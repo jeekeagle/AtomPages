@@ -64,7 +64,8 @@
     var rows = [
       ["编号", item.no],
       ["模块", mod.no + " " + mod.name],
-      ["页数", item.slides + " 页"],
+      ["类型", item.kind === "doc" ? "文档" : "幻灯片"],
+      ["规模", item.kind === "doc" ? (item.bytes / 1024).toFixed(0) + " KB" : item.slides + " 页"],
       ["大小", (item.bytes / 1024).toFixed(0) + " KB"],
       ["自包含", item.selfContained ? "是" : "否（含外部引用）"],
       ["来源项目", item.sourceProject],

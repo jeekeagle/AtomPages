@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>一稿多线 · 产品设计方案</title>
+<style>
+  :root{ --ink:#1a1a1a; --sub:#5a6b7b; --line:#e5e7eb; --accent:#1d4ed8; --soft:#eef2ff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:#fff; color:var(--ink); font:16px/1.9 "PingFang SC","Microsoft YaHei",sans-serif;
+        max-width:880px; margin:0 auto; padding:48px 40px 80px; }
+  h1{ font-size:34px; line-height:1.4; margin-bottom:8px; }
+  .meta{ color:var(--sub); font-size:16px; margin-bottom:36px; }
+  h2{ font-size:23px; margin:44px 0 16px; padding-left:14px; border-left:5px solid var(--accent); }
+  h3{ font-size:18px; margin:26px 0 10px; color:#0f2a5c; }
+  p{ margin:10px 0; }
+  ul,ol{ margin:10px 0 10px 26px; }
+  li{ margin:6px 0; }
+  table{ border-collapse:collapse; width:100%; margin:14px 0; font-size:16px; }
+  th,td{ border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; }
+  th{ background:#f6f7f9; }
+  .lead{ font-size:18px; color:#0f2a5c; background:var(--soft); border-radius:10px; padding:16px 20px; margin:18px 0; }
+  .rule{ border-left:4px solid #b91c1c; background:#fef7f7; padding:10px 16px; border-radius:0 8px 8px 0; margin:12px 0; }
+  .diagram{ border:1.5px solid var(--line); border-radius:12px; padding:18px 20px; margin:16px 0; background:#fcfcfd; }
+  .diagram .row{ display:flex; gap:10px; margin:8px 0; align-items:stretch; }
+  .box{ flex:1; border:1.5px solid var(--line); border-radius:8px; padding:8px 12px; text-align:center; background:#fff; font-size:16px; }
+  .box.core{ border-color:var(--accent); background:var(--soft); font-weight:600; }
+  .box.dim{ color:var(--sub); }
+  .arrow{ align-self:center; color:var(--sub); }
+  code,.file{ font-family:inherit; background:#f3f4f6; border-radius:4px; padding:1px 8px; font-size:16px; }
+  .toc{ background:#fafbfc; border:1px solid var(--line); border-radius:10px; padding:16px 24px; margin-bottom:8px; }
+  .toc li{ margin:3px 0; }
+</style>
+</head>
+<body>
+
+<h1>一稿多线：多线讲稿产品方案</h1>
+<div class="meta">Atom 标准 · 介质 M8 产品设计 · 2026 年 10 月</div>
+
+<div class="toc"><b>目录</b>
+<ol>
+<li>一句话定位</li><li>核心理念：文稿是母线</li><li>产品结构：一层母线，多层线</li>
+<li>线协议：一条线怎么定义</li><li>内建五条线详解</li><li>线是怎么被生产出来的</li>
+<li>呈现规范：播放页与静态退化</li><li>与 Atom 五段信息流的映射</li><li>演进路线</li><li>风险与边界</li>
+</ol>
+</div>
+
+<h2>一、一句话定位</h2>
+<div class="lead">给一份讲稿，长出一条声音、一排字幕、一张大纲、一串重点、一组概念、一张亮起来的知识图谱——而讲稿本身一个字都不用改。</div>
+<p>本产品是 Atom 标准中 M8 介质（多线讲稿页）的完整产品设计。它面向讲课、说课、口播三类场景：使用者只有一份文稿和一个主题，系统围绕这份文稿自动生产出一组相互同步的「线」，听讲的人沿时间轴前进时，各线同时联动。</p>
+
+<h2>二、核心理念：文稿是母线</h2>
+<p>整个产品只有一个信息源头：<b>文稿</b>。其余一切均由它派生：</p>
+<ul>
+<li><b>声音线</b>：对文稿做语音合成，逐句生成音频，句的起止时刻即声音的时间轴；</li>
+<li><b>字幕线</b>：文稿本就是逐句文本，与声音线天然逐句对齐——等同于视频里的字幕，只是它的「视频」还没生成就已经同步了；</li>
+<li><b>一切标注线</b>：结构、重点、概念、图谱、意图……全部叠加在文稿的分句锚点上，不修改母线。</li>
+</ul>
+<p>这里有一个反直觉但关键的顺序颠倒：传统做法先有录音再回头转写对齐，本产品先有文稿，声音与对齐是从文稿「正向生成」的。于是对齐精度天生就是句级，接上强制对齐后可以到字级，且永远不需要人工打时间戳。</p>
+<div class="rule"><b>红线：</b>任何线都不得反向修改母线。改内容只改文稿，改完重新派生各线；在声音或标注上直接打补丁一律禁止。</div>
+
+<h2>三、产品结构：一层母线，多层线</h2>
+<div class="diagram">
+  <div class="row"><div class="box core">文稿（母线）</div><div class="arrow">→ 派生</div><div class="box">声音线</div><div class="box">字幕线</div></div>
+  <div class="row"><div class="box dim">↓ 叠加（可开关、可增删、互不依赖）</div></div>
+  <div class="row"><div class="box">结构线</div><div class="box">重点线</div><div class="box">概念线</div><div class="box">图谱线</div><div class="box">意图线</div><div class="box dim">自定义线…</div></div>
+  <div class="row"><div class="box core">播放页（装配所有线，随讲联动）</div></div>
+</div>
+<p>母线只有一个，线有任意多条。线与线平权：可以整体删除任何一条而不影响其余；可以随时新增一条线而不动母线。</p>
+
+<h2>四、线协议：一条线怎么定义</h2>
+<p>这是本方案的核心抽象，已写入 Atom 规范 11.1 节。任何线必须登记六要素：</p>
+<table>
+<tr><th>要素</th><th>内容</th><th>示例（重点线）</th></tr>
+<tr><td>编号与名称</td><td>线在注册表中的唯一标识</td><td>L2 重点线</td></tr>
+<tr><td>锚点粒度</td><td>章 / 节 / 分句 / 字，向下兼容</td><td>分句</td></tr>
+<tr><td>呈现方式</td><td>这条线出现时观众看到什么</td><td>文字加粗与高亮</td></tr>
+<tr><td>生成方式</td><td>自动 / 模型候选加人工校订 / 纯人工</td><td>模型候选＋人工确认</td></tr>
+<tr><td>默认开关</td><td>播放页初始是否显示</td><td>开</td></tr>
+<tr><td>依赖声明</td><td>跨线依赖必须显式，禁止隐式依赖</td><td>无</td></tr>
+</table>
+<div class="rule"><b>硬规则：</b>线的产物落盘为独立文件；介质段装配时才合并。删一条线＝删一个文件；加一条线＝注册加落盘加装配开关。</div>
+
+<h2>五、内建五条线详解</h2>
+
+<h3>L1 结构线——「我讲了哪几部分」</h3>
+<p><b>锚点：章、节（区间挂载）。</b>识别整份文稿的内容分区：章与节构成大结构树，时间区间由子节点推导。呈现为左侧大纲树高亮、顶部进度条按章分段。这是唯一自动生成的线——标题层级即结构，无需智能体判断。</p>
+
+<h3>L2 重点线——「哪几句话特别重要」</h3>
+<p><b>锚点：分句。</b>整份文稿的注意力分配：哪些句子是需要听众记住的核心论断，逐句判定重要程度（核心、支撑、过渡三级），核心句播放时加粗高亮，过渡句自动淡显。生成方式为模型逐句给出候选与理由，人只确认候选名单——校订成本远低于从零标注。</p>
+
+<h3>L3 概念线——「学生会在哪里卡住」</h3>
+<p><b>锚点：分句。</b>难点概念探测：讲到某个学生易卡住的概念时弹出概念卡（定义、判断标准、常见误解），讲到设问处弹出问答卡。概念卡内容与弹出时机都挂在分句锚点上。此线已实现，是其余各线的原型。</p>
+
+<h3>L4 图谱线——「讲到哪里，点亮哪里」</h3>
+<p><b>锚点：分句。</b>知识图谱联动：讲稿中每个分句与图谱节点做匹配，讲到某句时右侧图谱同步点亮所涉节点与连边，讲完一章，一章的子图已亮。它让「知识结构」从目录页的一次性展示，变成全程呼吸着的背景。生成方式为图谱匹配加人工校订；前提是主题已有图谱，没有时先由图谱构建流程补齐。</p>
+
+<h3>L5 意图线——「这句话为什么这样讲」</h3>
+<p><b>锚点：分句。</b>教学意图标注：建立概念、制造冲突、给出类比、提示易错、要求回忆。它是给<b>作者</b>看的线，不上播放页——用于备课复盘与讲稿互审，也是三条生成式线（重点、概念、图谱）的依据来源：意图定了，重点与概念自然浮现。</p>
+
+<h3>自定义线</h3>
+<p>以上皆可按线协议扩展，例如「节奏线」（哪里该快、哪里该停）、「共鸣线」（哪里该请学生举例）、「证据线」（哪里需要出示实验或数据）。注册六要素、落盘产物、登记进规范注册表，即成为标准线。</p>
+
+<h2>六、线是怎么被生产出来的</h2>
+<p>输入只有两样：<b>文稿</b>与<b>主题</b>。生产按线分派给不同的智能体角色，彼此并行：</p>
+<table>
+<tr><th>线</th><th>生产者（角色）</th><th>输入</th><th>人做什么</th></tr>
+<tr><td>结构线</td><td>结构角色</td><td>文稿标题层级</td><td>无需介入</td></tr>
+<tr><td>重点线</td><td>解析角色（判读）</td><td>逐句文稿＋主题</td><td>确认核心句名单</td></tr>
+<tr><td>概念线</td><td>解析角色（教学）</td><td>逐句文稿＋学情</td><td>确认概念卡与时机</td></tr>
+<tr><td>图谱线</td><td>解析角色（关联）</td><td>逐句文稿＋知识图谱</td><td>校订节点匹配</td></tr>
+<tr><td>意图线</td><td>纯人工</td><td>作者本人</td><td>写（这也是其他线的校订依据）</td></tr>
+</table>
+<p>注意生成顺序上的一个设计：意图线虽是纯人工，却建议<b>先写</b>——作者标完意图，重点线与概念线的模型候选就有了依据，确认成本大幅下降。意图是其他线的纲。</p>
+
+<h2>七、呈现规范：播放页与静态退化</h2>
+<h3>播放页（动态形态）</h3>
+<ul>
+<li>母线居中：逐句滚动，当前句高亮，声音线同步播放；</li>
+<li>结构线居左：大纲树实时指示位置，可点击跳转；</li>
+<li>其余线居右或内嵌：概念卡弹出、重点句加粗、图谱点亮；</li>
+<li>每条线有独立开关；进度条按章分段（结构线的可视形态）。</li>
+</ul>
+<h3>静态退化（打印形态）</h3>
+<p>打印为静态介质时各线不消失，而是退化：重点线退化为加粗，概念线退化为页边卡片，结构线退化为目录，图谱线退化为文末附图，意图线退化为批注样式。<b>一份文稿、一套数据，两种形态。</b></p>
+
+<h2>八、与 Atom 五段信息流的映射</h2>
+<table>
+<tr><th>段</th><th>本产品的工作</th><th>产物落盘</th></tr>
+<tr><td>源段</td><td>文稿与主题就位</td><td>文稿原文</td></tr>
+<tr><td>解析段</td><td>切章、切节、切分句，建锚点系统</td><td>母线结构树</td></tr>
+<tr><td>加工段</td><td>各线智能体<b>并行</b>生产，各自落盘</td><td>每线一个独立文件</td></tr>
+<tr><td>介质段</td><td>装配播放页：母线＋已开关的线</td><td>单文件多线讲稿页</td></tr>
+<tr><td>确认段</td><td>台面逐线验收：每条线一个勾选清单</td><td>验收留痕</td></tr>
+</table>
+<p>加工段的并行是效率关键：五条线互不依赖，可同时生产；某条线失败只重跑该线，不影响其余。这正是线协议「禁止隐式依赖」换来的工程红利。</p>
+
+<h2>九、演进路线</h2>
+<table>
+<tr><th>阶段</th><th>内容</th><th>状态</th></tr>
+<tr><td>第一阶段</td><td>结构线＋概念线，演示播放页</td><td>已完成</td></tr>
+<tr><td>第二阶段</td><td>线协议入规范；重点线（加粗高亮）与逐线开关上线</td><td>规范已完成，播放页待升级</td></tr>
+<tr><td>第三阶段</td><td>语音合成接入：声音线与字幕线正向生成，锚点精确到真实语音</td><td>待启动</td></tr>
+<tr><td>第四阶段</td><td>强制对齐：锚点从分句下沉到字级，重点线可只加粗关键词</td><td>待启动</td></tr>
+<tr><td>第五阶段</td><td>图谱线：主题图谱构建＋分句匹配点亮</td><td>待启动</td></tr>
+<tr><td>第六阶段</td><td>上游备课技能：主题加思路，自动产出带意图标注的初稿</td><td>待启动</td></tr>
+</table>
+
+<h2>十、风险与边界</h2>
+<ul>
+<li><b>线不是越多越好。</b>每条线都消耗观众注意力，播放页同屏激活的线不宜超过三条；其余默认关闭，按需打开。</li>
+<li><b>候选质量依赖学情输入。</b>重点线与概念线的模型判断若无学情描述，只能按通用规律猜；输入里应包含「给谁讲」。</li>
+<li><b>图谱线必须有真图谱。</b>没有图谱硬做匹配，会产出似是而非的点亮效果，宁可暂缓。</li>
+<li><b>意图线不可代劳。</b>「这句话为什么这样讲」是作者的专业判断，模型可以建议，但该线必须人工落笔——这也是本产品守住「判断权在人」的位置。</li>
+</ul>
+
+</body>
+</html>

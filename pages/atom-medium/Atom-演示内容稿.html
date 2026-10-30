@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Atom 演示内容稿</title>
+<style>
+  :root{ --bg:#ffffff; --ink:#1a1a1a; --sub:#5a6b7b; --accent:#1d4ed8; --line:#e5e7eb; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--bg); color:var(--ink); font:16px/1.75 "PingFang SC","Microsoft YaHei",sans-serif; overflow:hidden; }
+  .slide{ position:fixed; inset:0; display:none; flex-direction:column; justify-content:center; padding:6vh 9vw; }
+  .slide.active{ display:flex; }
+  h2{ font-size:34px; margin-bottom:4vh; padding-left:16px; border-left:6px solid var(--accent); }
+  ul{ list-style:none; }
+  li{ font-size:20px; margin:1.6vh 0; padding-left:1.4em; position:relative; }
+  li::before{ content:""; position:absolute; left:0; top:.75em; width:.5em; height:.5em; background:var(--accent); border-radius:2px; }
+  .hint{ position:fixed; right:20px; bottom:14px; color:var(--sub); font-size:16px; }
+</style>
+</head>
+<body>
+<section class="slide"><h2>为什么需要一套标准</h2><ul><li>每个人都在沉淀经验，但经验散落在聊天记录和临时脚本里</li><li>标准的作用，是把沉淀这件事本身变成可重复的流程：有固定的目录、固定的格式、固定的验收</li><li>没有标准，沉淀靠自觉；</li><li>有了标准，沉淀靠流程</li></ul></section>
+<section class="slide"><h2>三个核心设计</h2><ul><li>一切介质收敛为单文件网页，教学、汇报、培训共用一个容器</li><li>引擎即模式，一个引擎代表一类信息处理任务的标准套路，模式下挂多个智能体配置</li><li>信息流五段单向流动，源、解析、加工、介质、确认</li><li>确认段发现问题就回到解析段重走，禁止在介质段打补丁</li></ul></section>
+<section class="slide"><h2>如何参与迭代</h2><ul><li>用命令行创建技能骨架，填写技能层的五个部分，再填充各段脚本</li><li>每完成一次真实任务，把失败样本和修订理由写进日志</li><li>三次迭代之后，这个技能就值得信任了</li></ul></section>
+<div class="hint">← → 或点击翻页</div>
+<script>
+  var s=[].slice.call(document.querySelectorAll('.slide')),i=0;
+  function show(n){ s[i].classList.remove('active'); i=(n+s.length)%s.length; s[i].classList.add('active'); }
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ')show(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+  });
+  document.addEventListener('click',function(){show(i+1);});
+  s[0].classList.add('active');
+</script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>Atom 标准 · 总规范 v1.2</title><style>
+body{background:#fff;color:#1a1a1a;font:16px/1.9 "PingFang SC","Microsoft YaHei",sans-serif;max-width:900px;margin:0 auto;padding:48px 40px 80px;}
+h1{font-size:30px;border-left:6px solid #1d4ed8;padding-left:14px;}
+h2{font-size:21px;margin:36px 0 12px;padding-left:12px;border-left:4px solid #1d4ed8;}
+h3{font-size:17px;color:#0f2a5c;margin:20px 0 8px;}
+p,li{margin:6px 0;} ul,ol{margin:8px 0 8px 26px;}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:16px;}
+th,td{border:1px solid #e5e7eb;padding:7px 11px;text-align:left;vertical-align:top;}
+th{background:#f6f7f9;} code{background:#f3f4f6;border-radius:4px;padding:0 6px;}
+pre{background:#f6f8fa;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;overflow-x:auto;white-space:pre-wrap;}
+</style></head><body><h1>Atom 标准 · 总规范（Atom Spec v1.2）</h1>
+<blockquote>
+<p>Atom：把一次做对的经验，固化为人可读、可改、可确认的可复用技能。
+一切 Atom 技能包的命名、结构、格式、信息流、介质、验收，以本规范为准。</p>
+</blockquote>
+<hr />
+<h2>0. 术语</h2>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>技能（Skill）</td>
+<td>一个可独立调用、可独立验收的能力单元，对应一个目录</td>
+</tr>
+<tr>
+<td>容器（Container）</td>
+<td>技能的运行环境声明：依赖、工作区、产物落点、兜底方案</td>
+</tr>
+<tr>
+<td>引擎（Engine）</td>
+<td>一个<strong>模式</strong>的调度声明：该模式下挂哪些智能体、按什么流向加工信息</td>
+</tr>
+<tr>
+<td>智能体（Agent）</td>
+<td>引擎模式下的一个角色配置：表征真正的信息处理要求、约束与内涵</td>
+</tr>
+<tr>
+<td>介质（Medium）</td>
+<td>信息的最终呈现形态。<strong>Atom 中一切介质的唯一容器是 HTML</strong></td>
+</tr>
+<tr>
+<td>台面（Bench）</td>
+<td>前端三可页：人阅读、修改参数、确认执行的那一页</td>
+</tr>
+<tr>
+<td>原子动作</td>
+<td>执行流程中不可再分的一步，须可独立完成、可独立验收、可独立替换</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. 命名规范</h2>
+<ul>
+<li>技能目录名：小写字母与连字符，如 <code>koubo-video</code>、<code>slide-pdf</code>；禁止空格、中文、下划线混用。</li>
+<li>技能显示名：中文，写在 SKILL.md 的 description 中。</li>
+<li>版本号：<code>主.次.修订</code>（如 1.2.0）。主版本=验收标准或信息流变了；次版本=步骤、模式或参数变了；修订=修错或留痕更新。</li>
+<li>配置文件命名：<code>&lt;技能目录名&gt;.container.json</code>、<code>&lt;技能目录名&gt;.engine.json</code>。</li>
+<li>智能体配置命名：<code>agents/&lt;角色名&gt;.json</code>，角色名用标准角色名（见第 10 章）。</li>
+</ul>
+<h2>2. 目录结构规范</h2>
+<p><code>&lt;skill-name&gt;/
+├── SKILL.md              必需。入口：触发条件 + 六步流程 + 指向规范
+├── spec/                 必需。本技能自己的标准（验收标准唯一来源）
+│   └── SPEC.md
+├── templates/            按需。输入模板、配置模板、确认页模板
+├── agents/               按需。本技能模式下的智能体配置（每角色一个 json）
+├── scripts/              按需。自动化脚本（每个脚本顶部写用途与用法）
+├── examples/             按需。沉淀完成的实例，至少一个
+└── logs/                 运行时自动生成。失败样本、边界记录、修订理由</code></p>
+<p>规则：
+- SKILL.md 是唯一入口，其他文件都从它可达；
+- examples 里的实例必须通过五项体检，作为该技能「确实能跑通」的证据；
+- logs 三类痕迹分开存：<code>failures.md</code>、<code>boundaries.md</code>、<code>revisions.md</code>。</p>
+<h2>3. 技能层规范（skill.md 模板）</h2>
+<p>五段固定结构，缺一不可：</p>
+<ol>
+<li><strong>输入约定</strong>：表格列出每项输入的内容、格式、来源、必填性。禁止出现「一些资料」这类不可准备的描述。</li>
+<li><strong>执行步骤</strong>：编号列表，动词开头，一句一步，每步标明产物。步骤数 ≥ 2。</li>
+<li><strong>工具清单</strong>：每步对应的能力/命令 + 自动化程度（全自动 / 半自动 / 人工）。</li>
+<li><strong>验收标准</strong>：可观察、可判断的勾选项。禁止「效果要好」「体验流畅」这类不可判断的表述。</li>
+<li><strong>边界</strong>：明确哪些情况不交给这个技能、必须交还给人。</li>
+</ol>
+<h2>4. 容器层规范（container.json）</h2>
+<p>必填字段：<code>name</code>、<code>version</code>、<code>runtime</code>（语言、依赖、网络）、<code>workspace</code>（输入/输出/临时目录、清理策略）、<code>outputs</code>（名称、路径、格式）、<code>fallbacks</code>（至少一条兜底）。</p>
+<p>规则：
+- 输出产物必须收敛为<strong>单文件</strong>优先（视频 mp4、文档 pdf、网页单 html），便于交付与复用；
+- HTML 介质按第 11 章介质规范产出；
+- 临时目录必须声明清理策略，禁止残留；
+- 每条 fallback 必须可执行，不能只写「出错了再说」。</p>
+<h2>5. 引擎层规范（engine.json）——引擎即模式</h2>
+<p>每个引擎必须声明一个<strong>模式（mode）</strong>：一类信息处理任务的标准套路。模式下挂一组智能体配置，每个智能体表征该环节真正的处理要求、约束与内涵。</p>
+<p>必填字段：
+- <code>mode</code>：模式名 + 一句话定义（如「幻灯片模式：把结构化内容转为主标题式幻灯片组」）；
+- <code>agents</code>：智能体数组，每个含角色名、配置文件引用、执行顺序或并行组；
+- <code>flow</code>：信息流向声明（顺序 flow / 并行 parallel / 汇流 converge），必须与第 9 章五段信息流对应；
+- <code>trigger</code>：类型、触发语、必需输入；
+- <code>confirmation</code>：执行前确认点、执行后确认点、必须人工过目的智能体环节；
+- <code>evidence</code>：留痕类型与目录。</p>
+<p>规则：
+- 每条流水线至少一个执行前确认、一个执行后确认；
+- 涉及判断、责任、对外发布的环节必须标进 <code>human_review_steps</code>；
+- 失败重试上限默认 2 次，超过即转人工；
+- 模式可以继承：新技能可引用已有模式的智能体配置，只覆写差异项。</p>
+<h2>6. 台面规范（前端三可）</h2>
+<p>台面是一页可渲染的文档或网页（本身即 HTML 介质），三块固定：</p>
+<ol>
+<li><strong>可阅读</strong>：一句话说明 + 步骤流 + 每步产物 + 预估耗时；</li>
+<li><strong>可修改</strong>：参数表（参数 / 默认值 / 改了会怎样），一行一个参数，禁止笼统的「高级设置」；</li>
+<li><strong>可确认</strong>：执行前勾选（输入齐、参数对）+ 执行后对照验收标准逐条打勾 + 不满意时的两条出路（只改参数重跑 / 回技能层修订并写修订理由）。</li>
+</ol>
+<p>排版底线：最小字号 16px；一个页面只讲一个技能。</p>
+<h2>7. 五项体检（强制门禁）</h2>
+<p>任何技能入库前运行 <code>scripts/validate.py</code>：</p>
+<ol>
+<li>有输入——输入可准备；</li>
+<li>有步骤——≥2 步，每步有产物；</li>
+<li>有工具——每步有明确能力支撑；</li>
+<li>有标准——验收项可判断；</li>
+<li>有回传——有确认点与留痕。</li>
+</ol>
+<p>不通过不交付。体检脚本是门禁，不是参考。</p>
+<h2>8. 生命周期与留痕</h2>
+<p><code>草稿 → 体检通过 → 在用 → （迭代）→ 归档</code></p>
+<p>迭代必须留三类痕迹，写入 logs/：
+- <strong>失败样本</strong>（价值高于成功案例）：什么输入、哪一步、什么报错；
+- <strong>边界记录</strong>：新发现的不该交给自动流程的情况，补进技能层第 5 段；
+- <strong>修订理由</strong>：每次改步骤或改标准写一句为什么。无理由的修订禁止合入。</p>
+<h2>9. 信息流规范（五段标准流向）</h2>
+<p>Atom 中一切任务的信息流统一为五段，任何技能的 engine.flow 必须映射到这五段：</p>
+<p><code>① 源段 → ② 解析段 → ③ 加工段 → ④ 介质段 → ⑤ 确认段</code></p>
+<table>
+<thead>
+<tr>
+<th>段</th>
+<th>职责</th>
+<th>承担者</th>
+<th>产物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>① 源段</td>
+<td>收集原始输入</td>
+<td>人 + 台面确认</td>
+<td>原始材料（文本/文件/参数）</td>
+</tr>
+<tr>
+<td>② 解析段</td>
+<td>结构化：意图、受众、内容骨架</td>
+<td>解析智能体</td>
+<td>结构清单（json/md）</td>
+</tr>
+<tr>
+<td>③ 加工段</td>
+<td>按模式生成各部分内容</td>
+<td>生成智能体群（可并行）</td>
+<td>各部分半成品</td>
+</tr>
+<tr>
+<td>④ 介质段</td>
+<td>收敛为标准化 HTML 介质</td>
+<td>收敛智能体</td>
+<td>单文件 HTML</td>
+</tr>
+<tr>
+<td>⑤ 确认段</td>
+<td>台面三可：人确认、回传、留痕</td>
+<td>人 + 校验智能体</td>
+<td>已确认产物 + 痕迹</td>
+</tr>
+</tbody>
+</table>
+<p>规则：
+- 流向<strong>单向不回头</strong>：确认段发现问题时，回退到解析段重走，禁止在介质段就地打补丁；
+- 每段产物必须落盘（写入工作区），下一段只读上一段产物，不隐式依赖；
+- 任何一段失败按引擎声明的策略处理，重试上限 2 次。</p>
+<h2>10. 智能体规范（模式下的标准角色）</h2>
+<p>引擎模式下挂的智能体是<strong>配置而非代码</strong>，每个智能体一个 json，五项固定：</p>
+<ol>
+<li><code>role</code> 标准角色名（从下表取，不自造）；</li>
+<li><code>duty</code> 职责一句话；</li>
+<li><code>input</code> 读什么（上游哪一段的什么产物）；</li>
+<li><code>constraints</code> 约束（风格、禁用项、底线，如「不出现英文小字」「最小字号16px」）；</li>
+<li><code>acceptance</code> 该环节的可判断验收项。</li>
+</ol>
+<p>标准角色表（模式按需取用，同一角色可有多个实例）：</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+<th>所在段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>parse（解析）</td>
+<td>把原始输入结构化为意图与骨架</td>
+<td>②</td>
+</tr>
+<tr>
+<td>structure（结构）</td>
+<td>规划内容组织与介质选择</td>
+<td>②</td>
+</tr>
+<tr>
+<td>generate（生成）</td>
+<td>按分工产出内容块，可多个实例按介质/主题分工</td>
+<td>③</td>
+</tr>
+<tr>
+<td>verify（校验）</td>
+<td>对照验收标准逐项检查</td>
+<td>⑤</td>
+</tr>
+<tr>
+<td>assemble（收敛）</td>
+<td>把各部分收敛为单一 HTML 介质</td>
+<td>④</td>
+</tr>
+</tbody>
+</table>
+<h2>11. 介质规范（HTML 容器标准）</h2>
+<p><strong>总纲：HTML 是 Atom 的唯一介质容器。</strong> 教学、培训、汇报、看板、对话演示……一切信息传递介质最终都以单文件 HTML 形态产出，可离线打开、可转换（打印为 PDF、嵌入平台）、可再加工。</p>
+<p>通用底线（一切 HTML 介质必须满足）：
+1. 单文件，无外部脚本依赖，双击即可打开；
+2. 最小字号 16px；
+3. 全篇中文（产品名等专名除外）；
+4. 有键盘或触摸的基本操作方式（如有翻页/展开）；
+5. 内容结构完整：有标题、有主体、不留空段。</p>
+<p>介质注册表（标准类型，新增类型先在此登记再使用）：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>类型</th>
+<th>适用场景</th>
+<th>骨架要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>幻灯片页组</td>
+<td>教学、汇报</td>
+<td>每页一主标题，翻页操作</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>文档页</td>
+<td>说明、方案、总结</td>
+<td>单栏纵排，章节锚点</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>交互长页</td>
+<td>自学材料、教程</td>
+<td>滚动叙事，节点作答</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>看板/表格</td>
+<td>数据、任务、进度</td>
+<td>表格为主体，可排序筛选</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>卡片流</td>
+<td>多方案并列展示</td>
+<td>网格卡片，可对比</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>对话演示</td>
+<td>流程讲解、示例演示</td>
+<td>气泡按序出现</td>
+</tr>
+<tr>
+<td>M7</td>
+<td>测验页</td>
+<td>练习、自测</td>
+<td>题目+判定+指向性反馈</td>
+</tr>
+<tr>
+<td>M8</td>
+<td>多线讲稿页</td>
+<td>讲课、说课、口播</td>
+<td>文稿为母线（声音线、字幕线由其派生），标注以「线」为单位叠加：分层时间轴（章/节大结构 + 分句小结构），各线挂载于锚点，可独立开关</td>
+</tr>
+<tr>
+<td>M9</td>
+<td>播放工作台</td>
+<td>备课成果演示、多线联动播放</td>
+<td>上区画面（幻灯片随讲切换）、中区讲稿逐句滚动、下区多线轨道（每线独立开关）；单一时钟驱动，全部线为母线锚点的订阅者</td>
+</tr>
+</tbody>
+</table>
+<p>每种介质的标准模板存放于 <code>templates/mediums/</code>，生成时从模板出发修改，不从零写起。</p>
+<h3>11.1 多线协议（一稿多线）</h3>
+<p><strong>总纲：文稿是母线。</strong> 一份讲稿即一条母线：语音合成由它生成声音线，转写对齐由它生成字幕线，母线与一切标注天然同步。任何结构化标注不修改母线，只作为「线」叠加其上。</p>
+<p>线的定义六要素（缺一不得注册）：
+1. 编号与名称（如 重点线）；
+2. 锚点粒度：章、节、分句、字四选一，向下兼容（可挂更粗）；
+3. 呈现方式：区间高亮、文字加粗、弹卡、点亮图谱节点、弹出问题等；
+4. 生成方式：自动生成、模型候选加人工校订、纯人工三选一；
+5. 默认开关状态；
+6. 与其他线的依赖声明（禁止隐式依赖，跨线依赖必须显式声明）。</p>
+<p>内建标准线（新线先在此登记再使用）：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>名称</th>
+<th>锚点粒度</th>
+<th>呈现方式</th>
+<th>生成方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>结构线</td>
+<td>章/节</td>
+<td>大纲树高亮、进度条分段</td>
+<td>自动（标题层级推导）</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>重点线</td>
+<td>分句</td>
+<td>加粗与高亮</td>
+<td>模型候选＋人工确认</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>概念线</td>
+<td>分句</td>
+<td>弹出概念卡</td>
+<td>模型候选＋人工确认</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>图谱线</td>
+<td>分句</td>
+<td>点亮知识图谱节点</td>
+<td>依知识图谱匹配＋人工校订</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>意图线</td>
+<td>分句</td>
+<td>教学意图标注（建立概念、制造冲突、提示易错等）</td>
+<td>纯人工</td>
+</tr>
+</tbody>
+</table>
+<p>硬规则：
+- 线之间平权，可整体增删；删任何一条线，母线与其余线不受影响；
+- 线的产物必须落盘为独立文件，介质段装配时合并；
+- 播放页必须提供每条线的独立开关；打印为静态介质时，各线退化为对应静态标注（加粗、脚注、侧栏卡片）。</p>
+<h2>12. 质量红线</h2>
+<ul>
+<li>凡须现场看人、临场判断、权衡取舍的环节，不得做成全自动步骤；</li>
+<li>验收标准里出现不可判断的形容词 = 体检不通过；</li>
+<li>台面上看不见的参数不存在（隐性配置一律提到参数表）；</li>
+<li>一切介质必为单文件 HTML，旁路输出（mp4/pdf 等）只能由 HTML 介质转换而来，不得绕过介质段直接生成；</li>
+<li>效率来自复用而非生成：两次重复出现的做法才值得沉淀。</li>
+</ul></body></html>

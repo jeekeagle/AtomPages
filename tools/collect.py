@@ -58,7 +58,8 @@ MODULE_RULES = [
     (r"selfmedia|自媒体", "selfmedia-gap", "自媒体鸿沟", "自媒体与自我应用之间的效果落差"),
     (r"training-product|培训交付", "training-product", "培训交付", "培训从交付理念转向直接交付产品"),
     (r"ethics|伦理|policy|政策", "ai-ethics-policy", "伦理与安全", "人工智能伦理与安全的政策依据"),
-    (r"atom-system|atom", "atom-system", "Atom 系统", "Atom 规范、运行系统与一稿多线"),
+    (r"workbench|bench|台面|工作台|workspace|medium", "atom-medium", "介质工作台", "Atom 各介质的运行工作台与确认台面"),
+    (r"atom-system|atom|规范|一稿多线|多线", "atom-system", "Atom 系统", "Atom 规范、运行系统与一稿多线"),
     (r"remotion|video|视频", "video", "视频制作", "口播视频与动效"),
 ]
 
@@ -66,7 +67,7 @@ DEFAULT_MODULE = "misc"
 
 # 模块显示顺序（未列出的排后面）
 MODULE_ORDER = [
-    "ai-ethics-policy", "atom-system", "training-product", "selfmedia-gap",
+    "ai-ethics-policy", "atom-system", "atom-medium", "training-product", "selfmedia-gap",
     "microcourse", "skill-engineering", "agent-basics", "interface",
     "model-eats-app", "cognition", "video", "misc",
 ]
@@ -118,6 +119,15 @@ def count_slides(html_path: Path) -> int:
     return n or 1
 
 
+def has_slide_class(html_path: Path) -> bool:
+    """是否含 .slide / .page 幻灯片结构——用来区分幻灯片与普通文档。"""
+    try:
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+    return bool(SLIDE_RE.search(text) or PAGE_RE.search(text))
+
+
 def deck_title(html_path: Path) -> str:
     text = html_path.read_text(encoding="utf-8", errors="ignore")
     m = TITLE_RE.search(text)
@@ -129,8 +139,14 @@ def deck_title(html_path: Path) -> str:
     return html_path.stem
 
 
-def guess_module(project_dir_name: str, html_name: str) -> str:
-    probe = f"{project_dir_name} {html_name}".lower()
+def guess_module(project_dir_name: str, html_name: str, section: str = "") -> str:
+    """判定模块归属。
+
+    section 是 HTML 相对项目根的子目录路径（如 "workspace/structured-script/medium"）。
+    Atom 系统的 docs/ 与 workspace/ 是两码事，必须靠 section 区分，
+    否则整包都会落进同一个模块。
+    """
+    probe = f"{project_dir_name} {html_name} {section}".lower()
     for pattern, slug, _cn, _desc in MODULE_RULES:
         if re.search(pattern, probe):
             return slug
@@ -176,26 +192,175 @@ def project_stem(proj_name: str) -> str:
 
 
 def topic_key(title: str, proj_name: str) -> str:
-    """去掉版本噪音词后的标题指纹，用于同一项目内多份 deck 的判重。"""
+    """去掉版本噪音词后的标题指纹，用于同一项目内多份 deck 的判重。
+
+    同一主题的新旧两版标题常被改写（"交付的不再是理念，而是产品" vs
+    "一次培训，直接交付一个产品"），标题对不上时退回项目名指纹，
+    保证跨项目的同主题仍然只留一版。
+    """
     t = VERSION_NOISE.sub("", title)
     t = re.sub(r"[：:，,。·\-\s]+", "", t)
     t = re.sub(r"(综述|讲座|第一部分|第二部分|部分)$", "", t)
-    return (t or project_stem(proj_name)).strip().lower()
+    t = t.strip().lower()
+    if not t:
+        return project_stem(proj_name)
+    # 标题与项目名没有共同词，说明不是同一主题的改写版，各自独立
+    stem = project_stem(proj_name)
+    head = stem.split("-")[0]
+    if head and head not in t:
+        return f"{stem}::{t}"
+    return t
 
 
 # ── 采集 ────────────────────────────────────────────────────────────────
+# 不收录的目录（依赖、构建产物、缓存）
+SKIP_DIRS = {"node_modules", ".git", "shots", "out", "dist", "__pycache__",
+             ".venv", "venv", "assets", "templates", "logs"}
+
+# deck 的分页源文件目录：里面是单页碎片，项目根目录已有合并后的单文件版，
+# 全收会重复上架。目录名约定为 slides / pages。
+FRAGMENT_DIRS = {"slides", "pages"}
+
+# 模板占位文件：标题里带 {{TITLE}} / 〈标题〉 这类未填占位符，不是可展示的作品。
+# 只看标题——正文里提到「占位符」三个字的正式文档（如规格书的目录树）不该被误杀。
+PLACEHOLDER_RE = re.compile(r"\{\{[^}]*\}\}|〈[^〉]{0,20}〉|待填写|占位", re.I)
+
+
+def is_template(html_path: Path) -> bool:
+    """标题含未填占位符的模板文件不收录。"""
+    try:
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+    m = TITLE_RE.search(text)
+    title = clean_text(m.group(1)) if m else ""
+    if title and PLACEHOLDER_RE.search(title):
+        return True
+    # 没有标题标签时退回全量判断
+    if not title:
+        return bool(PLACEHOLDER_RE.search(text[:4000]))
+    return False
+
+
 def find_candidates(sources: list) -> list:
-    """在源工作区里找出所有 HTML 产出，附带所属项目目录。"""
+    """在源工作区里找出所有 HTML 产出，附带所属项目目录。
+
+    递归扫描：项目内部还有子目录（Atom 系统的 docs/ 与 workspace/ 就是这样），
+    不递归的话整包交付文档会全部漏收。
+    deck 的分页源目录（slides/、pages/）不扫——项目根目录已有合并后的单文件版。
+    """
     found = []
     for src in sources:
         if not src.exists():
             continue
         for proj in sorted(p for p in src.iterdir() if p.is_dir()):
-            if proj.name in {"node_modules", ".git", "shots", "out", "dist"}:
+            if proj.name in SKIP_DIRS:
                 continue
-            for html in sorted(proj.glob("*.html")):
+            for html in sorted(proj.rglob("*.html")):
+                if any(part in SKIP_DIRS for part in html.parts):
+                    continue
+                # 相对于项目根的分页碎片目录
+                rel_parts = html.parent.relative_to(proj).parts
+                if any(part in FRAGMENT_DIRS for part in rel_parts):
+                    continue
                 found.append((proj, html))
     return found
+
+
+def find_pdf_for(html_path: Path) -> Path | None:
+    """给 HTML 找配套 PDF。
+
+    多数产出里 HTML 与 PDF 不同名（如「认知瓶颈-幻灯片.html」对「认知瓶颈.pdf」），
+    只按同名匹配会丢掉一大半 PDF。这里按三条规则依次尝试：
+      1. 同名同目录；
+      2. 同目录内「去掉幻灯片/讲稿/版本后缀」后同名的 PDF；
+      3. 同目录内唯一的 PDF。
+    """
+    same = html_path.with_suffix(".pdf")
+    if same.exists():
+        return same
+
+    siblings = sorted(html_path.parent.glob("*.pdf"))
+    if not siblings:
+        return None
+
+    # 规则 2：标题主干相同
+    stem = html_path.stem
+    for suf in ("-幻灯片", "-讲稿幻灯片", "-讲稿", "幻灯片", "讲稿"):
+        if stem.endswith(suf) and stem != suf:
+            target = stem[: -len(suf)].strip("-_ ")
+            for pdf in siblings:
+                if pdf.stem == target:
+                    return pdf
+            break
+
+    # 规则 3：目录内唯一 PDF
+    if len(siblings) == 1:
+        return siblings[0]
+    return None
+
+
+# 指向本机绝对路径的链接（file:///C:/...）上线后必然断链，
+# 采集时改写成站点内可用的相对路径。
+FILE_URL_RE = re.compile(r'href\s*=\s*["\']file:///(?:/)?[A-Za-z]:[\\/][^"\']+["\']', re.I)
+
+
+def rewrite_local_links(html_path: Path, dest_dir: Path, dest_name: str) -> bool:
+    """把 HTML 里的 file:/// 本机绝对路径链接改写成指向站点内文件的相对路径。
+
+    目标文件此刻可能还没归档进站点，所以链接指向的 HTML 用标题去站点里找，
+    找不到再退回文件名匹配。返回 True 表示内容被改写过。
+    """
+    try:
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+
+    # 站点内已有的 HTML，按文件名与标题两条线索索引
+    by_name = {}
+    by_title = {}
+    if PAGES_DIR.exists():
+        for f in PAGES_DIR.rglob("*.html"):
+            by_name.setdefault(f.stem, f)
+            try:
+                t = deck_title(f)
+            except Exception:
+                t = ""
+            if t:
+                by_title.setdefault(t, f)
+
+    def repl(m: re.Match) -> str:
+        raw = m.group(0)
+        inner = re.search(r'file:///(?:/)?([A-Za-z]:[\\/][^"\']+)', raw, re.I)
+        if not inner:
+            return raw
+        win = inner.group(1).replace("\\", "/")
+        stem = Path(win).stem
+        # 先按文件名找，再按标题找
+        target = by_name.get(stem)
+        if not target:
+            try:
+                src_text = Path(win).read_text(encoding="utf-8", errors="ignore")
+                t = deck_title(Path(win)) if src_text else ""
+            except Exception:
+                t = ""
+            if t:
+                target = by_title.get(t)
+        if not target:
+            return raw
+        # 相对当前文件所在目录的相对路径
+        try:
+            rel = target.relative_to(dest_dir).as_posix()
+        except ValueError:
+            rel = os.path.relpath(target, dest_dir).replace("\\", "/")
+        quote = '"' if '"' in raw else "'"
+        return f'href={quote}{rel}{quote}'
+
+    new_text = FILE_URL_RE.sub(repl, text)
+    if new_text == text:
+        return False
+    (dest_dir / dest_name).write_text(new_text, encoding="utf-8")
+    return True
 
 
 def collect(source_dirs: list, dry_run: bool = False) -> dict:
@@ -211,15 +376,24 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
     if statepath.exists():
         try:
             state = json.loads(statepath.read_text(encoding="utf-8"))
-            prev = state.get("items", {})
+            # 状态文件结构是 {"items": {key: entry}}，取一次即可。
+            # 早先这里多取了一层 items，导致 prev_items 恒为空、幂等失效、
+            # 每次采集都把全部条目当成新增。
+            prev = state.get("items", {}) or {}
         except Exception:
             prev = {}
-    prev_items = prev.get("items", {})
+    prev_items = prev if isinstance(prev, dict) else {}
 
     modules = {}
     items = {}
     changes = []
-    seen_topics = {}   # topic_key -> (mtime, key)
+    # 两级判重：
+    #   seen_projects —— 跨项目同主题（training-product-slides vs training-product-huashu），
+    #                    以「项目名去版本后缀」为指纹，同一主题只留最新一版；
+    #   seen_sections —— 同一项目内不同小节并存的多份文档（Atom 的 docs/ 下四份），
+    #                    以「子目录 + 主题」为指纹，各自独立收录。
+    seen_projects = {}
+    seen_sections = {}
 
     for proj, html in find_candidates(source_dirs):
         # 只收「产出型」HTML：排除概览墙 / 目录页（index.html）
@@ -231,29 +405,54 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
             continue
         if size < 2000:
             continue
+        # 含占位符的模板不是作品
+        if is_template(html):
+            continue
 
         title = deck_title(html)
-        module_slug = guess_module(proj.name, html.name)
+        # 子目录（如 Atom 系统的 docs/ 与 workspace/）算不同小节，各自独立收录，
+        # 也参与模块判定——docs 是规范文档，workspace 是介质工作台。
+        rel_sub = html.parent.relative_to(proj).as_posix()
+        sub_key = "" if rel_sub == "." else rel_sub
+        module_slug = guess_module(proj.name, html.name, sub_key)
         mtime = html.stat().st_mtime
 
-        # 同一主题只收最新一版：以「项目目录去版本后缀」为指纹跨目录判重，
-        # 同一目录内的不同 deck 各自独立收录。
-        tk = f"{module_slug}::{project_stem(proj.name)}"
-        prev_best = seen_topics.get(tk)
-        if prev_best and prev_best[0] >= mtime:
+        proj_stem = project_stem(proj.name)
+
+        # 同一项目 + 同一小节内：不同主题各自独立收录（docs/ 下四份文档同属此列）
+        sk = f"{module_slug}::{proj_stem}::{sub_key}::{topic_key(title, proj.name)}"
+        prev_sec = seen_sections.get(sk)
+        if prev_sec and prev_sec[0] >= mtime:
             continue
-        seen_topics[tk] = (mtime, html)
+        seen_sections[sk] = (mtime, html)
+
+        # 跨项目同主题：只留最新一版（老版本目录不再重复上架）。
+        # 同一主题的新旧两版几乎都在同名项目目录里（training-product-slides 与
+        # training-product-huashu），所以跨项目一律按项目指纹判重，取 mtime 新的。
+        # 注意这与上面的「同小节」规则不是一回事：见下。
+        if sub_key:
+            # 项目内有子目录结构（Atom 系统）：每份文档各自独立，不参与跨项目判重
+            pk = f"{module_slug}::{proj_stem}::{sub_key}::{topic_key(title, proj.name)}"
+        else:
+            pk = f"{module_slug}::{proj_stem}"
+        prev_proj = seen_projects.get(pk)
+        if prev_proj and prev_proj[0] >= mtime:
+            continue
+        seen_projects[pk] = (mtime, html)
 
         sslug = slugify(title, html.stem)
         key = f"{module_slug}/{sslug}"
 
-        # 同一项目里若有同名 PDF，一并收
-        pdf = html.with_suffix(".pdf")
-        has_pdf = pdf.exists()
+        # 配套 PDF：同名优先，其次按标题主干匹配
+        pdf = find_pdf_for(html)
+        has_pdf = pdf is not None
 
         # 稳定性：优先取自包含版本
         self_contained = is_self_contained(html)
         digest = file_sha(html)
+        slides = count_slides(html)
+        # 幻灯片还是文档：文档没有 .slide 结构，用它决定前端显示「页」还是「文档」
+        kind = "deck" if slides > 1 or has_slide_class(html) else "doc"
 
         rel_html = f"pages/{module_slug}/{sslug}.html"
         rel_pdf = f"pdfs/{module_slug}/{sslug}.pdf" if has_pdf else None
@@ -269,10 +468,12 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
             "slug": sslug,
             "source": str(html),
             "sourceProject": proj.name,
+            "sourceSection": sub_key,
             "html": rel_html,
             "pdf": rel_pdf,
             "thumb": rel_thumb,
-            "slides": count_slides(html),
+            "slides": slides,
+            "kind": kind,
             "bytes": size,
             "hash": digest,
             "selfContained": self_contained,
@@ -291,6 +492,27 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
 
         items[key] = entry
         modules.setdefault(module_slug, []).append(key)
+
+    # ── 绝对路径链接改写 ────────────────────────────────────────────────
+    # 必须等所有文件都落位后再做：台面页里的链接指向别的产物，
+    # 目标可能排在后面才被收录，边收边改会漏。
+    # 每次都重写一遍，保证链接目标变化时也能跟着更新。
+    if not dry_run:
+        for e in items.values():
+            src = Path(e["source"])
+            dest = ROOT / e["html"]
+            if not (src.exists() and dest.exists()):
+                continue
+            try:
+                before = dest.read_bytes()
+                shutil.copy2(src, dest)
+                if rewrite_local_links(src, dest.parent, dest.name):
+                    after = dest.read_bytes()
+                    # 只有结果真的变了才算变更，避免每次采集都产生提交
+                    if after != before:
+                        changes.append(("改写链接", e["title"], e["key"]))
+            except Exception:
+                pass
 
     # ── 编号：模块内按加入时间排，编号永不重排 ──────────────────────────
     ordered_modules = []
@@ -336,6 +558,25 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
     }
 
     if not dry_run:
+        # 清理孤儿：条目被改名、换模块或被移除后，旧的文件还留在 pages/ pdfs/ thumbs/ 里，
+        # 会变成 404 的死链。清单里没有的文件一律删掉。
+        keep = set()
+        for e in items.values():
+            keep.add(e["html"])
+            keep.add(e["thumb"])
+            if e.get("pdf"):
+                keep.add(e["pdf"])
+        for base in (PAGES_DIR, PDFS_DIR, THUMBS_DIR):
+            if not base.exists():
+                continue
+            for f in base.rglob("*"):
+                if not f.is_file():
+                    continue
+                rel = f.relative_to(ROOT).as_posix()
+                if rel not in keep:
+                    f.unlink()
+                    changes.append(("清理", rel, rel))
+
         # 公开清单不暴露本机绝对路径：写出前剥掉 source 字段。
         pub = json.loads(json.dumps(result, ensure_ascii=False))
         for m in pub.get("modules", []):

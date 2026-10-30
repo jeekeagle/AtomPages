@@ -56,29 +56,45 @@ def render(items):
                 page.goto(src.resolve().as_uri(), wait_until="networkidle", timeout=45000)
                 page.wait_for_timeout(1500)
 
-                # 找到真正显示的那一屏画布：优先当前激活的 slide，
-                # 其次任意可见 slide / page，最后退回 body。
-                handle = page.evaluate_handle("""() => {
-                    const pick = (sel) => {
-                        const list = Array.from(document.querySelectorAll(sel));
-                        let best = null, bestArea = 0;
-                        list.forEach(el => {
-                            const cs = getComputedStyle(el);
-                            if (cs.display === 'none' || cs.visibility === 'hidden') return;
-                            const r = el.getBoundingClientRect();
-                            const area = r.width * r.height;
-                            if (area > bestArea) { bestArea = area; best = el; }
-                        });
-                        return best;
-                    };
-                    return pick('.slide.active, .slide.on, .slide') ||
-                           pick('.page') || document.body;
+                # 幻灯片类按真实画布元素截图；文档/台面类截 16:9 首屏视口。
+                # 判定依据是有没有 .slide 结构——有就是 deck，没有就是长文档或工作台。
+                is_deck = page.evaluate("""() => {
+                    const s = document.querySelectorAll('.slide, .page');
+                    for (const el of s) {
+                        const cs = getComputedStyle(el);
+                        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+                        const r = el.getBoundingClientRect();
+                        if (r.width > 400 && r.height > 200) return true;
+                    }
+                    return false;
                 }""")
-                el = handle.as_element()
-                if el is None:
-                    raise RuntimeError("找不到画布元素")
 
-                el.screenshot(path=str(out), type="jpeg", quality=84)
+                if is_deck:
+                    handle = page.evaluate_handle("""() => {
+                        const pick = (sel) => {
+                            const list = Array.from(document.querySelectorAll(sel));
+                            let best = null, bestArea = 0;
+                            list.forEach(el => {
+                                const cs = getComputedStyle(el);
+                                if (cs.display === 'none' || cs.visibility === 'hidden') return;
+                                const r = el.getBoundingClientRect();
+                                const area = r.width * r.height;
+                                if (area > bestArea) { bestArea = area; best = el; }
+                            });
+                            return best;
+                        };
+                        return pick('.slide.active, .slide.on, .slide') ||
+                               pick('.page') || document.body;
+                    }""")
+                    el = handle.as_element()
+                    if el is None:
+                        raise RuntimeError("找不到画布元素")
+                    el.screenshot(path=str(out), type="jpeg", quality=84)
+                else:
+                    # 长文档（Atom 规格书）与台面页整页截图会退化成细长条，
+                    # 卡片里什么都看不清。统一截首屏视口，比例回到 16:9。
+                    page.screenshot(path=str(out), type="jpeg", quality=84,
+                                    clip={"x": 0, "y": 0, "width": 1920, "height": 1080})
                 made += 1
                 print(f"  [缩略图] {it['key']}")
             except Exception as e:

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分数的第一课 · 播放工作台</title>
+<style>
+  :root{ --bg:#fff; --ink:#1a1a1a; --sub:#5a6b7b; --line:#e5e7eb; --soft:#f8fafc;
+         --accent:#1d4ed8; --concept:#2563eb; --qa:#b45309; --example:#047857; --warn:#b91c1c; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ background:var(--bg); color:var(--ink); font:16px/1.8 "PingFang SC","Microsoft YaHei",sans-serif;
+        display:flex; flex-direction:column; overflow:hidden; }
+
+  /* 顶栏 */
+  header{ flex:none; border-bottom:1px solid var(--line); padding:10px 28px 6px; }
+  .top{ display:flex; align-items:center; gap:18px; }
+  h1{ font-size:20px; font-weight:600; letter-spacing:.02em; }
+  .ctrl{ margin-left:auto; display:flex; align-items:center; gap:12px; }
+  button{ font-size:16px; padding:5px 18px; border:1px solid var(--accent); background:var(--accent);
+          color:#fff; border-radius:6px; cursor:pointer; }
+  button:active{ transform:translateY(1px); }
+  select{ font-size:16px; padding:4px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); }
+  #time{ color:var(--sub); font-variant-numeric:tabular-nums; }
+  #bar{ display:flex; height:12px; margin:8px 0 20px; background:var(--line); border-radius:6px; overflow:visible; }
+  .seg{ position:relative; border-right:2px solid #fff; cursor:pointer; }
+  .seg:last-child{ border-right:none; }
+  .seg > i{ position:absolute; inset:0 auto 0 0; width:0; background:var(--accent); border-radius:6px 0 0 6px; }
+  .seg .lab{ position:absolute; top:14px; left:2px; font-size:16px; color:var(--sub); white-space:nowrap;
+             overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+
+  /* 三区 */
+  main{ flex:1; display:flex; flex-direction:column; min-height:0; }
+  #stage{ flex:4 1 0; min-height:0; display:flex; align-items:center; justify-content:center;
+          background:var(--soft); border-bottom:1px solid var(--line); padding:16px 28px; }
+  #slide{ background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:0 6px 24px rgba(15,42,92,.07);
+          width:min(880px,100%); max-height:100%; padding:28px 40px; overflow:auto; }
+  #slide h2{ font-size:26px; color:#0f2a5c; font-weight:600; margin-bottom:16px; padding-left:14px; border-left:5px solid var(--accent); }
+  #slide ul{ list-style:none; }
+  #slide li{ font-size:18px; color:#333; margin:10px 0; padding-left:22px; position:relative; }
+  #slide li::before{ content:""; position:absolute; left:4px; top:.75em; width:7px; height:7px; border-radius:50%; background:var(--accent); opacity:.55; }
+
+  #script{ flex:4 1 0; min-height:0; overflow-y:auto; padding:16px 28px 24px; }
+  .sec{ margin:6px 0 18px; }
+  .sec > h3{ font-size:16px; font-weight:600; color:var(--sub); letter-spacing:.06em; margin-bottom:6px; }
+  .u{ margin:4px 0; }
+  .sp{ font-size:18px; line-height:1.9; padding:3px 10px; border-radius:8px; cursor:pointer; display:inline;
+       transition:background .18s,color .18s; }
+  .sp.core{ font-weight:700; }
+  .sp.now{ background:#eef2ff; box-shadow:inset 4px 0 0 var(--accent); }
+  .sp.past{ color:var(--sub); }
+  .card{ border:1px solid var(--line); border-left:6px solid var(--sub); border-radius:10px;
+         padding:9px 14px; margin:6px 0 8px 26px; cursor:pointer; transition:opacity .2s,border-color .2s,box-shadow .2s; }
+  .card .tag{ display:inline-block; font-size:16px; color:#fff; padding:1px 10px; border-radius:10px; margin-right:8px; }
+  .card b{ font-size:16px; }
+  .card .body{ font-size:16px; color:#333; }
+  .card.concept{ border-left-color:var(--concept); } .card.concept .tag{ background:var(--concept); }
+  .card.qa{ border-left-color:var(--qa); } .card.qa .tag{ background:var(--qa); }
+  .card.example{ border-left-color:var(--example); } .card.example .tag{ background:var(--example); }
+  .card.warn{ border-left-color:var(--warn); } .card.warn .tag{ background:var(--warn); }
+  .card.future{ opacity:.35; }
+  .card.live{ border-color:var(--accent); box-shadow:0 2px 14px rgba(29,78,216,.22); }
+  .card.off{ display:none; }
+
+  /* 下区：多线轨道 */
+  #tracks{ flex:none; border-top:1px solid var(--line); background:#fafbfc; padding:10px 28px 14px; }
+  .track{ display:flex; align-items:center; gap:14px; margin:5px 0; }
+  .track label{ flex:none; width:104px; font-size:16px; color:#0f2a5c; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .track input{ width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
+  .tbar{ position:relative; flex:1; height:16px; background:#fff; border:1px solid var(--line); border-radius:8px; cursor:pointer; }
+  .tick{ position:absolute; top:3px; bottom:3px; min-width:4px; border-radius:3px; cursor:pointer; }
+  .tick.l1{ background:#94a3b8; } .tick.l1.on{ background:#475569; }
+  .tick.l2{ background:#b91c1c; }
+  .tick.l3{ background:var(--concept); }
+  .tick.l4{ background:#0f766e; }
+  .tick.on{ box-shadow:0 0 0 2px rgba(29,78,216,.35); }
+  .cursor{ position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink); left:0; pointer-events:none; }
+  .cursor::after{ content:""; position:absolute; left:-4px; top:-4px; border:5px solid transparent; border-top-color:var(--ink); }
+  .track.off{ opacity:.4; }
+  .empty{ font-size:16px; color:var(--sub); padding:4px 0; }
+
+  /* ===== 打印退化（静态文档）：目录＋逐节幻灯片＋讲稿＋旁注卡片，轨道不打印 ===== */
+  #printdoc{ display:none; }
+  @media print{
+    html,body{ height:auto; overflow:visible; display:block; background:#fff; }
+    header, main{ display:none !important; }
+    #printdoc{ display:block; padding:0 4mm; }
+    #printdoc h1{ font-size:26px; margin:0 0 6px; }
+    #printdoc .meta{ color:#5a6b7b; font-size:16px; margin-bottom:18px; }
+    #printdoc .toc{ border:1px solid #e5e7eb; border-radius:10px; padding:12px 16px; margin-bottom:20px; }
+    #printdoc .toc div{ font-size:16px; margin:3px 0; }
+    #printdoc .toc b{ color:#0f2a5c; }
+    #printdoc .pch{ font-size:22px; margin:22px 0 6px; padding-left:10px; border-left:5px solid #1d4ed8; break-after:avoid; }
+    #printdoc .psec{ margin:16px 0 6px; }
+    #printdoc .psec h3{ font-size:18px; font-weight:600; color:#0f2a5c; margin:14px 0 8px; break-after:avoid; }
+    #printdoc .pslide{ border:1px solid #e5e7eb; border-radius:8px; padding:10px 14px; background:#f8fafc; margin-bottom:10px; break-inside:avoid; }
+    #printdoc .pslide div{ font-size:16px; color:#333; margin:3px 0; }
+    #printdoc .pu{ font-size:16px; line-height:1.9; margin:4px 0; }
+    #printdoc .pu.core{ font-weight:700; }
+    #printdoc .pnote{ font-size:16px; border-left:4px solid #94a3b8; background:#fafafa; padding:6px 12px; margin:6px 0 6px 16px; break-inside:avoid; }
+    #printdoc .pnote b{ color:#0f2a5c; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>分数的第一课</h1>
+    <div class="ctrl">
+      <button id="play">播放</button>
+      <span id="time">00:00 / 00:00</span>
+      <label>倍速
+        <select id="speed">
+          <option value="0.75">0.75</option>
+          <option value="1" selected>1</option>
+          <option value="1.25">1.25</option>
+          <option value="1.5">1.5</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <div id="bar"></div>
+</header>
+
+<main>
+  <div id="stage"><div id="slide"></div></div>
+  <div id="script"></div>
+  <div id="tracks"></div>
+</main>
+
+<!-- 打印退化版：目录＋逐节画面＋讲稿＋旁注，仅在打印/导出 PDF 时显示 -->
+<div id="printdoc"></div>
+
+<script>
+/* ===== 数据：母线 ＋ 各线（介质段注入，无外部依赖） ===== */
+const TREE    = {"title": "分数的第一课", "total": 73.25, "rate": 4.0, "chapters": [{"title": "分数的第一课", "t": 0.0, "dur": 46.5, "sections": [{"title": "从分蛋糕说起", "t": 0.0, "dur": 28.5, "utterances": [{"id": "u0", "t": 0.0, "dur": 3.5, "text": "今天我们先从一个生日会讲起。", "core": false}, {"id": "u1", "t": 3.5, "dur": 7.0, "text": "妈妈买回来一个大蛋糕，要分给四个小朋友，怎么分才公平呢。", "core": false}, {"id": "u2", "t": 10.5, "dur": 4.75, "text": "对，每人拿四分之一，这四块必须一样大。", "core": true}, {"id": "u3", "t": 15.25, "dur": 8.5, "text": "这种「每一份都一样多」的分法，在数学里有一个专门的名字，叫做平均分。", "core": false}, {"id": "u4", "t": 23.75, "dur": 4.75, "text": "记住这个词，今天整节课都建立在它上面。", "core": true}]}, {"title": "半个蛋糕怎么写", "t": 28.5, "dur": 18.0, "utterances": [{"id": "u5", "t": 28.5, "dur": 3.75, "text": "那半个蛋糕怎么用数字写出来呢。", "core": false}, {"id": "u6", "t": 32.25, "dur": 11.75, "text": "我们发明一个新符号来表示它，先写一条短横线，下面写 2 表示切成两份，上面写 1 表示拿走其中的一份。", "core": true}, {"id": "u7", "t": 44.0, "dur": 2.5, "text": "这个数读作二分之一。", "core": false}]}]}, {"title": "分数怎么比大小", "t": 46.5, "dur": 26.75, "sections": [{"title": "同样的蛋糕，谁拿得多", "t": 46.5, "dur": 26.75, "utterances": [{"id": "u8", "t": 46.5, "dur": 9.25, "text": "现在有两个小朋友，一个拿了二分之一块蛋糕，一个拿了三分之一块，谁拿得多呢。", "core": false}, {"id": "u9", "t": 55.75, "dur": 4.0, "text": "先别急着算，用刚才的蛋糕想一想。", "core": false}, {"id": "u10", "t": 59.75, "dur": 7.25, "text": "切成的份数越多，每一份反而越小，所以二分之一比三分之一大。", "core": true}, {"id": "u11", "t": 67.0, "dur": 6.25, "text": "这个规律反过来也一样，四分之一就比三分之一更小了。", "core": false}]}]}]};
+const SLIDES  = [{"t": 0.0, "title": "从分蛋糕说起", "chapter": "分数的第一课", "bullets": ["今天我们先从一个生日会讲起。", "妈妈买回来一个大蛋糕，要分给四个小朋友，怎么分才公平呢。", "对，每人拿四分之一，这四块必须一样大。"]}, {"t": 28.5, "title": "半个蛋糕怎么写", "chapter": "分数的第一课", "bullets": ["那半个蛋糕怎么用数字写出来呢。", "我们发明一个新符号来表示它，先写一条短横线，下面写 2 表示切成两份，上面写 1 表示拿走其中的一份。", "这个数读作二分之一。"]}, {"t": 46.5, "title": "同样的蛋糕，谁拿得多", "chapter": "分数怎么比大小", "bullets": ["现在有两个小朋友，一个拿了二分之一块蛋糕，一个拿了三分之一块，谁拿得多呢。", "先别急着算，用刚才的蛋糕想一想。", "切成的份数越多，每一份反而越小，所以二分之一比三分之一大。"]}];
+const LINES   = [{"id": "L1", "name": "结构线", "ticks": [{"t": 0.0, "dur": 46.5, "label": "分数的第一课"}, {"t": 46.5, "dur": 26.75, "label": "分数怎么比大小"}]}, {"id": "L2", "name": "重点线", "ticks": [{"t": 10.5, "dur": 4.75}, {"t": 23.75, "dur": 4.75}, {"t": 32.25, "dur": 11.75}, {"t": 59.75, "dur": 7.25}]}, {"id": "L3", "name": "概念线", "affects": "cards", "ticks": [{"t": 10.5, "dur": 6.2, "label": "公平的含义", "kind": "warn"}, {"t": 15.25, "dur": 10.6, "label": "平均分", "kind": "concept"}, {"t": 32.25, "dur": 14.2, "label": "分数三件套", "kind": "concept"}, {"t": 46.5, "dur": 11.1, "label": "先猜一猜", "kind": "qa"}, {"t": 59.75, "dur": 8.75, "label": "比大小的口诀", "kind": "example"}]}, {"id": "L4", "name": "画面线", "ticks": [{"t": 0.0, "dur": null, "label": "从分蛋糕说起"}, {"t": 28.5, "dur": null, "label": "半个蛋糕怎么写"}, {"t": 46.5, "dur": null, "label": "同样的蛋糕，谁拿得多"}]}];      /* 只含真实存在的线：删文件即该轨消失 */
+const CONCEPT = [{"kind": "warn", "title": "公平的含义", "body": "公平不是随便掰一块，而是每份一样大，这一点后面会反复用到。", "anchor": "u2", "t": 10.5, "dur": 6.2, "section": "从分蛋糕说起"}, {"kind": "concept", "title": "平均分", "body": "每一份的数量都相等，才叫平均分。判断是否平均，只看一件事：任何两份交换后没人有意见。", "anchor": "u3", "t": 15.25, "dur": 10.6, "section": "从分蛋糕说起"}, {"kind": "concept", "title": "分数三件套", "body": "横线叫分数线，线下叫分母，表示总共切成几份；线上叫分子，表示取了几份。读的时候先读分母，再读分子。", "anchor": "u6", "t": 32.25, "dur": 14.2, "section": "半个蛋糕怎么写"}, {"kind": "qa", "title": "先猜一猜", "body": "二分之一和三分之一，哪个大？提示：想象蛋糕被切成的份数越多，每一份就越小。", "anchor": "u8", "t": 46.5, "dur": 11.1, "section": "同样的蛋糕，谁拿得多"}, {"kind": "example", "title": "比大小的口诀", "body": "分母相同看分子，分子大的大；分子相同看分母，分母大的反而小。", "anchor": "u10", "t": 59.75, "dur": 8.75, "section": "同样的蛋糕，谁拿得多"}];    /* 概念线的呈现数据 */
+const TOTAL   = TREE.total;
+
+const $ = id => document.getElementById(id);
+const fmt = s => { s = Math.max(0, Math.floor(s));
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+const KIND_NAME = { concept:'概念卡', qa:'问答卡', example:'示例卡', warn:'提醒卡' };
+const KIND_CLS  = { concept:'l3', qa:'l3', example:'l3', warn:'l3' };
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ===== L1 结构线：顶栏进度条按章分段 ===== */
+const segs = [];
+TREE.chapters.forEach(ch => {
+  const d = document.createElement('div');
+  d.className = 'seg';
+  d.style.width = (ch.dur / TOTAL * 100) + '%';
+  d.innerHTML = '<i></i><span class="lab">' + esc(ch.title) + '</span>';
+  d.onclick = e => { const r = d.getBoundingClientRect();
+    seek(ch.t + (e.clientX - r.left) / r.width * ch.dur); };
+  $('bar').appendChild(d);
+  segs.push({ fill: d.querySelector('i'), ch });
+});
+
+/* ===== 中区：讲稿分句（母线）＋ 概念线卡片（按锚点挂） ===== */
+const utts = [], cards = [];
+const cardsByAnchor = {};
+CONCEPT.forEach(c => (cardsByAnchor[c.anchor] = cardsByAnchor[c.anchor] || []).push(c));
+
+let totalSections = 0;
+TREE.chapters.forEach(ch => ch.sections.forEach(sec => {
+  totalSections++;
+  const box = document.createElement('div');
+  box.className = 'sec';
+  const h = document.createElement('h3');
+  h.textContent = sec.title;
+  box.appendChild(h);
+
+  sec.utterances.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'u';
+    const sp = document.createElement('span');
+    sp.className = 'sp' + (u.core ? ' core' : '');
+    sp.textContent = u.text;
+    sp.onclick = () => seek(u.t);
+    row.appendChild(sp);
+
+    (cardsByAnchor[u.id] || []).forEach(cd => {
+      const el = document.createElement('div');
+      el.className = 'card ' + cd.kind + ' future';
+      el.innerHTML = '<span class="tag">' + KIND_NAME[cd.kind] + '</span><b>' + esc(cd.title) +
+                     '</b><div class="body">' + esc(cd.body) + '</div>';
+      el.onclick = e => { e.stopPropagation(); seek(cd.t); };
+      row.appendChild(el);
+      cards.push({ el, cd });
+    });
+    box.appendChild(row);
+    utts.push({ sp, u });
+  });
+  $('script').appendChild(box);
+}));
+
+/* ===== 下区：多线轨道（每线一行：开关 ＋ 刻度条 ＋ 指针） ===== */
+const tracks = LINES.map(line => {
+  const row = document.createElement('div');
+  row.className = 'track';
+  const lab = document.createElement('label');
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = true;
+  lab.appendChild(cb);
+  lab.appendChild(document.createTextNode(line.name));
+  row.appendChild(lab);
+
+  const bar = document.createElement('div');
+  bar.className = 'tbar';
+  const cls = 'l' + line.id.slice(1);
+  const ticks = line.ticks.map(tk => {
+    const k = document.createElement('div');
+    k.className = 'tick ' + cls;
+    k.style.left = 'calc(' + (tk.t / TOTAL * 100) + '% - 2px)';
+    if (tk.label) k.title = tk.label;
+    k.onclick = e => { e.stopPropagation(); seek(tk.t); };
+    bar.appendChild(k);
+    return { el: k, tk };
+  });
+  const cursor = document.createElement('div');
+  cursor.className = 'cursor';
+  bar.appendChild(cursor);
+  bar.onclick = e => { const r = bar.getBoundingClientRect();
+    seek((e.clientX - r.left) / r.width * TOTAL); };
+  row.appendChild(bar);
+  $('tracks').appendChild(row);
+
+  /* 开关：该线刻度隐藏并将整轨淡出；跨线依赖必须在数据里显式声明（affects） */
+  cb.onchange = () => {
+    row.classList.toggle('off', !cb.checked);
+    ticks.forEach(o => o.el.style.display = cb.checked ? '' : 'none');
+    if (line.affects === 'cards') cards.forEach(o => o.el.classList.toggle('off', !cb.checked));
+  };
+  return { line, ticks, cursor, cb };
+});
+if (!tracks.length) $('tracks').innerHTML = '<div class="empty">（本次未装配任何线：process/ 下无线文件）</div>';
+
+/* ===== L4 画面线：幻灯片随节切换（取最后一个 t ≤ 当前时刻的页） ===== */
+let slideIdx = -1;
+function renderSlide(t) {
+  if (!SLIDES.length) return;
+  let i = 0;
+  SLIDES.forEach((s, k) => { if (t >= s.t) i = k; });
+  if (i === slideIdx) return;
+  slideIdx = i;
+  const s = SLIDES[i];
+  $('slide').innerHTML = '<h2>' + esc(s.title) + '</h2>' +
+    (s.bullets.length ? '<ul>' + s.bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' : '');
+}
+
+/* ===== 单一时钟：全页只有 now 一个时刻变量，各线都是订阅者 ===== */
+let now = 0, playing = false, speed = 1, last = null;
+
+function seek(t) { now = Math.max(0, Math.min(TOTAL, t)); render(true); }
+
+function render(fromSeek) {
+  $('time').textContent = fmt(now) + ' / ' + fmt(TOTAL);
+
+  segs.forEach(s => { s.fill.style.width = Math.max(0, Math.min(100, (now - s.ch.t) / s.ch.dur * 100)) + '%'; });
+  renderSlide(now);
+
+  let curU = null;
+  utts.forEach(({ sp, u }) => {
+    const on = now >= u.t && now < u.t + u.dur;
+    sp.classList.toggle('now', on);
+    sp.classList.toggle('past', now >= u.t + u.dur);
+    if (now >= u.t && !curU) curU = sp;
+    if (on) curU = sp;
+  });
+  cards.forEach(({ el, cd }) => {
+    el.classList.toggle('live', now >= cd.t && now < cd.t + cd.dur);
+    el.classList.toggle('future', now < cd.t);
+  });
+  tracks.forEach(tr => {
+    tr.cursor.style.left = (now / TOTAL * 100) + '%';
+    tr.ticks.forEach(o => {
+      const dur = o.tk.dur || 2.5;
+      o.el.classList.toggle('on', now >= o.tk.t && now < o.tk.t + dur);
+    });
+  });
+
+  /* 当前句自动滚入视野（手动算偏移，不依赖动画，跳转与播放都即时生效） */
+  if (curU && (fromSeek || playing)) {
+    const box = $('script'), r = curU.getBoundingClientRect(), br = box.getBoundingClientRect();
+    if (r.top < br.top + 48 || r.bottom > br.bottom - 48) {
+      box.scrollTop += r.top - br.top - br.height / 2 + r.height / 2;
+    }
+  }
+}
+
+$('play').onclick = () => {
+  if (now >= TOTAL) now = 0;
+  playing = !playing;
+  $('play').textContent = playing ? '暂停' : '播放';
+  last = null;
+};
+$('speed').onchange = e => { speed = parseFloat(e.target.value); };
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); $('play').click(); }
+  if (e.code === 'ArrowRight') seek(now + 5);
+  if (e.code === 'ArrowLeft') seek(now - 5);
+});
+
+/* 唯一时钟：所有渲染只读 now */
+function loop(ts) {
+  if (playing) {
+    if (last != null) now = Math.min(TOTAL, now + (ts - last) / 1000 * speed);
+    if (now >= TOTAL) { playing = false; $('play').textContent = '播放'; }
+  }
+  last = ts;
+  render(false);
+  requestAnimationFrame(loop);
+}
+renderSlide(0);
+render(true);
+requestAnimationFrame(loop);
+
+/* ===== 打印退化：结构→目录，画面→逐节幻灯片，重点→加粗，概念→旁注 ===== */
+(function buildPrintDoc() {
+  const box = $('printdoc');
+  const h1 = document.createElement('h1');
+  h1.textContent = TREE.title;
+  box.appendChild(h1);
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = TREE.chapters.length + ' 章 · ' + totalSections + ' 节 · 总长 ' + fmt(TOTAL) +
+                     ' · 静态打印版（结构=目录，画面=逐节页，重点=加粗，概念=旁注）';
+  box.appendChild(meta);
+
+  const toc = document.createElement('div');
+  toc.className = 'toc';
+  TREE.chapters.forEach(ch => {
+    const d = document.createElement('div');
+    d.innerHTML = '<b>' + esc(ch.title) + '</b>　' +
+                  ch.sections.map(s => esc(s.title)).join(' · ');
+    toc.appendChild(d);
+  });
+  box.appendChild(toc);
+
+  TREE.chapters.forEach(ch => {
+    const h = document.createElement('h2');
+    h.className = 'pch';
+    h.textContent = ch.title;
+    box.appendChild(h);
+
+    ch.sections.forEach(sec => {
+      const wrap = document.createElement('div');
+      wrap.className = 'psec';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = sec.title + '　' + fmt(sec.t) + '–' + fmt(sec.t + sec.dur);
+      wrap.appendChild(h3);
+
+      const sl = SLIDES.filter(s => s.t === sec.t)[0];
+      if (sl && sl.title !== sec.title) {          /* 画面线在静态版由节标题承载，仅有差异时补一行 */
+        const p2 = document.createElement('div');
+        p2.className = 'pslide';
+        p2.textContent = '画面：' + sl.title;
+        wrap.appendChild(p2);
+      }
+
+      sec.utterances.forEach(u => {
+        const p = document.createElement('div');
+        p.className = 'pu' + (u.core ? ' core' : '');
+        p.textContent = u.text;
+        wrap.appendChild(p);
+        (cardsByAnchor[u.id] || []).forEach(cd => {
+          const note = document.createElement('div');
+          note.className = 'pnote';
+          note.innerHTML = '<b>' + KIND_NAME[cd.kind] + '｜' + esc(cd.title) + '</b>　' + esc(cd.body);
+          wrap.appendChild(note);
+        });
+      });
+      box.appendChild(wrap);
+    });
+  });
+})();
+</script>
+</body>
+</html>

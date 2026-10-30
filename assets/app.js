@@ -64,7 +64,7 @@
     var body = el("div", "card__body");
     body.appendChild(el("div", "card__title", it.title));
     var meta = el("div", "card__meta");
-    meta.appendChild(el("span", null, "页 " + it.slides));
+    meta.appendChild(el("span", null, it.kind === "doc" ? "文档" : "页 " + it.slides));
     var src = el("span");
     src.innerHTML = "来源 <b></b>";
     src.querySelector("b").textContent = it.sourceProject;
@@ -115,7 +115,7 @@
     box.innerHTML = "";
     var items = allItems();
     var pages = 0;
-    items.forEach(function (i) { pages += (i.slides || 1); });
+    items.forEach(function (i) { if (i.kind !== "doc") pages += (i.slides || 1); });
     var pdfs = items.filter(function (i) { return i.pdf; }).length;
 
     function stat(n, k) {

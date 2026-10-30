@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>一稿多线 · 需求与开发规格书</title>
+<style>
+  :root{ --ink:#1a1a1a; --sub:#5a6b7b; --line:#e5e7eb; --accent:#1d4ed8; --soft:#eef2ff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:#fff; color:var(--ink); font:16px/1.9 "PingFang SC","Microsoft YaHei",sans-serif;
+        max-width:900px; margin:0 auto; padding:48px 40px 80px; }
+  h1{ font-size:32px; line-height:1.4; margin-bottom:8px; }
+  .meta{ color:var(--sub); font-size:16px; margin-bottom:32px; }
+  h2{ font-size:22px; margin:42px 0 14px; padding-left:14px; border-left:5px solid var(--accent); }
+  h3{ font-size:18px; margin:24px 0 10px; color:#0f2a5c; }
+  p{ margin:9px 0; }
+  ul,ol{ margin:9px 0 9px 26px; }
+  li{ margin:5px 0; }
+  table{ border-collapse:collapse; width:100%; margin:12px 0; font-size:16px; }
+  th,td{ border:1px solid var(--line); padding:7px 11px; text-align:left; vertical-align:top; }
+  th{ background:#f6f7f9; }
+  .lead{ font-size:17px; color:#0f2a5c; background:var(--soft); border-radius:10px; padding:14px 18px; margin:14px 0; }
+  .rule{ border-left:4px solid #b91c1c; background:#fef7f7; padding:9px 15px; border-radius:0 8px 8px 0; margin:10px 0; }
+  pre{ background:#f6f8fa; border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+       font:15px/1.7 Consolas,"Courier New",monospace; overflow-x:auto; margin:10px 0; white-space:pre-wrap; }
+  code{ font-family:Consolas,monospace; background:#f3f4f6; border-radius:4px; padding:0 6px; font-size:16px; }
+  .fr{ display:flex; gap:10px; margin:8px 0; }
+  .fr .id{ flex:none; width:64px; font-weight:700; color:var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>一稿多线 · 需求与开发规格书</h1>
+<div class="meta">交付版 v1.0 · 供任意开发环境实现 · 配套文档：《产品设计方案》《技术方案》《Atom 规范 v1.2》· 2026 年 10 月</div>
+
+<div class="lead">本文档自包含：不需要访问任何现有代码库即可据此实现完整系统。实现目标是——<b>输入一份讲课主题与讲解思路，生成讲稿；讲稿经人确认后，自动生产多条同步标注线（结构、重点、概念、图谱、意图），最终装配成一个播放工作台：上面幻灯片随讲切换，中间讲稿逐句滚动，下面各线轨道随时间联动。</b></div>
+
+<h2>一、项目背景与一句话定义</h2>
+<p>教学、培训、汇报都需要「讲」。本产品把讲课的核心资产收敛为<b>一份文稿（母线）</b>：声音由文稿合成，字幕由文稿对齐，一切标注以「线」为单位叠加在文稿的时间轴上。传统做法里声、画、字幕的对齐靠剪辑；本产品里对齐是数据结构自带的——没有需要对帧的环节，就没有对不齐的可能。</p>
+<p><b>一句话定义：文稿是母线，声音与一切标注都是它的派生线；播放时一个时钟驱动所有线联动。</b></p>
+
+<h2>二、术语表</h2>
+<table>
+<tr><th>术语</th><th>定义</th></tr>
+<tr><td>母线</td><td>文稿及其分句锚点系统。唯一信息源头，任何线不得反向修改它</td></tr>
+<tr><td>锚点</td><td>带时间的文稿最小单元。四级：章、节、分句、字；分句为默认锚点粒度</td></tr>
+<tr><td>线（L）</td><td>叠加在母线上的一类标注，六要素定义（见第五章），独立落盘、独立开关</td></tr>
+<tr><td>卡片</td><td>概念线的呈现单元：概念卡、问答卡、示例卡、提醒卡四种</td></tr>
+<tr><td>工作台</td><td>播放页：上区画面、中区讲稿、下区多线轨道，单文件网页</td></tr>
+<tr><td>台面</td><td>确认页：人阅读产物、勾选验收、确认执行的地方</td></tr>
+<tr><td>排时</td><td>给锚点赋时间。三代：语速估算 → 逐句语音合成回写 → 字级强制对齐</td></tr>
+</table>
+
+<h2>三、功能需求总表</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th></tr>
+<tr><td>FR1</td><td>录入主题、讲课对象、讲解思路，生成讲稿初稿（分段分章，含标记语法）</td><td>高</td></tr>
+<tr><td>FR2</td><td>讲稿确认台面：逐节展示、可编辑；<b>确认即冻结母线</b>，此后改讲稿须全量重跑</td><td>高</td></tr>
+<tr><td>FR3</td><td>母线解析：切章、节、分句，标记校验（残留标记即报错中止）</td><td>高</td></tr>
+<tr><td>FR4</td><td>排时：缺省按语速估算（每秒四字，可配置）；预留语音合成回写接口</td><td>高</td></tr>
+<tr><td>FR5</td><td>结构线：章/节树，区间由子节点推导，进度条按章分段</td><td>高</td></tr>
+<tr><td>FR6</td><td>重点线：句首标记的句子为核心句，播放时加粗、轨道出刻度</td><td>高</td></tr>
+<tr><td>FR7</td><td>概念线：卡片标记生成弹卡，挂前面最近的分句，随讲弹出</td><td>高</td></tr>
+<tr><td>FR8</td><td>画面线：每节一页幻灯片（标题＋要点），随讲切换</td><td>高</td></tr>
+<tr><td>FR9</td><td>播放工作台：上/中/下三区布局，单一时钟，各线独立开关</td><td>高</td></tr>
+<tr><td>FR10</td><td>声音线：逐句语音合成，句时长回写锚点（二期）</td><td>中</td></tr>
+<tr><td>FR11</td><td>图谱线：主题图谱＋分句匹配，讲到点亮（三期）</td><td>低</td></tr>
+<tr><td>FR12</td><td>意图线：纯人工标注界面，作为其他线的校订依据（三期）</td><td>低</td></tr>
+<tr><td>FR13</td><td>静态退化：打印为文档时各线退化为加粗、页边卡、目录（三期）</td><td>低</td></tr>
+</table>
+
+<h2>四、标记语法规范（讲稿 DSL）</h2>
+<p>讲稿为中文 Markdown。结构标记与标注标记如下，解析器对<b>无法解析的标记必须报错中止，不得带病生成</b>。</p>
+<table>
+<tr><th>标记</th><th>位置</th><th>效果</th></tr>
+<tr><td><code># 标题</code></td><td>行首</td><td>章（大结构一级）</td></tr>
+<tr><td><code>## 标题</code></td><td>行首</td><td>节（大结构二级），必须挂在章下，否则报错</td></tr>
+<tr><td><code>【重点】</code></td><td>句首</td><td>重点线：该句为核心句（加粗＋轨道刻度）</td></tr>
+<tr><td><code>【概念卡|标题|内容】</code></td><td>任意</td><td>概念线：弹出概念卡</td></tr>
+<tr><td><code>【问答卡|问题|答案】</code></td><td>任意</td><td>概念线：弹出问答卡</td></tr>
+<tr><td><code>【示例卡|标题|内容】</code></td><td>任意</td><td>概念线：弹出示例卡</td></tr>
+<tr><td><code>【提醒卡|标题|内容】</code></td><td>任意</td><td>概念线：弹出提醒卡</td></tr>
+</table>
+<h3>挂载规则</h3>
+<ul>
+<li>卡片挂给它<b>前面最近的分句</b>（可跨行）；若位于段首且该节尚无分句，挂给节内第一个分句；之后仍无分句可挂则报错；</li>
+<li>分句切分：以句末标点（句号、叹号、问号、分号）为界，保留标点；</li>
+<li>【重点】可与卡片标记同句共存；</li>
+<li>正文不得出现在任何章标题之前；节不得出现在章之前；违反即报错。</li>
+</ul>
+
+<h2>五、线协议（核心抽象）</h2>
+<p>任何线登记六要素后方可使用：</p>
+<table>
+<tr><th>要素</th><th>说明</th></tr>
+<tr><td>编号与名称</td><td>如 L2 重点线</td></tr>
+<tr><td>锚点粒度</td><td>章、节、分句、字四选一，向下兼容</td></tr>
+<tr><td>呈现方式</td><td>区间高亮、文字加粗、弹卡、点亮图谱节点等</td></tr>
+<tr><td>生成方式</td><td>自动 / 模型候选加人工校订 / 纯人工</td></tr>
+<tr><td>默认开关</td><td>工作台初始是否显示</td></tr>
+<tr><td>依赖声明</td><td>跨线依赖必须显式，禁止隐式依赖</td></tr>
+</table>
+<table>
+<tr><th>编号</th><th>名称</th><th>粒度</th><th>呈现</th><th>生成</th></tr>
+<tr><td>L1</td><td>结构线</td><td>章/节</td><td>进度条分段＋大纲高亮</td><td>自动</td></tr>
+<tr><td>L2</td><td>重点线</td><td>分句</td><td>加粗＋轨道刻度</td><td>标记（可扩为模型候选）</td></tr>
+<tr><td>L3</td><td>概念线</td><td>分句</td><td>弹卡＋轨道刻度</td><td>标记（可扩为模型候选）</td></tr>
+<tr><td>L4</td><td>画面线</td><td>节</td><td>幻灯片切换</td><td>自动</td></tr>
+<tr><td>L5</td><td>声音线</td><td>分句→字</td><td>语音播放</td><td>自动（二期）</td></tr>
+<tr><td>L6</td><td>图谱线</td><td>分句</td><td>点亮图谱节点</td><td>匹配＋人校订（三期）</td></tr>
+<tr><td>L7</td><td>意图线</td><td>分句</td><td>作者侧批注</td><td>纯人工（三期）</td></tr>
+</table>
+<div class="rule"><b>硬规则：线之间平权，可整体增删；每线产物独立落盘为一个文件；删任何线，母线与其余线不受影响；播放端每线一个开关。</b></div>
+
+<h2>六、数据结构规范（落盘契约）</h2>
+<h3>6.1 母线锚点 <code>anchors.json</code>（解析段产物）</h3>
+<pre>{
+  "title": "分数的第一课",
+  "total": 74.5,            // 总时长（秒）
+  "rate": 4.0,              // 语速（字/秒）
+  "chapters": [
+    {
+      "title": "分数的第一课",
+      "t": 0.0, "dur": 47.5,            // 区间由子节点推导，不手工填
+      "sections": [
+        {
+          "title": "从分蛋糕说起",
+          "t": 0.0, "dur": 28.5,
+          "utterances": [                // 分句 = 小结构锚点线
+            { "id": "u0", "t": 0.0, "dur": 2.75,
+              "text": "今天我们先从一个生日会讲起。",
+              "core": false,             // 重点线标记
+              "cards": [                 // 概念线标记（解析段暂存于此）
+                { "kind": "warn", "title": "公平的含义",
+                  "body": "公平不是随便掰一块……" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}</pre>
+<h3>6.2 概念线 <code>concept.json</code>（加工段产物，独立落盘）</h3>
+<pre>[
+  { "kind": "concept", "title": "平均分",
+    "body": "每一份的数量都相等，才叫平均分。……",
+    "anchor": "u3",            // 挂接的分句
+    "t": 18.2,                 // 弹出时刻 = 锚点分句开始时刻
+    "dur": 8.6,                // 弹出窗 = max(3, 锚点时长 + min(4, 正文字数/20))
+    "section": "从分蛋糕说起" }
+]</pre>
+<h3>6.3 画面线 <code>slides.json</code>（加工段产物）</h3>
+<pre>[
+  { "t": 0.0,                          // 本页起始时刻（=对应节的 t）
+    "title": "从分蛋糕说起",
+    "chapter": "分数的第一课",
+    "bullets": ["第一分句原文", "第二分句原文", "第三分句原文"] }
+]</pre>
+<h3>6.4 时间推导规则</h3>
+<ul>
+<li>分句时长 = max(1.2, 字数 ÷ 语速)；分句时间依序累加；</li>
+<li>节区间 = 首分句开始 → 末分句结束；章区间同理（<b>推导，不手工维护</b>）；</li>
+<li>卡片不占讲稿时长，是叠加层；</li>
+<li>接入语音合成后：分句时长 = 合成音频实际时长，回写同结构。</li>
+</ul>
+
+<h2>七、处理流水线规范（五段）</h2>
+<table>
+<tr><th>段</th><th>输入</th><th>输出（落盘）</th><th>失败策略</th></tr>
+<tr><td>① 源段</td><td>主题思路 + 冻结讲稿</td><td>复制入工作区</td><td>缺文件即中止</td></tr>
+<tr><td>② 解析段</td><td>讲稿</td><td>anchors.json</td><td>标记残留/结构违规即中止</td></tr>
+<tr><td>③ 加工段</td><td>anchors.json</td><td>concept.json、slides.json（各线并行，各一文件）</td><td>单线失败只重跑该线</td></tr>
+<tr><td>④ 介质段</td><td>母线＋各线文件</td><td>播放工作台.html（单文件）</td><td>失败即中止</td></tr>
+<tr><td>⑤ 确认段</td><td>全部产物</td><td>台面页（产物链接＋验收勾选清单）</td><td>人勾选后闭环</td></tr>
+</table>
+<div class="rule"><b>流向单向不回头：</b>确认段发现问题 → 回解析段重走全流程，禁止在介质段就地打补丁。每段只读上一段产物文件，段间无隐式依赖。</div>
+<h3>讲稿生成（FR1/FR2）</h3>
+<ul>
+<li>输入：主题、对象、思路（越具体质量越高）；</li>
+<li>生成：大模型按思路起草，章用 #、节用 ##，按思路把【重点】【概念卡】标记写进初稿；</li>
+<li>确认：台面逐节展示，人可改文字、增删标记；<b>确认即冻结</b>，冻结版进入源段。</li>
+</ul>
+
+<h2>八、播放工作台 UI 规格（FR9）</h2>
+<h3>布局（自上而下）</h3>
+<table>
+<tr><th>区</th><th>内容</th><th>要点</th></tr>
+<tr><td>顶栏</td><td>标题、播放/暂停、时间显示、倍速（0.75/1/1.25/1.5）</td><td>时间轴按章分段，段内填充进度，段标签随章名，点段跳转</td></tr>
+<tr><td>上区（约四成高）</td><td>幻灯片画面：标题＋要点列表</td><td>随节切换（找到最后一个 t ≤ 当前时刻的页），白底卡片式，居中</td></tr>
+<tr><td>中区（约四成高，滚动）</td><td>讲稿分句：当前句蓝底高亮、已讲淡显、核心句加粗；卡片内嵌于锚点句下方</td><td>点击任意句/卡跳转；当前句自动滚入视野；卡片未到时间淡显、到达时描边高亮</td></tr>
+<tr><td>下区（固定）</td><td>多线轨道：每线一行＝名称＋开关＋时刻刻度条＋播放指针</td><td>点刻度跳转；开关关闭该线刻度隐藏且呈现淡出；指针全轨同步</td></tr>
+</table>
+<h3>联动规则（单一时钟）</h3>
+<ul>
+<li>全页只有一个播放时刻变量；每条线是订阅者：拿到时刻，查自己的数据，决定亮什么；</li>
+<li>线之间互不调用、互不知道彼此存在；</li>
+<li>卡片弹出窗：t ≤ 时刻 &lt; t+dur 时高亮。</li>
+</ul>
+<h3>呈现底线</h3>
+<ul>
+<li>单文件网页：无外部脚本、无网络依赖、双击可开；</li>
+<li>最小字号 16px；全篇中文；</li>
+<li>打印为静态文档时各线退化：重点→加粗、概念→页边卡、结构→目录（三期实现）。</li>
+</ul>
+
+<h2>九、非功能需求</h2>
+<ul>
+<li><b>离线可用</b>：除讲稿生成与语音合成需联网外，解析、加工、装配、播放全部本地完成；</li>
+<li><b>可审计</b>：每段产物落盘，任何一步可人工检查、可回滚；</li>
+<li><b>成本可控</b>：模型调用按任务分派，逐句处理按需付费；候选一律人确认后入库；</li>
+<li><b>可扩展</b>：新线 = 注册六要素 + 落盘文件 + 工作台开关，三步接入，不动母线逻辑；</li>
+<li><b>留痕</b>：运行日志记录每次各段成败；修订须写理由。</li>
+</ul>
+
+<h2>十、验收测试清单</h2>
+<ol>
+<li>给定含全部标记类型的讲稿，解析后无残留标记符号；故意写错标记（缺分隔符），解析报错并指出位置；</li>
+<li>节标题无章标题时，解析报错；正文先于标题时，解析报错；</li>
+<li>改一个分句的文字，重跑后其所在节/章区间自动变化，无需手工改时间；</li>
+<li>删除 concept.json 后重装配，工作台正常播放，仅概念线为空——验证线可独立增删；</li>
+<li>工作台播放：幻灯片切换发生在节边界；核心句加粗与刻度同步点亮；卡片在锚点句弹出；</li>
+<li>关闭概念线开关：卡片与轨道隐藏，重点线不受影响；</li>
+<li>总时长与逐句时长之和一致；点任意刻度/句子/卡片段落跳转准确；</li>
+<li>单文件检查：断网打开工作台，全部功能可用。</li>
+</ol>
+
+<h2>十一、里程碑</h2>
+<table>
+<tr><th>期</th><th>范围</th><th>验收口径</th></tr>
+<tr><td>一期</td><td>FR1-FR9（讲稿闭环＋结构/重点/概念/画面线＋工作台）</td><td>真实课题十分钟内出可播放工作台，四方联动准确</td></tr>
+<tr><td>二期</td><td>FR10 声音线（逐句合成回写）</td><td>点播放有声，句时长为合成真实时长，声画稿线同步</td></tr>
+<tr><td>三期</td><td>FR11-FR13（图谱线、意图线、静态退化）</td><td>讲到概念处图谱点亮；意图标注使候选确认成本下降</td></tr>
+</table>
+
+<h2>十二、附录：参考实现的工程结构（可直接照抄）</h2>
+<pre>project/
+├── core/flow.py            # 五段调度引擎：段产物落盘、失败中止、留痕
+├── atom.py                 # 命令行：list / new / run / check
+├── agents/roles.json       # 五角色默认配置：解析/结构/生成/收敛/校验
+├── mediums/
+│   ├── m1-slides.html      # 幻灯片模板（画面线内容源）
+│   └── m9-workbench.html   # 工作台模板（占位符：{{TITLE}} {{TREE}} {{SLIDES}} {{CONCEPT}}）
+├── skills/multi-line-lecture/
+│   ├── SKILL.md            # 技能层五段：输入约定/执行步骤/工具清单/验收标准/边界
+│   ├── engine.json         # 引擎层：模式名、智能体群、段流向、确认点、留痕
+│   ├── container.json      # 容器层：运行时、工作区、产物路径、兜底
+│   ├── input/              # topic.md（主题思路）、script.md（冻结讲稿）
+│   └── scripts/            # parse.py（解析+排时）process.py（各线）medium.py（装配）
+└── workspace/<技能名>/     # 运行现场：parse/ process/ medium/ confirm/ 各段产物</pre>
+<p>参考实现的三个段脚本合计约二百行、零第三方依赖（纯标准库）；工作台模板约二百行原生网页技术。两个关键工程约定：引擎按<b>段名</b>找 <code>scripts/&lt;段名&gt;.py</code>；工作台 JS 有单一时钟变量，全部渲染函数只读时刻。</p>
+
+</body>
+</html>

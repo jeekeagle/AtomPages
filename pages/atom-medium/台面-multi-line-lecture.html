@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>台面 · multi-line-lecture</title><style>
+body{background:#fff;color:#1a1a1a;font:16px/1.7 "PingFang SC","Microsoft YaHei",sans-serif;max-width:860px;margin:0 auto;padding:40px 24px;}
+h1{font-size:26px;border-left:5px solid #2563eb;padding-left:12px;} h2{font-size:20px;margin-top:32px;}
+li{margin:6px 0;} a{color:#2563eb;} .note{color:#5a6b7b;font-size:16px;}
+</style></head><body>
+<h1>台面 · 备课装配模式</h1>
+<h2>可阅读</h2>
+<p>模式：主题与思路进：讲稿确认并冻结为母线，各线并行生产、各自落盘，装配为单时钟驱动的播放工作台</p>
+<p>信息流：['source', 'parse', 'process', 'medium', 'confirm']</p>
+<p class="note">本次运行各段产物见 workspace/multi-line-lecture/ 下各段目录。</p>
+<h2>产物（可阅读）</h2><ul><li>产物：<a href="分数的第一课-播放工作台.html">播放工作台.html</a></li></ul>
+<h2>可确认</h2>
+<p>执行前确认：输入已就位、参数按默认。执行后逐条核对：</p>
+<ul><li><label><input type="checkbox"> 工作台为单文件网页，双击可开，断网可用，最小字号 16px</label></li><li><label><input type="checkbox"> 全页只有一个时钟变量，各线只读时刻，线间互不调用</label></li><li><label><input type="checkbox"> 每条线一个独立开关；关闭概念线只隐藏卡片与该轨，重点线不受影响</label></li><li><label><input type="checkbox"> 讲稿标记全部被认领，无残留标记符号；标记写错时报错并指到行号</label></li><li><label><input type="checkbox"> 任一条线文件缺失时仍可装配播放，只缺该线（删文件即删线）</label></li><li><label><input type="checkbox"> 幻灯片页与节一一对应，切页发生在节边界</label></li><li><label><input type="checkbox"> 总时长恒等于逐句时长之和，节/章区间由分句推导</label></li><li><label><input type="checkbox"> 打印/导出 PDF 时各线退化：结构→目录、画面→节标题、重点→加粗、概念→旁注</label></li><li><label><input type="checkbox"> `python tests/acceptance.py` 全绿</label></li></ul>
+<p class="note">不满意：只改参数重跑；要改步骤本身，回技能层修订并写修订理由。</p>
+</body></html>

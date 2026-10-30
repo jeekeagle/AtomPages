@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>一稿多线 · 技术方案</title>
+<style>
+  :root{ --ink:#1a1a1a; --sub:#5a6b7b; --line:#e5e7eb; --accent:#1d4ed8; --soft:#eef2ff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:#fff; color:var(--ink); font:16px/1.9 "PingFang SC","Microsoft YaHei",sans-serif;
+        max-width:880px; margin:0 auto; padding:48px 40px 80px; }
+  h1{ font-size:34px; line-height:1.4; margin-bottom:8px; }
+  .meta{ color:var(--sub); font-size:16px; margin-bottom:36px; }
+  h2{ font-size:23px; margin:44px 0 16px; padding-left:14px; border-left:5px solid var(--accent); }
+  h3{ font-size:18px; margin:26px 0 10px; color:#0f2a5c; }
+  p{ margin:10px 0; }
+  ul,ol{ margin:10px 0 10px 26px; }
+  li{ margin:6px 0; }
+  table{ border-collapse:collapse; width:100%; margin:14px 0; font-size:16px; }
+  th,td{ border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; }
+  th{ background:#f6f7f9; }
+  .lead{ font-size:18px; color:#0f2a5c; background:var(--soft); border-radius:10px; padding:16px 20px; margin:18px 0; }
+  .rule{ border-left:4px solid #b91c1c; background:#fef7f7; padding:10px 16px; border-radius:0 8px 8px 0; margin:12px 0; }
+  .ok{ border-left:4px solid #047857; background:#f2faf6; padding:10px 16px; border-radius:0 8px 8px 0; margin:12px 0; }
+  .diagram{ border:1.5px solid var(--line); border-radius:12px; padding:18px 20px; margin:16px 0; background:#fcfcfd; }
+  .diagram .row{ display:flex; gap:10px; margin:8px 0; align-items:stretch; }
+  .box{ flex:1; border:1.5px solid var(--line); border-radius:8px; padding:8px 12px; text-align:center; background:#fff; font-size:16px; }
+  .box.core{ border-color:var(--accent); background:var(--soft); font-weight:600; }
+  .box.dim{ color:var(--sub); }
+  .arrow{ align-self:center; color:var(--sub); white-space:nowrap; }
+  code,.file{ font-family:inherit; background:#f3f4f6; border-radius:4px; padding:1px 8px; font-size:16px; }
+  .stage{ display:flex; gap:6px; margin:10px 0; flex-wrap:wrap; }
+  .stage .box{ flex:1; min-width:110px; }
+</style>
+</head>
+<body>
+
+<h1>一稿多线 · 技术方案</h1>
+<div class="meta">Atom 系统工程评估 · 播放工作台技术选型 · 2026 年 10 月</div>
+
+<div class="lead"><b>总体判断：可行，且没有一环需要发明新技术。</b>本系统 = 一条内容流水线（主题与思路进，各线产物出）+ 一个播放工作台（单文件网页，声音、幻灯片、讲稿、各线随同一时间轴联动）。全部环节都有成熟组件，工程量集中在编排与装配，不在算法。</div>
+
+<h2>一、系统全貌：两端一线</h2>
+<div class="diagram">
+  <div class="row"><div class="box core">输入端</div><div class="arrow">→</div><div class="box core">流水线（智能体群）</div><div class="arrow">→</div><div class="box core">播放工作台</div></div>
+  <div class="row"><div class="box">讲课主题<br>讲解思路</div><div class="box">讲稿生成 → <b>人确认</b> → 各线并行生成 → 声音合成 → 装配</div><div class="box">幻灯片视频区<br>讲稿字幕区<br>多线轨道区</div></div>
+</div>
+<p>技术上分四个子系统，下面逐一给方案。</p>
+
+<h2>二、子系统一：讲稿生成与确认（入口）</h2>
+<table>
+<tr><th>环节</th><th>技术</th><th>说明</th></tr>
+<tr><td>主题与思路录入</td><td>网页表单（单文件页）或直接对话</td><td>主题 + 讲给谁 + 思路要点，越具体质量越高</td></tr>
+<tr><td>讲稿初稿</td><td>大模型接口，一轮生成或先搜资料再写</td><td>产出带分句的文稿；思路作为约束写进提示词</td></tr>
+<tr><td>人工确认</td><td>台面页（复用 Atom 确认段）</td><td>逐节展示，可改可退回；<b>确认即冻结母线</b>，后续一切以此为准</td></tr>
+</table>
+<div class="rule"><b>关键设计：确认点是全系统唯一的分水岭。</b>确认前流水线可以整体重来，成本只是几次模型调用；确认后母线冻结，各线生产都挂接在冻结版锚点上，改母线则全部重跑。</div>
+
+<h2>三、子系统二：多线生产流水线（核心）</h2>
+<h3>编排器</h3>
+<p>复用 Atom 系统现成的五段引擎（<code>flow.py</code> + <code>atom.py</code>），把加工段从串行改为并行：五条线的生产互不依赖，同时发起。实现上不需要消息队列——本系统的规模下，一个进程内的任务并行（顺序或并发）足够，等任务量过百再考虑队列。</p>
+<h3>各线的生产方式</h3>
+<table>
+<tr><th>线</th><th>技术实现</th><th>自动化程度</th></tr>
+<tr><td>结构线</td><td>程序解析标题层级（非模型）</td><td>全自动</td></tr>
+<tr><td>重点线</td><td>大模型逐句判读，输出核心句名单与理由</td><td>候选＋人确认</td></tr>
+<tr><td>概念线</td><td>大模型按学情探测难点，生成概念卡、问答卡</td><td>候选＋人确认</td></tr>
+<tr><td>意图线</td><td>界面标注，模型只做建议</td><td>人工为主</td></tr>
+<tr><td>图谱线</td><td>知识图谱存为结构化数据文件；分句与节点做语义匹配（模型）</td><td>匹配＋人校订</td></tr>
+<tr><td>声音线</td><td>逐句语音合成接口，每句返回真实时长，<b>回写母线锚点</b></td><td>全自动</td></tr>
+<tr><td>幻灯片</td><td>按节生成幻灯片（复用 M1 模板），节与幻灯片页一一对应</td><td>全自动</td></tr>
+</table>
+<p>所有模型调用走<b>统一适配层</b>：一个函数入口，参数里带任务类型，底层可换模型供应商。好处是成本可统计、模型可替换、提示词集中在技能层文件里（Atom 的规范要求）。</p>
+
+<h2>四、子系统三：声音线与时间轴（技术关键）</h2>
+<p>这是全系统唯一的硬技术点，方案分两代：</p>
+<ul>
+<li><b>第一代（估时）</b>：无声合成，按语速估算，已实现（每秒四字）。够用于纯网页演示。</li>
+<li><b>第二代（合成回写）</b>：逐句调语音合成，拿到每句音频与精确时长，回写母线锚点。同步精度即句级，误差为零——因为时间轴本来就是合成结果给的，不是对出来的。</li>
+<li><b>第三代（字级）</b>：句内再做强制对齐（语音识别工具链），锚点下沉到字。重点线可只加粗关键词，卡片可在词中间弹出。此代为可选增强，不阻塞前两代。</li>
+</ul>
+<div class="ok"><b>为什么声音是第一代就值得上的：</b>逐句合成让「播放」从模拟变成真实听讲，且时长回写让幻灯片切换、卡片弹出全部自动对齐。成本极低（短句合成接口按字符计费，一节微课几毛钱量级）。</div>
+<p>音频文件的携带方式：小课（十分钟内）直接内嵌进单文件网页；长课音频旁路存放、网页按句懒加载。两种都符合介质规范。</p>
+
+<h2>五、子系统四：播放工作台（呈现）</h2>
+<h3>布局：上视频、中讲稿、下轨道</h3>
+<div class="diagram">
+  <div class="row"><div class="box core">上区 · 幻灯片画面（随讲切换，占屏约五成）</div></div>
+  <div class="row"><div class="box core">中区 · 讲稿逐句滚动＋当前句高亮＋声音同步</div></div>
+  <div class="row"><div class="box">重点轨道</div><div class="box">概念轨道</div><div class="box">图谱轨道</div><div class="box">意图轨道</div><div class="box dim">自定义…</div></div>
+  <div class="row"><div class="box core">底部 · 总时间轴（按章分段）＋每线开关＋播放控制</div></div>
+</div>
+<h3>「幻灯片视频」的实现取舍</h3>
+<p><b>第一版不预渲染视频文件。</b>工作台里的画面区直接放幻灯片页面本身，讲到哪一节就切换到对应页（过渡用样式动画）。这条路的好处：</p>
+<ul>
+<li>零渲染成本，改一页幻灯片立即生效，不需要重导视频；</li>
+<li>幻灯片保持可交互（页内动画、点击展开都还活着）；</li>
+<li>时间同步由母线锚点驱动，天然准。</li>
+</ul>
+<p>确需导出真视频文件时（如投稿平台要求），再走无头浏览器逐帧渲染加视频编码的管线——这条路在本机已经验证过（口播视频流水线），属于随时可加的旁路输出，不进主流程。</p>
+<h3>联动机制</h3>
+<p>全工作台只有一个时钟（当前播放时刻）。每条线是一个「订阅者」：拿到时刻，查自己的数据文件，决定自己亮什么。互不调用、互不知道彼此存在——这正是线协议禁止隐式依赖在播放端的兑现。</p>
+
+<h2>六、技术栈清单</h2>
+<table>
+<tr><th>层</th><th>选型</th><th>理由</th></tr>
+<tr><td>编排与服务</td><td>Python（现有 Atom 引擎直接复用）</td><td>五段引擎、门禁、留痕已就位</td></tr>
+<tr><td>大模型调用</td><td>云接口＋统一适配层</td><td>讲稿、重点、概念、图谱匹配共用一个入口</td></tr>
+<tr><td>语音合成</td><td>逐句合成接口（本地引擎或云服务）</td><td>句时长回写是同步的根基</td></tr>
+<tr><td>字级对齐（可选）</td><td>开源语音识别工具链</td><td>成熟方案，接入点是排时段一个函数</td></tr>
+<tr><td>前端呈现</td><td>单文件网页，原生技术，无构建链</td><td>符合 Atom 介质规范；双击即开、可转静态</td></tr>
+<tr><td>幻灯片</td><td>M1 模板（已入库）</td><td>页与节对应，切换由母线驱动</td></tr>
+<tr><td>知识图谱</td><td>结构化数据文件起步</td><td>一个主题图谱就是一份文件，无需数据库</td></tr>
+<tr><td>存储</td><td>文件系统＋结构化数据文件（全程落盘）</td><td>Atom 落盘原则；每线一个文件，可独立增删</td></tr>
+<tr><td>视频导出（旁路）</td><td>无头浏览器逐帧渲染＋视频编码</td><td>本机已验证；按需启用</td></tr>
+</table>
+<div class="rule"><b>刻意不引入的东西：</b>数据库、后端常驻服务、前端构建框架、消息队列。理由：单机单人规模下它们都是负担；Atom 的落盘原则让每个产物都是文件，天然可审计、可回滚、可人工检查。等需要多人协作或在线服务时再升级，迁移点清晰。</div>
+
+<h2>七、关键技术难点与对策</h2>
+<table>
+<tr><th>难点</th><th>对策</th></tr>
+<tr><td>时间轴一致性（声音、幻灯片、各线必须同拍）</td><td>单一时钟＋锚点回写：时间是合成结果推导的，不靠各模块各自计时</td></tr>
+<tr><td>改讲稿后的连锁重算</td><td>按分句做差量：只重合成被改的句子、只重跑受影响的线；分句级锚点让差量成为可能</td></tr>
+<tr><td>模型候选质量不稳定</td><td>凡生成一律「候选＋人确认」；确认结果留痕，形成该作者的判断样本，反过来当少样本示例</td></tr>
+<tr><td>长讲稿的调用成本</td><td>逐句调用按需付费；重点线只判读候选句而非全文反复判读</td></tr>
+<tr><td>多线同屏的信息过载</td><td>默认同屏激活不超过三条线，其余开关关闭；播放与阅读（静态退化）两种形态</td></tr>
+</table>
+
+<h2>八、与现有 Atom 系统的复用清单</h2>
+<table>
+<tr><th>资产</th><th>状态</th><th>本方案中的角色</th></tr>
+<tr><td>五段引擎与命令行</td><td>已实现</td><td>流水线骨架，加工段改并行</td></tr>
+<tr><td>台面（确认页生成器）</td><td>已实现</td><td>讲稿确认点＋各线验收点</td></tr>
+<tr><td>体检门禁</td><td>已实现</td><td>各线产物入库前校验</td></tr>
+<tr><td>M1 幻灯片模板</td><td>已实现</td><td>画面区内容源</td></tr>
+<tr><td>M8 分层时间轴与播放页</td><td>已实现（单线版）</td><td>工作台的中区与底栏原型，升多线</td></tr>
+<tr><td>线协议（规范 11.1）</td><td>已成文</td><td>各线接入的统一契约</td></tr>
+<tr><td>备课技能（主题→讲稿）</td><td>待建</td><td>入口子系统</td></tr>
+<tr><td>多线装配器与工作台外壳</td><td>待建</td><td>介质段升级</td></tr>
+</table>
+
+<h2>九、分期实施</h2>
+<table>
+<tr><th>期</th><th>范围</th><th>验收标准</th></tr>
+<tr><td>第一期 · 讲稿闭环</td><td>主题与思路进 → 讲稿出 → 台面确认；结构线、概念线自动生产</td><td>输入一个真实课题，十分钟内拿到可确认的讲稿与两线产物</td></tr>
+<tr><td>第二期 · 声音与多线</td><td>逐句语音合成回写时长；重点线上线；多线播放工作台（上幻灯片、中讲稿、下轨道）</td><td>点播放后声画稿线四方同步，重点句随声音加粗</td></tr>
+<tr><td>第三期 · 图谱与意图</td><td>主题图谱构建；图谱线点亮联动；意图线标注与少样本反哺</td><td>讲到概念处图谱节点亮起；意图标注使候选确认成本可感下降</td></tr>
+<tr><td>第四期 · 旁路与差量</td><td>真视频导出；字级对齐；分句级差量重算</td><td>改一句话只重算该句相关产物</td></tr>
+</table>
+
+<h2>十、结论</h2>
+<p>这套系统的技术本质是：<b>把「视频剪辑」问题换成「数据装配」问题。</b>传统做法里声音、画面、字幕、标注在时间轴上对齐靠剪辑软件逐帧对；本方案里对齐是数据结构自带的——一切时间都从母线锚点推导，声音是合成结果，画面是锚点驱动的切页，各线是锚点上的订阅者。没有需要对帧的环节，就没有对不齐的可能。</p>
+<p>工程重心按序是：<b>第一期搭讲稿闭环（复用度最高，风险最小）；第二期上声音，同步从模拟变真实；之后每条线都是独立增量，随做随用。</b></p>
+
+</body>
+</html>
