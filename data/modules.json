@@ -1,17 +1,17 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-30T17:24:12.039769+08:00",
+  "updatedAt": "2026-10-30T18:16:35.491162+08:00",
   "generatedBy": "tools/collect.py",
   "moduleCount": 11,
-  "itemCount": 18,
+  "itemCount": 19,
   "modules": [
     {
       "no": "M01",
       "slug": "ai-ethics-policy",
       "name": "伦理与安全",
       "desc": "人工智能伦理与安全的政策依据",
-      "count": 1,
+      "count": 2,
       "items": [
         {
           "key": "ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据",
@@ -32,6 +32,26 @@
           "addedAt": "2026-10-30T17:22:46.641491+08:00",
           "no": "01-01",
           "index": 1
+        },
+        {
+          "key": "ai-ethics-policy/人工智能伦理与安全-第一部分-层次体系",
+          "module": "ai-ethics-policy",
+          "title": "人工智能伦理与安全 · 第一部分 层次体系",
+          "slug": "人工智能伦理与安全-第一部分-层次体系",
+          "sourceProject": "ai-ethics-layers-huashu",
+          "sourceSection": "",
+          "html": "pages/ai-ethics-policy/人工智能伦理与安全-第一部分-层次体系.html",
+          "pdf": "pdfs/ai-ethics-policy/人工智能伦理与安全-第一部分-层次体系.pdf",
+          "thumb": "thumbs/ai-ethics-policy/人工智能伦理与安全-第一部分-层次体系.jpg",
+          "slides": 18,
+          "kind": "deck",
+          "bytes": 110205,
+          "hash": "5c1cc5d621e01545",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T18:13:50.143193+08:00",
+          "addedAt": "2026-10-30T18:16:35.309171+08:00",
+          "no": "01-02",
+          "index": 2
         }
       ]
     },
