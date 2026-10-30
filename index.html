@@ -41,11 +41,18 @@
     <section class="stats" id="stats"></section>
 
     <section class="toolbar">
-      <label class="toolbar__search">
-        <span>检索</span>
-        <input type="search" id="q" placeholder="按标题、模块或来源检索" autocomplete="off">
-      </label>
-      <div id="filters" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <div class="toolbar__row">
+        <label class="toolbar__search">
+          <span>检索</span>
+          <input type="search" id="q" placeholder="按标题、模块或来源检索" autocomplete="off">
+        </label>
+        <div class="views" id="views" role="group" aria-label="视图切换">
+          <button class="viewbtn" data-view="grid" type="button">网格</button>
+          <button class="viewbtn" data-view="archive" type="button">档案</button>
+          <button class="viewbtn" data-view="list" type="button">清单</button>
+        </div>
+      </div>
+      <div id="filters" class="toolbar__chips"></div>
     </section>
 
     <section id="modules"></section>

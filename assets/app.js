@@ -3,7 +3,15 @@
   "use strict";
 
   var DATA_URL = "data/modules.json";
-  var state = { modules: [], q: "", filter: "all" };
+  var VIEWS = ["grid", "archive", "list"];
+  var VIEW_KEY = "atompages.view";
+  var state = { modules: [], q: "", filter: "all", view: "grid" };
+
+  // 记住上次选的视图
+  try {
+    var saved = localStorage.getItem(VIEW_KEY);
+    if (saved && VIEWS.indexOf(saved) !== -1) state.view = saved;
+  } catch (e) { /* 隐私模式下不可用，用默认值 */ }
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -49,9 +57,10 @@
     var a = el("a", "card");
     a.href = "view.html?m=" + encodeURIComponent(m.slug) + "&i=" + encodeURIComponent(it.slug);
 
-    var th = el("div", "card__thumb");
     var no = el("div", "card__no", it.no);
-    th.appendChild(no);
+    a.appendChild(no);
+
+    var th = el("div", "card__thumb");
     if (it.thumb) {
       var img = document.createElement("img");
       img.src = it.thumb;
@@ -64,21 +73,30 @@
     var body = el("div", "card__body");
     body.appendChild(el("div", "card__title", it.title));
     var meta = el("div", "card__meta");
-    meta.appendChild(el("span", null, it.kind === "doc" ? "文档" : "页 " + it.slides));
-    var src = el("span");
+    meta.appendChild(el("span", "card__kind", it.kind === "doc" ? "文档" : it.slides + " 页"));
+    var src = el("span", "card__src");
     src.innerHTML = "来源 <b></b>";
     src.querySelector("b").textContent = it.sourceProject;
     meta.appendChild(src);
-    var d = el("span", null, fmtDate(it.updatedAt));
+    var d = el("span", "card__date", fmtDate(it.updatedAt));
     meta.appendChild(d);
     body.appendChild(meta);
     a.appendChild(body);
+
+    // 清单视图用的独立列（网格/档案视图里隐藏）
+    a.appendChild(el("div", "card__col card__col--kind", it.kind === "doc" ? "文档" : it.slides + " 页"));
+    var colSrc = el("div", "card__col card__col--src");
+    colSrc.innerHTML = "来源 <b></b>";
+    colSrc.querySelector("b").textContent = it.sourceProject;
+    a.appendChild(colSrc);
+    a.appendChild(el("div", "card__col card__col--date", fmtDate(it.updatedAt)));
     return a;
   }
 
   function render() {
     var wrap = document.getElementById("modules");
     wrap.innerHTML = "";
+    wrap.className = "view-" + state.view;
     var hits = allItems().filter(matches);
     var shown = 0;
 
@@ -150,10 +168,32 @@
     });
   }
 
+  function renderViews() {
+    var box = document.getElementById("views");
+    if (!box) return;
+    var labels = { grid: "网格", archive: "档案", list: "清单" };
+    box.innerHTML = "";
+    VIEWS.forEach(function (v) {
+      var b = el("button", "viewbtn" + (state.view === v ? " on" : ""), labels[v]);
+      b.type = "button";
+      b.setAttribute("data-view", v);
+      b.setAttribute("aria-pressed", state.view === v ? "true" : "false");
+      b.addEventListener("click", function () {
+        if (state.view === v) return;
+        state.view = v;
+        try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* 忽略 */ }
+        renderViews();
+        render();
+      });
+      box.appendChild(b);
+    });
+  }
+
   function boot(data) {
     state.modules = data.modules || [];
     renderStats();
     renderFilters();
+    renderViews();
     render();
 
     var st = document.getElementById("stamp");

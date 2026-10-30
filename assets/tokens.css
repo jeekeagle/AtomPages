@@ -171,9 +171,76 @@ main{ padding:56px 0 120px; }
 /* 两条时也用横排，比例略收 */
 .items:has(> .card:nth-child(2):last-child){ grid-template-columns:repeat(2,1fr); }
 
+/* ── 视图：网格（小卡片）──────────────────────────────── */
+/* 网格视图下所有卡片一律小尺寸，单条模块也不再拉伸 */
+.view-grid .items{
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:16px; padding:16px;
+}
+.view-grid .items:has(> .card:only-child){ grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+.view-grid .items:has(> .card:nth-child(2):last-child){ grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+.view-grid .items:has(> .card:only-child) .card{
+  display:block;
+}
+.view-grid .items:has(> .card:only-child) .card__thumb{
+  aspect-ratio:16/9; border-right:0; border-bottom:1px solid var(--rule);
+}
+.view-grid .items:has(> .card:only-child) .card__body{
+  display:block; padding:13px 14px 15px;
+}
+.view-grid .items:has(> .card:only-child) .card__title{ font-size:15px; }
+.view-grid .card__body{ padding:13px 14px 15px; }
+.view-grid .card__title{ font-size:15px; line-height:1.4; }
+.view-grid .card__meta{ margin-top:8px; gap:4px 10px; font-size:10.5px; }
+/* 网格视图不显示清单专用的独立列 */
+.view-grid .card__col{ display:none; }
+
+/* ── 视图：清单（表格）───────────────────────────────── */
+/* 清单列（类型 / 来源 / 日期）默认隐藏，只在清单视图出现 */
+.card__col{ display:none; }
+/* 档案视图沿用原有大卡片排版，隐藏清单专用列 */
+.view-archive .card__col{ display:none; }
+
+.view-list .items{
+  grid-template-columns:1fr; gap:0; padding:0;
+}
+.view-list .items:has(> .card:only-child){ grid-template-columns:1fr; }
+.view-list .card,
+.view-list .items:has(> .card:only-child) .card{
+  display:grid;
+  grid-template-columns:52px 68px minmax(0,1.5fr) 56px minmax(120px,0.7fr) 80px;
+  align-items:center; gap:16px;
+  border:0; border-bottom:1px solid var(--rule); border-radius:0;
+  background:none; padding:11px 20px; overflow:visible;
+}
+.view-list .card:last-child{ border-bottom:0; }
+.view-list .card:hover{ background:var(--surface-2); border-color:var(--rule); }
+.view-list .card__thumb{
+  aspect-ratio:16/9; border:0; border-radius:2px; overflow:hidden;
+}
+.view-list .card__no{
+  position:static; z-index:auto;
+  background:none; color:var(--amber); font-size:11px;
+  padding:0; letter-spacing:.08em;
+}
+.view-list .card__body{
+  padding:0; min-width:0;
+}
+.view-list .card__title{ font-size:14px; line-height:1.4; }
+.view-list .card__meta{ display:none; }
+.view-list .card__col{
+  display:block; font-family:var(--mono); font-size:10.5px;
+  color:var(--text-3); white-space:nowrap; min-width:0;
+}
+.view-list .card__col--kind{ color:var(--text-2); }
+.view-list .card__col--src{ overflow:hidden; text-overflow:ellipsis; }
+.view-list .card__col--src b{ color:var(--text-2); font-weight:400; }
+.view-list .card__col--date{ text-align:right; }
+
 /* ── 卡片 ────────────────────────────────────────────── */
 .card{
   display:block; text-decoration:none; color:inherit;
+  position:relative;
   border:1px solid var(--rule); border-radius:var(--radius);
   background:var(--surface-2); overflow:hidden;
   transition:border-color .18s ease, background .18s ease;
@@ -190,7 +257,7 @@ main{ padding:56px 0 120px; }
 }
 .card:hover .card__thumb img{ opacity:1; }
 .card__no{
-  position:absolute; top:0; left:0;
+  position:absolute; top:0; left:0; z-index:2;
   font-family:var(--mono); font-size:11px; font-weight:700;
   color:var(--void); background:var(--amber);
   padding:3px 8px; letter-spacing:.1em;
@@ -210,10 +277,17 @@ main{ padding:56px 0 120px; }
 
 /* ── 工具条 ──────────────────────────────────────────── */
 .toolbar{
-  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  display:flex; flex-direction:column; gap:14px;
   padding:14px 18px; border:1px solid var(--rule);
   background:var(--surface); border-radius:var(--radius);
   margin-bottom:28px;
+}
+.toolbar__row{
+  display:flex; align-items:flex-end; gap:16px;
+}
+.toolbar__chips{
+  display:flex; gap:8px; flex-wrap:wrap;
+  padding-top:14px; border-top:1px solid var(--rule-soft);
 }
 .toolbar__search{
   flex:1; min-width:220px; display:flex; align-items:center; gap:10px;
@@ -235,6 +309,23 @@ main{ padding:56px 0 120px; }
 }
 .chip:hover{ color:var(--text); border-color:var(--text-3); }
 .chip.on{ color:var(--amber); border-color:var(--amber-dim); background:var(--amber-wash); }
+
+/* ── 视图切换 ────────────────────────────────────────── */
+.views{
+  display:flex; gap:0; margin-left:auto;
+  border:1px solid var(--rule); border-radius:var(--radius);
+  overflow:hidden; flex:none; align-self:flex-end;
+}
+.viewbtn{
+  font-family:var(--mono); font-size:12px; letter-spacing:.08em;
+  color:var(--text-3); background:none; border:0;
+  border-right:1px solid var(--rule);
+  padding:7px 15px; cursor:pointer;
+  transition:color .16s ease, background .16s ease;
+}
+.viewbtn:last-child{ border-right:0; }
+.viewbtn:hover{ color:var(--text); background:var(--surface-2); }
+.viewbtn.on{ color:var(--amber); background:var(--amber-wash); }
 
 /* ── 空态 ────────────────────────────────────────────── */
 .empty{
@@ -337,6 +428,8 @@ main{ padding:56px 0 120px; }
   .stats{ flex-wrap:wrap; }
   .stat{ flex:1 1 44%; border-bottom:1px solid var(--rule); }
   .module__desc{ display:none; }
+  .toolbar__row{ flex-wrap:wrap; }
+  .views{ margin-left:0; }
 }
 @media (max-width:700px){
   /* 横排大卡片在窄屏改回竖排，否则文字被挤到溢出 */
@@ -346,10 +439,37 @@ main{ padding:56px 0 120px; }
     aspect-ratio:16/9; border-right:0; border-bottom:1px solid var(--rule);
   }
   .items:has(> .card:nth-child(2):last-child){ grid-template-columns:1fr; }
+
+  /* 网格视图在窄屏留两列，仍保持小卡片 */
+  .view-grid .items{ grid-template-columns:repeat(2,1fr); gap:12px; padding:12px; }
+  .view-grid .items:has(> .card:only-child){ grid-template-columns:repeat(2,1fr); }
+  .view-grid .card__meta{ font-size:10px; }
+
+  /* 清单视图在窄屏砍掉来源列，只留编号·缩略图·标题·日期 */
+  .view-list .card,
+  .view-list .items:has(> .card:only-child) .card{
+    grid-template-columns:52px 64px minmax(0,1fr) 76px;
+    gap:10px; padding:9px 14px;
+  }
+  .view-list .card__col--kind{ display:none; }
+  .view-list .card__col--src{ display:none; }
 }
 @media (max-width:560px){
   .stat{ flex:1 1 100%; border-right:0; }
   .items{ grid-template-columns:1fr; }
   .page-head h1{ font-size:30px; }
   .lede{ font-size:16px; }
+
+  .view-grid .items{ grid-template-columns:1fr; }
+
+  .view-list .card,
+  .view-list .items:has(> .card:only-child) .card{
+    grid-template-columns:50px minmax(0,1fr) 74px;
+  }
+  .view-list .card__thumb{ display:none; }
+  .toolbar{ gap:12px; }
+  .toolbar__row{ gap:12px; }
+  .toolbar__search{ min-width:100%; }
+  .views{ width:100%; }
+  .viewbtn{ flex:1; }
 }
