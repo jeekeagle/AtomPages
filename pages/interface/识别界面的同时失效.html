@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>识别界面的同时失效</title>
+<style>
+/* ============================================================
+   课件模式 · 视觉变量源（唯一）
+   ------------------------------------------------------------
+   风格基线：Michael Alley 断言—证据
+   场景：大屏投影，我讲学生听
+   规则：任何颜色/字号/间距都只能改这里，不在页内写死
+   ============================================================ */
+
+:root{
+  /* ---------- 画布 ---------- */
+  --canvas-w: 1920px;
+  --canvas-h: 1080px;
+
+  /* ---------- 栅格 ---------- */
+  --pad-x: 128px;          /* 左右安全边 */
+  --pad-top: 104px;         /* 上安全边 */
+  --pad-bottom: 96px;      /* 下安全边 */
+  --content-w: calc(var(--canvas-w) - var(--pad-x) * 2);   /* 1664px */
+
+  /* ---------- 色板 ---------- */
+  --paper:   #FFFFFF;       /* 底 */
+  --paper-warm: #F8F6F1;    /* 暖白：图内浅色块，与纸白区分 */
+  --ink:     #14181C;       /* 主墨：标题、结构线 */
+  --ink2:    #4A5158;       /* 次墨：正文 */
+  --ink3:    #6E757D;       /* 弱墨：图内标签、注释 */
+  --ink4:    #9B978D;       /* 最弱：分隔线上的小字 */
+  --line:    #E3E1DA;       /* 分隔线 */
+  --line2:   #EFEDE7;       /* 更浅的分隔线 */
+  --accent:  #1E5C48;       /* 主张色：深松绿。用于断言高亮、结构线强调 */
+  --accent-soft: #E9F0ED;   /* 主张色的极浅底 */
+  --accent-line: #BFD3CB;   /* 主张色的浅描边 */
+  --accent-pale: #A8C3B6;   /* 主张色上的次级字 */
+  --warn:    #B23A2E;       /* 警示色：砖红。只用于「禁止/追责/反面」 */
+  --warn-soft: #F6EDEB;
+  --warn-line: #E0B4AC;
+  --neutral-fill: #F4F3F0;  /* 中性块底 */
+  --neutral-line: #9B978D;  /* 中性块描边 */
+  /* 换主张色时：只改 --accent 一个值即可全页生效（CSS 变量已下沉到 SVG）。
+     不能取砖红 #B23A2E（那是警示色，两红相撞会丢掉「禁止/追责」的语义）。
+     本讲取深松绿 #1E5C48（与警示色砖红为红绿互补对，ΔE 远高于 30 的安全线）。 */
+
+  /* ---------- 字体 ----------
+     只用三个族（用户硬规矩）：黑体 / 微软雅黑 / 华文中宋
+     不引入宋体、苹方、Noto，fallback 也回落到黑体 */
+  --font-sans: "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", sans-serif;
+  --font-serif: "STZhongsong", "华文中宋", "SimHei", "黑体", serif;
+
+  /* ---------- 字阶 ----------
+     下限：正文 30px，标签 24px（远高于 deck 底线 24/16） */
+  --fs-cover:   120px;      /* 封面主标题 */
+  --fs-section: 104px;      /* 章节页大字 */
+  --fs-assert:  56px;       /* 断言标题（内容页标题） */
+  --fs-lead:    34px;       /* 段标题 / 引语 */
+  --fs-body:    30px;       /* 正文 */
+  --fs-concl:   28px;       /* 结论条 */
+  --fs-label:   26px;       /* 图内标签 */
+  --fs-note:    24px;       /* 注释、脚注 */
+
+  --lh-tight: 1.24;
+  --lh-assert: 1.42;
+  --lh-body: 1.78;
+
+  /* ---------- 间距阶 ---------- */
+  --sp-1: 12px;
+  --sp-2: 20px;
+  --sp-3: 28px;
+  --sp-4: 38px;
+  --sp-5: 52px;
+  --sp-6: 72px;
+  --sp-7: 104px;
+
+  /* ---------- 动效 ---------- */
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur: .58s;
+}
+
+/* ============================================================
+   画布与基线
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family: var(--font-sans);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  position: relative;
+}
+
+/* ============================================================
+   页骨架：断言 → 分隔线 → 一张图 → 结论条
+   ============================================================ */
+.page{
+  width: var(--canvas-w);
+  height: var(--canvas-h);
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   共用零件
+   ============================================================ */
+
+/* 断言标题：完整一句，最多两行 */
+.assert{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-assert);
+  line-height: var(--lh-assert);
+  letter-spacing: .005em;
+  color: var(--ink);
+  max-width: var(--content-w);
+  flex: 0 0 auto;
+}
+.assert em{ font-style: normal; color: var(--accent); }
+
+/* 断言下的分隔线：短靛段 + 长浅线 */
+.rule{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: var(--sp-4);
+  flex: 0 0 auto;
+}
+.rule b{ display:block; width:120px; height:3px; background:var(--accent); }
+.rule i{ display:block; flex:1; height:1px; background:var(--line); }
+
+/* 底部结论条 */
+.concl{
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.concl .k{
+  font-size: var(--fs-concl);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+.concl .v{ font-size: var(--fs-concl); color: var(--ink3); }
+
+/* 眉标：课程名 / 讲次，无英文 */
+.eyebrow{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink2);
+}
+.mark{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink3);
+}
+
+/* 图区：断言下方的主场 */
+.figure{
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: var(--sp-3);
+  display: flex;
+}
+svg.figsvg{ display:block; width:100%; height:100%; }
+svg.figsvg text{ font-family: var(--font-sans); }
+
+/* 段标题（页内小标题） */
+.h3{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* 正文 */
+.body{ font-size: var(--fs-body); line-height: var(--lh-body); color: var(--ink2); }
+
+/* 图内标签 */
+.label{ font-size: var(--fs-label); fill: var(--ink2); }
+.note{ font-size: var(--fs-note); fill: var(--ink3); }
+
+/* ============================================================
+   图内常用元件与文字级
+   ============================================================ */
+.b-soft{ fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.b-solid{ fill: var(--accent); stroke: none; }
+.b-gray{ fill: var(--neutral-fill); stroke: var(--neutral-line); stroke-width: 2; }
+.b-open{ fill: var(--paper); stroke: var(--accent-line); stroke-width: 2; stroke-dasharray: 9 7; }
+.b-warn{ fill: var(--warn-soft); stroke: var(--warn); stroke-width: 2.5; }
+.b-line{ fill: none; stroke: var(--line); stroke-width: 2; }
+.b-ax{ fill: none; stroke: var(--accent); stroke-width: 3; }
+.b-dash{ fill: none; stroke: var(--neutral-line); stroke-width: 2; stroke-dasharray: 9 7; }
+
+.t-cap{ font-size: 27px; fill: var(--accent); font-weight: 700; }
+.t-cap2{ font-size: 27px; fill: var(--accent-line); font-weight: 700; }
+.t-h{ font-size: 30px; fill: var(--ink); font-weight: 700; }
+.t-hw{ font-size: 30px; fill: #FFFFFF; font-weight: 700; }
+.t-hg{ font-size: 30px; fill: var(--ink2); font-weight: 700; }
+.t-b{ font-size: 26px; fill: var(--ink2); }
+.t-m{ font-size: 25px; fill: var(--ink3); }
+.t-m2{ font-size: 24px; fill: var(--ink3); }
+.t-w{ font-size: 26px; fill: var(--warn); }
+.t-wb{ font-size: 28px; fill: var(--warn); font-weight: 700; }
+.t-k{ font-size: 24px; fill: var(--ink3); font-weight: 700; }
+.t-kw{ font-size: 24px; fill: var(--warn); font-weight: 700; }
+
+/* ============================================================
+   入场动效（轻，只做位移与淡入）
+   ------------------------------------------------------------
+   注意：.r 的初始隐藏只在「有 .on 祖先」时生效。
+   独立单页（直接双击打开、没有 .on 祖先）必须始终可见，
+   否则整页透明 —— 这是 2026-10-30 验证时踩到的坑。
+   ============================================================ */
+.r{ opacity:1; transform:none;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.on .r{ opacity:0; transform: translateY(14px); }
+.on .r.d1{ transition-delay:.07s }
+.on .r.d2{ transition-delay:.14s }
+.on .r.d3{ transition-delay:.21s }
+.on .r.d4{ transition-delay:.28s }
+.on .r.d5{ transition-delay:.35s }
+.on .r.d6{ transition-delay:.42s }
+
+/* 独立单页：直接显示，不做入场动画 */
+body:not(.anim) .r,
+html:not(.anim) body:not(.anim) .r{
+  opacity:1 !important;
+  transform:none !important;
+  transition:none !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .r{ opacity:1; transform:none; transition:none; }
+  .on .r{ opacity:1; transform:none; transition:none; }
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+body{font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{position:absolute;width:1920px;height:1080px;transform-origin:center center;display:none;background:#fff;overflow:hidden}
+.slide.on{display:block}
+#bar{position:fixed;right:26px;bottom:22px;display:flex;gap:14px;align-items:center;
+  font-family:var(--font-sans);font-size:16px;color:#9B978D;user-select:none}
+#bar button{font:inherit;border:1px solid #C9C7E0;background:#fff;color:#14181C;padding:6px 14px;cursor:pointer}
+@media print{
+  html,body{overflow:visible}
+  #stage{position:static;display:block}
+  .slide{position:relative;display:block!important;page-break-after:always;break-after:page;transform:none!important}
+  #bar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide" id="s1"><style>#s1 .page{ padding:104px 110px 96px; flex-direction:row; align-items:center; gap:64px; }#s1 .cov-left{ flex:0 0 900px; }#s1 .eyebrow{ font-size:30px; font-weight:700; color:var(--ink2); letter-spacing:.08em; }#s1 .cov-title{
+    font-family:var(--font-sans); font-weight:700; font-size:96px; line-height:1.22;
+    color:var(--ink); margin-top:40px; letter-spacing:.01em;
+  }#s1 .cov-rule{ width:160px; height:8px; background:var(--accent); margin-top:48px; }#s1 .cov-right{ flex:1; min-width:0; }#s1 .figsvg{ width:100%; height:auto; display:block; }
+</style>
+<section class="page" id="s">
+  <div class="cov-left">
+    <div class="eyebrow r d1">人工智能时代的人际判断</div>
+    <h1 class="cov-title r d2">识别界面的<br>同时失效</h1>
+    <div class="cov-rule r d3"></div>
+  </div>
+  <div class="cov-right r d3">
+    <svg class="figsvg" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet">
+      <!-- 三层界面横条 -->
+      <g>
+        <rect x="0" y="40" width="620" height="120" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="36" y="88" font-size="28" fill="#1E5C48" font-weight="700">书写界面</text>
+        <text x="36" y="130" font-size="30" fill="#14181C" font-weight="700">字迹</text>
+      </g>
+      <g>
+        <rect x="40" y="220" width="580" height="120" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="76" y="268" font-size="28" fill="#1E5C48" font-weight="700">表达界面</text>
+        <text x="76" y="310" font-size="30" fill="#14181C" font-weight="700">文章　方案　汇报</text>
+      </g>
+      <g>
+        <rect x="80" y="400" width="540" height="120" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="116" y="448" font-size="28" fill="#1E5C48" font-weight="700">身份界面</text>
+        <text x="116" y="490" font-size="30" fill="#14181C" font-weight="700">面孔　指纹　声纹</text>
+      </g>
+      <!-- 贯穿裂缝 -->
+      <path d="M120,20 L300,210 L250,400 L390,540"
+            fill="none" stroke="#B23A2E" stroke-width="5" stroke-linecap="round"/>
+      <text x="470" y="120" font-size="30" fill="#B23A2E" font-weight="700">同时失效</text>
+      <path d="M452,132 L414,150" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <!-- 底部注 -->
+      <text x="80" y="640" font-size="26" fill="#6E757D">三条判断通道沿同一路径被拉平</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s2">
+<section class="page">
+  <div class="assert r d1">人无法直接观察另一个人，<em>只能借助造假成本高的痕迹来推断</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：真实的人（不可直接观察） -->
+      <g>
+        <rect x="20" y="90" width="360" height="280" fill="#F4F3F0" stroke="#9B978D" stroke-width="2" stroke-dasharray="9 7"/>
+        <text x="200" y="160" font-size="30" fill="#14181C" font-weight="700" text-anchor="middle">真实的人</text>
+        <text x="200" y="212" font-size="26" fill="#6E757D" text-anchor="middle">能力</text>
+        <text x="200" y="254" font-size="26" fill="#6E757D" text-anchor="middle">品格</text>
+        <text x="200" y="296" font-size="26" fill="#6E757D" text-anchor="middle">身份</text>
+        <text x="200" y="348" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">不可直接观察</text>
+      </g>
+
+      <!-- 中：自然呈现的痕迹 -->
+      <g>
+        <rect x="560" y="60" width="560" height="340" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="840" y="118" font-size="28" fill="#1E5C48" font-weight="700" text-anchor="middle">自然呈现的痕迹</text>
+        <rect x="600" y="150" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="675" y="189" font-size="26" fill="#14181C" text-anchor="middle">字迹</text>
+        <rect x="770" y="150" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="845" y="189" font-size="26" fill="#14181C" text-anchor="middle">文章</text>
+        <rect x="940" y="150" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="1015" y="189" font-size="26" fill="#14181C" text-anchor="middle">方案</text>
+        <rect x="685" y="240" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="760" y="279" font-size="26" fill="#14181C" text-anchor="middle">面孔</text>
+        <rect x="855" y="240" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="930" y="279" font-size="26" fill="#14181C" text-anchor="middle">声音</text>
+        <text x="840" y="352" font-size="25" fill="#4A5158" text-anchor="middle">观察痕迹，就是在推断这个人</text>
+      </g>
+
+      <!-- 右：可用的判断 -->
+      <g>
+        <rect x="1300" y="90" width="344" height="280" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <text x="1472" y="170" font-size="30" fill="#14181C" font-weight="700" text-anchor="middle">低成本判断装置</text>
+        <text x="1472" y="228" font-size="26" fill="#4A5158" text-anchor="middle">看一眼即可完成</text>
+        <text x="1472" y="278" font-size="26" fill="#4A5158" text-anchor="middle">运转数千年</text>
+        <text x="1472" y="328" font-size="25" fill="#6E757D" text-anchor="middle">即「界面」</text>
+      </g>
+
+      <!-- 箭头 -->
+      <path d="M390,230 L540,230" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M540,230 L516,216 L516,244 Z" fill="#1E5C48"/>
+      <path d="M1130,230 L1280,230" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M1280,230 L1256,216 L1256,244 Z" fill="#1E5C48"/>
+
+      <!-- 底部共同特征 -->
+      <g>
+        <rect x="20" y="440" width="1624" height="88" fill="#14181C"/>
+        <text x="832" y="494" font-size="28" fill="#FFFFFF" text-anchor="middle">共同特征：造假成本高于收益，因而可以作为可信信号使用</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">界面</span>
+    <span class="v">人与人之间的低成本判断装置——它跑了几千年，只因长期有效</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s3">
+<section class="page">
+  <div class="assert r d1">观察不到真实生产力，<em>就观察那些难以伪装的替代特征</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">信号理论的机制解释</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">获取成本高，因而难以伪装</text>
+
+      <!-- 雇主困境 -->
+      <g>
+        <rect x="20" y="70" width="420" height="200" fill="#F4F3F0" stroke="#9B978D" stroke-width="2" stroke-dasharray="9 7"/>
+        <text x="230" y="140" font-size="30" fill="#14181C" font-weight="700" text-anchor="middle">雇主</text>
+        <text x="230" y="192" font-size="26" fill="#6E757D" text-anchor="middle">无法直接观察</text>
+        <text x="230" y="236" font-size="26" fill="#6E757D" text-anchor="middle">雇员的真实生产力</text>
+      </g>
+
+      <!-- 退而观察 -->
+      <path d="M450,170 L560,170" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M560,170 L536,156 L536,184 Z" fill="#1E5C48"/>
+      <text x="505" y="150" font-size="25" fill="#1E5C48" font-weight="700" text-anchor="middle">退而观察</text>
+
+      <!-- 替代特征 -->
+      <g>
+        <rect x="570" y="70" width="560" height="200" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="850" y="122" font-size="28" fill="#1E5C48" font-weight="700" text-anchor="middle">获取成本较高的替代特征</text>
+        <rect x="606" y="152" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="681" y="191" font-size="26" fill="#14181C" text-anchor="middle">学历</text>
+        <rect x="776" y="152" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="851" y="191" font-size="26" fill="#14181C" text-anchor="middle">文凭</text>
+        <rect x="946" y="152" width="150" height="60" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="1021" y="191" font-size="26" fill="#14181C" text-anchor="middle">履历</text>
+        <text x="850" y="252" font-size="25" fill="#4A5158" text-anchor="middle">皆是这一逻辑的产物</text>
+      </g>
+
+      <!-- 教育的功能 -->
+      <path d="M1140,170 L1250,170" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M1250,170 L1226,156 L1226,184 Z" fill="#1E5C48"/>
+
+      <g>
+        <rect x="1260" y="70" width="404" height="200" fill="#1E5C48"/>
+        <text x="1462" y="130" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">教育的真实功能</text>
+        <text x="1462" y="186" font-size="26" fill="#A8C3B6" text-anchor="middle">不是提高生产率</text>
+        <text x="1462" y="234" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">而是把不同能力的人筛选出来</text>
+      </g>
+
+      <!-- 下半：装置为何未被质疑 -->
+      <g>
+        <rect x="20" y="330" width="1624" height="96" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="52" y="380" font-size="27" fill="#14181C" font-weight="700">这套装置运行数千年，未曾受到根本质疑</text>
+        <text x="1612" y="388" font-size="26" fill="#4A5158" text-anchor="end">原因只有一个：它长期有效</text>
+      </g>
+
+      <!-- 底部警示：前提正在被拆 -->
+      <g>
+        <rect x="20" y="456" width="1624" height="88" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="832" y="510" font-size="28" fill="#B23A2E" font-weight="700" text-anchor="middle">人工智能没有攻击这套装置的结论，它攻击的是前提——痕迹不再难以伪造</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">失效的起点</span>
+    <span class="v">不是痕迹突然不可信，而是造假的成本被拉到了收益之下</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s4">
+<section class="page">
+  <div class="assert r d1">人工智能拉平的是生产成本，<em>三层界面正沿同一路径失效</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">失效过程的三层</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">路径完全一致：生产成本先塌，界面随后失守</text>
+
+      <!-- 第一层 书写 -->
+      <g>
+        <rect x="20" y="52" width="1624" height="130" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <rect x="20" y="52" width="280" height="130" fill="#1E5C48"/>
+        <text x="52" y="108" font-size="27" fill="#A8C3B6" font-weight="700">第一层</text>
+        <text x="52" y="150" font-size="30" fill="#FFFFFF" font-weight="700">书写界面</text>
+        <text x="340" y="102" font-size="27" fill="#14181C" font-weight="700">电脑打字普及，字迹这一界面首先消失</text>
+        <text x="340" y="146" font-size="25" fill="#4A5158">彼时仍有替代品：文章与方案尚能反映水平</text>
+        <rect x="1380" y="88" width="236" height="56" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="1498" y="124" font-size="26" fill="#1E5C48" font-weight="700" text-anchor="middle">逐个替换</text>
+      </g>
+
+      <!-- 第二层 表达 -->
+      <g>
+        <rect x="20" y="200" width="1624" height="130" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <rect x="20" y="200" width="280" height="130" fill="#1E5C48"/>
+        <text x="52" y="256" font-size="27" fill="#A8C3B6" font-weight="700">第二层</text>
+        <text x="52" y="298" font-size="30" fill="#FFFFFF" font-weight="700">表达界面</text>
+        <text x="340" y="250" font-size="27" fill="#14181C" font-weight="700">人工智能普及，文章方案汇报的生产成本趋近于零</text>
+        <text x="340" y="294" font-size="25" fill="#4A5158">汇报越来越漂亮，效率未见提高，业务未见增长</text>
+        <rect x="1380" y="236" width="236" height="56" fill="#B23A2E"/>
+        <text x="1498" y="272" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">界面与实体脱钩</text>
+      </g>
+
+      <!-- 第三层 身份 -->
+      <g>
+        <rect x="20" y="348" width="1624" height="130" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="20" y="348" width="280" height="130" fill="#B23A2E"/>
+        <text x="52" y="404" font-size="27" fill="#E0B4AC" font-weight="700">第三层</text>
+        <text x="52" y="446" font-size="30" fill="#FFFFFF" font-weight="700">身份界面</text>
+        <text x="340" y="398" font-size="27" fill="#14181C" font-weight="700">最安全的生理特征被逐一突破：指纹　虹膜　人脸　声纹</text>
+        <text x="340" y="442" font-size="25" fill="#4A5158">独一无二的前提被推翻，动态视频即可通过活体核验</text>
+        <rect x="1380" y="384" width="236" height="56" fill="#14181C"/>
+        <text x="1498" y="420" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">同时拉平</text>
+      </g>
+
+      <!-- 底部箭头总结 -->
+      <path d="M60,508 L1604,508" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M1604,508 L1576,494 L1576,522 Z" fill="#1E5C48"/>
+      <text x="832" y="552" font-size="26" fill="#6E757D" text-anchor="middle">三层叠加，性质随之改变：不再是某一界面被替换，而是所有判断通道同时被拉平</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">失效的实质</span>
+    <span class="v">旧界面不是被逐个换掉，而是被同一股力量一次拉平</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s5">
+<section class="page">
+  <div class="assert r d1">杭州中院今年审结的一起案件，<em>推翻了「生理特征最安全」的前提</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">攻击链条还原</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">过去公认最安全的认证方式：指纹　虹膜　人脸　声纹</text>
+
+      <!-- 攻击链五步 -->
+      <g>
+        <rect x="20" y="70" width="290" height="150" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="165" y="118" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">第一步</text>
+        <text x="165" y="168" font-size="27" fill="#14181C" font-weight="700" text-anchor="middle">收集他人照片</text>
+      </g>
+      <path d="M318,145 L368,145" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <path d="M368,145 L348,133 L348,157 Z" fill="#B23A2E"/>
+
+      <g>
+        <rect x="378" y="70" width="290" height="150" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="523" y="118" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">第二步</text>
+        <text x="523" y="168" font-size="27" fill="#14181C" font-weight="700" text-anchor="middle">生成动态视频</text>
+        <text x="523" y="202" font-size="24" fill="#6E757D" text-anchor="middle">点头　摇头　眨眼</text>
+      </g>
+      <path d="M676,145 L726,145" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <path d="M726,145 L706,133 L706,157 Z" fill="#B23A2E"/>
+
+      <g>
+        <rect x="736" y="70" width="290" height="150" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="881" y="118" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">第三步</text>
+        <text x="881" y="168" font-size="27" fill="#14181C" font-weight="700" text-anchor="middle">篡改相机数据</text>
+      </g>
+      <path d="M1034,145 L1084,145" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <path d="M1084,145 L1064,133 L1064,157 Z" fill="#B23A2E"/>
+
+      <g>
+        <rect x="1094" y="70" width="270" height="150" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="1229" y="118" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">第四步</text>
+        <text x="1229" y="168" font-size="27" fill="#14181C" font-weight="700" text-anchor="middle">突破人脸核验</text>
+      </g>
+      <path d="M1372,145 L1422,145" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <path d="M1422,145 L1402,133 L1402,157 Z" fill="#B23A2E"/>
+
+      <g>
+        <rect x="1432" y="70" width="212" height="150" fill="#B23A2E"/>
+        <text x="1538" y="118" font-size="26" fill="#E0B4AC" font-weight="700" text-anchor="middle">结果</text>
+        <text x="1538" y="168" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">盗取账户信息</text>
+      </g>
+
+      <!-- 中部：性质判断 -->
+      <g>
+        <rect x="20" y="264" width="792" height="156" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="312" font-size="27" fill="#14181C" font-weight="700">非法牟利 5857 元</text>
+        <text x="52" y="354" font-size="26" fill="#4A5158">金额很小，意义重大——</text>
+        <text x="52" y="394" font-size="26" fill="#4A5158">它证明攻击生理特征已不需要顶尖资源</text>
+      </g>
+
+      <g>
+        <rect x="852" y="264" width="792" height="156" fill="#14181C"/>
+        <text x="884" y="312" font-size="27" fill="#FFFFFF" font-weight="700">法院按侵犯公民个人信息与盗窃定罪量刑</text>
+        <text x="884" y="354" font-size="26" fill="#9B978D">制度层面已有结论，</text>
+        <text x="884" y="394" font-size="26" fill="#9B978D">但身份界面被击穿的事实不因判决而恢复</text>
+      </g>
+
+      <!-- 底部关键问题 -->
+      <g>
+        <rect x="20" y="446" width="1624" height="96" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="832" y="486" font-size="28" fill="#B23A2E" font-weight="700" text-anchor="middle">数字密码泄露可以更换，面孔被冒用则无法更换一张脸</text>
+        <text x="832" y="526" font-size="25" fill="#4A5158" text-anchor="middle">关键问题在于不可更换性——下一页展开</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">第三层为何最关键</span>
+    <span class="v">身份一旦可伪造，前面所有关于「人」的判断都失去锚点</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s6">
+<section class="page">
+  <div class="assert r d1">不可更换性，<em>是身份界面与所有旧界面的本质区别</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">同一问题，两种命运</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">泄露之后发生什么</text>
+
+      <!-- 左：可更换 -->
+      <g>
+        <rect x="20" y="70" width="792" height="360" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2.5"/>
+        <text x="416" y="130" font-size="30" fill="#1E5C48" font-weight="700" text-anchor="middle">数字密码</text>
+        <rect x="80" y="170" width="220" height="70" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="190" y="214" font-size="26" fill="#14181C" text-anchor="middle">密码泄露</text>
+        <path d="M310,205 L390,205" stroke="#1E5C48" stroke-width="3" fill="none"/>
+        <path d="M390,205 L366,191 L366,219 Z" fill="#1E5C48"/>
+        <rect x="400" y="170" width="220" height="70" fill="#FFFFFF" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="510" y="214" font-size="26" fill="#14181C" text-anchor="middle">立即更换</text>
+        <path d="M630,205 L710,205" stroke="#1E5C48" stroke-width="3" fill="none"/>
+        <path d="M710,205 L686,191 L686,219 Z" fill="#1E5C48"/>
+        <rect x="250" y="290" width="332" height="76" fill="#1E5C48"/>
+        <text x="416" y="338" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">损失一次，随后恢复</text>
+        <text x="416" y="412" font-size="25" fill="#4A5158" text-anchor="middle">界面可以重发，信任可以重建</text>
+      </g>
+
+      <!-- 右：不可更换 -->
+      <g>
+        <rect x="852" y="70" width="792" height="360" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="1248" y="130" font-size="30" fill="#B23A2E" font-weight="700" text-anchor="middle">生理特征</text>
+        <rect x="912" y="170" width="220" height="70" fill="#FFFFFF" stroke="#E0B4AC" stroke-width="2"/>
+        <text x="1022" y="214" font-size="26" fill="#14181C" text-anchor="middle">面孔被冒用</text>
+        <path d="M1142,205 L1222,205" stroke="#B23A2E" stroke-width="3" fill="none"/>
+        <path d="M1222,205 L1198,191 L1198,219 Z" fill="#B23A2E"/>
+        <rect x="1232" y="170" width="220" height="70" fill="#FFFFFF" stroke="#E0B4AC" stroke-width="2"/>
+        <text x="1342" y="214" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">无法更换</text>
+        <path d="M1462,205 L1542,205" stroke="#B23A2E" stroke-width="3" fill="none"/>
+        <path d="M1542,205 L1518,191 L1518,219 Z" fill="#B23A2E"/>
+        <rect x="1082" y="290" width="332" height="76" fill="#B23A2E"/>
+        <text x="1248" y="338" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">一次泄露，终身暴露</text>
+        <text x="1248" y="412" font-size="25" fill="#4A5158" text-anchor="middle">你无法换掉自己的脸，也无法宣布它作废</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="466" width="1624" height="80" fill="#14181C"/>
+        <text x="832" y="516" font-size="28" fill="#FFFFFF" text-anchor="middle">独一无二曾是最大的安全优势，此刻成了最大的不可撤销</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">性质改变</span>
+    <span class="v">三层叠加之后，被拉平的不是某一界面，而是全部依赖自然呈现的判断通道</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s7">
+<section class="page">
+  <div class="assert r d1">新界面尚未形成，社会沿用旧界面维持运转，<em>由此产生三种错配</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">过渡期的三种可预期错配</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">社会不会停摆，只会将就</text>
+
+      <!-- 一：误判成本上升 -->
+      <g>
+        <rect x="20" y="52" width="524" height="440" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <rect x="20" y="52" width="524" height="72" fill="#1E5C48"/>
+        <text x="282" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">误判成本上升</text>
+        <text x="52" y="168" font-size="26" fill="#4A5158">依照旧界面判断人，准确率下降，</text>
+        <text x="52" y="208" font-size="26" fill="#4A5158">且下降幅度不可观测</text>
+        <rect x="52" y="240" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="281" font-size="25" fill="#14181C" text-anchor="middle">企业依据汇报质量提拔人员</text>
+        <rect x="52" y="316" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="357" font-size="25" fill="#14181C" text-anchor="middle">学校依据作业质量评定学生</text>
+        <rect x="52" y="392" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="433" font-size="25" fill="#14181C" text-anchor="middle">平台依据人脸核验放行</text>
+        <text x="282" y="478" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">误差持续累积，无人察觉</text>
+      </g>
+
+      <!-- 二：验证成本转移 -->
+      <g>
+        <rect x="570" y="52" width="524" height="440" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <rect x="570" y="52" width="524" height="72" fill="#1E5C48"/>
+        <text x="832" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">验证成本转移</text>
+        <text x="602" y="168" font-size="26" fill="#4A5158">判断一个人的成本，</text>
+        <text x="602" y="208" font-size="26" fill="#4A5158">由看一眼，转变为查一遍</text>
+        <rect x="602" y="240" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="832" y="281" font-size="25" fill="#14181C" text-anchor="middle">追问过程</text>
+        <rect x="602" y="316" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="832" y="357" font-size="25" fill="#14181C" text-anchor="middle">查验原始材料</text>
+        <rect x="602" y="392" width="460" height="64" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="832" y="433" font-size="25" fill="#14181C" text-anchor="middle">当面追问细节</text>
+        <text x="832" y="478" font-size="25" fill="#6E757D" text-anchor="middle">最终转化为组织的流程与人力成本</text>
+      </g>
+
+      <!-- 三：防御性贬值 -->
+      <g>
+        <rect x="1120" y="52" width="524" height="440" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="1120" y="52" width="524" height="72" fill="#B23A2E"/>
+        <text x="1382" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">防御性贬值</text>
+        <text x="1152" y="168" font-size="26" fill="#4A5158">界面一旦不可信，理性反应是</text>
+        <text x="1152" y="208" font-size="26" fill="#4A5158">降低对界面的依赖</text>
+        <rect x="1152" y="240" width="460" height="64" fill="#F6EDEB" stroke="#E0B4AC" stroke-width="2"/>
+        <text x="1382" y="281" font-size="25" fill="#14181C" text-anchor="middle">熟人推荐</text>
+        <rect x="1152" y="316" width="460" height="64" fill="#F6EDEB" stroke="#E0B4AC" stroke-width="2"/>
+        <text x="1382" y="357" font-size="25" fill="#14181C" text-anchor="middle">长期共事</text>
+        <rect x="1152" y="392" width="460" height="64" fill="#F6EDEB" stroke="#E0B4AC" stroke-width="2"/>
+        <text x="1382" y="433" font-size="25" fill="#14181C" text-anchor="middle">面对面考核</text>
+        <text x="1382" y="478" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">更笨重但更难伪造——不是进步，是退守</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">过渡期的代价</span>
+    <span class="v">错配不表现为突发事件，而表现为误判、成本与退守的缓慢累积</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s8">
+<section class="page">
+  <div class="assert r d1">新界面必将形成，<em>目前已有三条路径在生长，均未成熟</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">三条已经露头的路径</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">形态尚不明确，方向已经可见</text>
+
+      <!-- 一：技术路径 -->
+      <g>
+        <rect x="20" y="52" width="524" height="440" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <rect x="20" y="52" width="524" height="72" fill="#1E5C48"/>
+        <text x="282" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">技术路径</text>
+        <text x="282" y="152" font-size="26" fill="#14181C" font-weight="700" text-anchor="middle">为内容附加不可伪造的标记</text>
+        <rect x="52" y="182" width="460" height="56" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="219" font-size="25" fill="#14181C" text-anchor="middle">数字水印：生成环节嵌入标识</text>
+        <rect x="52" y="250" width="460" height="56" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="287" font-size="25" fill="#14181C" text-anchor="middle">内容溯源：发布环节附加来源</text>
+        <rect x="52" y="318" width="460" height="56" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="282" y="355" font-size="25" fill="#14181C" text-anchor="middle">区块链存证：固定创作时间</text>
+        <rect x="52" y="382" width="460" height="66" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="282" y="410" font-size="24" fill="#4A5158" text-anchor="middle">「人工智能创意」平台二〇二五年上线</text>
+        <text x="282" y="440" font-size="24" fill="#4A5158" text-anchor="middle">为内容提供出生证明</text>
+        <text x="282" y="478" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">解决内容是否由机器生成，不解决人是否可信</text>
+      </g>
+
+      <!-- 二：制度路径 -->
+      <g>
+        <rect x="570" y="52" width="524" height="440" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <rect x="570" y="52" width="524" height="72" fill="#1E5C48"/>
+        <text x="832" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">制度路径</text>
+        <text x="832" y="152" font-size="26" fill="#14181C" font-weight="700" text-anchor="middle">判断依据从呈现物转向过程</text>
+        <rect x="602" y="176" width="460" height="70" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="832" y="207" font-size="25" fill="#14181C" text-anchor="middle">学校：现场写作　口头答辩</text>
+        <text x="832" y="237" font-size="24" fill="#6E757D" text-anchor="middle">已从看结果转向看过程</text>
+        <rect x="602" y="258" width="460" height="70" fill="#E9F0ED" stroke="#BFD3CB" stroke-width="2"/>
+        <text x="832" y="289" font-size="25" fill="#14181C" text-anchor="middle">企业：从汇报材料转向决策链条</text>
+        <text x="832" y="319" font-size="24" fill="#6E757D" text-anchor="middle">考核重心随之后移</text>
+        <rect x="602" y="340" width="460" height="76" fill="#1E5C48"/>
+        <text x="832" y="372" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">伪造过程，远比伪造结果困难</text>
+        <text x="832" y="400" font-size="24" fill="#A8C3B6" text-anchor="middle">代价是成本显著更高</text>
+        <text x="832" y="478" font-size="24" fill="#6E757D" text-anchor="middle">修复的是旧界面里「产物可查」的那一半</text>
+      </g>
+
+      <!-- 三：市场路径 -->
+      <g>
+        <rect x="1120" y="52" width="524" height="440" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <rect x="1120" y="52" width="524" height="72" fill="#1E5C48"/>
+        <text x="1382" y="98" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">市场路径</text>
+        <text x="1382" y="152" font-size="26" fill="#14181C" font-weight="700" text-anchor="middle">内容分层</text>
+        <!-- 金字塔 -->
+        <path d="M1382,186 L1478,242 L1286,242 Z" fill="#1E5C48"/>
+        <text x="1382" y="230" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">手工层</text>
+        <path d="M1266,258 L1498,258 L1550,330 L1214,330 Z" fill="#7FA894"/>
+        <text x="1382" y="288" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">认证层</text>
+        <text x="1382" y="316" font-size="22" fill="#E9F0ED" text-anchor="middle">机器输出，人工审核</text>
+        <path d="M1194,346 L1570,346 L1616,424 L1148,424 Z" fill="#C7D8CF"/>
+        <text x="1382" y="378" font-size="24" fill="#14181C" font-weight="700" text-anchor="middle">免费层</text>
+        <text x="1382" y="406" font-size="22" fill="#4A5158" text-anchor="middle">机器生成，随处可得</text>
+        <text x="1382" y="454" font-size="24" fill="#14181C" text-anchor="middle">手工层的价值不在于质量更高，</text>
+        <text x="1382" y="482" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">而在于人投入的时间与精力本身具有分量</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">分层的逻辑</span>
+    <span class="v">技术可以无限复制内容时，价值将转移至不可复制之物</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s9">
+<section class="page">
+  <div class="assert r d1">旧界面之所以有效，<em>在于它同时解决了两个不同的问题</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">一笔好字，过去同时证明两件事</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">人工智能把这一捆绑关系拆解开来</text>
+
+      <!-- 左：一个界面 -->
+      <g>
+        <rect x="20" y="90" width="420" height="200" fill="#1E5C48"/>
+        <text x="230" y="166" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">字写得好</text>
+        <text x="230" y="222" font-size="26" fill="#A8C3B6" text-anchor="middle">同一份痕迹</text>
+        <text x="230" y="264" font-size="26" fill="#A8C3B6" text-anchor="middle">同时回答两个问题</text>
+      </g>
+
+      <!-- 拆解箭头 -->
+      <path d="M450,150 L620,110" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M620,110 L594,104 L602,128 Z" fill="#1E5C48"/>
+      <path d="M450,230 L620,270" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M620,270 L602,248 L594,272 Z" fill="#1E5C48"/>
+      <text x="535" y="206" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">被拆开</text>
+
+      <!-- 上股：技术问题 -->
+      <g>
+        <rect x="630" y="60" width="520" height="150" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="890" y="112" font-size="27" fill="#1E5C48" font-weight="700" text-anchor="middle">证明内容出自谁手</text>
+        <text x="890" y="156" font-size="25" fill="#4A5158" text-anchor="middle">受过训练　下过功夫　有真实积累</text>
+        <text x="890" y="192" font-size="25" fill="#6E757D" text-anchor="middle">这是技术问题——水印与溯源正在应对</text>
+      </g>
+
+      <!-- 下股：社会问题 -->
+      <g>
+        <rect x="630" y="250" width="520" height="150" fill="#FFFFFF" stroke="#1E5C48" stroke-width="2.5"/>
+        <text x="890" y="302" font-size="27" fill="#1E5C48" font-weight="700" text-anchor="middle">证明此人值得托付</text>
+        <text x="890" y="346" font-size="25" fill="#4A5158" text-anchor="middle">肯下功夫　可托付重任　可建立信任</text>
+        <text x="890" y="382" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">这是社会问题——技术路径覆盖不到</text>
+      </g>
+
+      <!-- 右：真正的新界面 -->
+      <path d="M1160,225 L1270,225" stroke="#1E5C48" stroke-width="3" fill="none"/>
+      <path d="M1270,225 L1246,211 L1246,239 Z" fill="#1E5C48"/>
+
+      <g>
+        <rect x="1280" y="90" width="384" height="310" fill="#14181C"/>
+        <text x="1472" y="160" font-size="29" fill="#FFFFFF" font-weight="700" text-anchor="middle">真正的新界面</text>
+        <path d="M1360,190 L1584,190" stroke="#4A5158" stroke-width="2"/>
+        <text x="1472" y="240" font-size="26" fill="#9B978D" text-anchor="middle">大概率不在于证明</text>
+        <text x="1472" y="280" font-size="26" fill="#9B978D" text-anchor="middle">一段内容由人写成</text>
+        <path d="M1360,306 L1584,306" stroke="#4A5158" stroke-width="2"/>
+        <text x="1472" y="352" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">而在于证明</text>
+        <text x="1472" y="386" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">一个人值得托付</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="446" width="1624" height="96" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="486" font-size="26" fill="#14181C" font-weight="700">三条路径的分工</text>
+        <text x="52" y="524" font-size="25" fill="#4A5158">技术路径与制度路径修复旧界面；市场路径承认旧界面无法回归，为「人」单独定价</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">拆解之后</span>
+    <span class="v">需要重新生长的，是一套只指向人、不指向产物的判断装置</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s10">
+<section class="page">
+  <div class="assert r d1">新装置的具体形态无法确定，<em>但方向已经可以确定</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部引导 -->
+      <text x="20" y="26" font-size="25" fill="#6E757D" font-weight="700">只指向人、不指向产物的判断装置</text>
+      <text x="1644" y="26" font-size="25" fill="#6E757D" text-anchor="end">两个确定的转向</text>
+
+      <!-- 转向一 -->
+      <g>
+        <rect x="20" y="70" width="380" height="120" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="210" y="122" font-size="28" fill="#14181C" font-weight="700" text-anchor="middle">看结果</text>
+        <text x="210" y="166" font-size="25" fill="#6E757D" text-anchor="middle">产物说了算</text>
+        <path d="M420,130 L560,130" stroke="#1E5C48" stroke-width="3" fill="none"/>
+        <path d="M560,130 L536,116 L536,144 Z" fill="#1E5C48"/>
+        <rect x="570" y="70" width="380" height="120" fill="#1E5C48"/>
+        <text x="760" y="122" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">看过程</text>
+        <text x="760" y="166" font-size="25" fill="#A8C3B6" text-anchor="middle">决策链条说了算</text>
+      </g>
+
+      <!-- 转向二 -->
+      <g>
+        <rect x="20" y="230" width="380" height="120" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="210" y="282" font-size="28" fill="#14181C" font-weight="700" text-anchor="middle">看呈现</text>
+        <text x="210" y="326" font-size="25" fill="#6E757D" text-anchor="middle">表象说了算</text>
+        <path d="M420,290 L560,290" stroke="#1E5C48" stroke-width="3" fill="none"/>
+        <path d="M560,290 L536,276 L536,304 Z" fill="#1E5C48"/>
+        <rect x="570" y="230" width="380" height="120" fill="#1E5C48"/>
+        <text x="760" y="282" font-size="28" fill="#FFFFFF" font-weight="700" text-anchor="middle">看选择</text>
+        <text x="760" y="326" font-size="25" fill="#A8C3B6" text-anchor="middle">取舍说了算</text>
+      </g>
+
+      <!-- 右侧：定价权 -->
+      <g>
+        <rect x="1060" y="70" width="604" height="280" fill="#14181C"/>
+        <text x="1362" y="140" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">下一轮的定价权</text>
+        <path d="M1200,168 L1524,168" stroke="#4A5158" stroke-width="2"/>
+        <text x="1362" y="222" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">谁先形成新的判断装置，</text>
+        <text x="1362" y="266" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">谁就先获得下一轮的定价权</text>
+        <text x="1362" y="322" font-size="25" fill="#9B978D" text-anchor="middle">识别的先手，就是信任的先手</text>
+      </g>
+
+      <!-- 底部回顾线 -->
+      <g>
+        <rect x="20" y="386" width="1624" height="156" fill="#E9F0ED" stroke="#1E5C48" stroke-width="2"/>
+        <text x="52" y="436" font-size="27" fill="#1E5C48" font-weight="700">本讲的推理链</text>
+        <text x="52" y="482" font-size="26" fill="#14181C">界面是低成本判断装置　→　人工智能拉平生产成本，三层界面同时失效　→</text>
+        <text x="52" y="524" font-size="26" fill="#14181C">过渡期出现三种错配　→　新界面沿技术、制度、市场三条路径生长　→　定价权属于先完成转向的人</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">收口</span>
+    <span class="v">旧界面教我们看产物，新装置要求我们看过程、看选择、看人</span>
+  </div>
+</section>
+</section>
+</div>
+<div id="bar"><button id="prev">上一页</button><button id="next">下一页</button></div>
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var cur = 0;
+  function fit(){
+    var s = Math.min(innerWidth/1920, innerHeight/1080);
+    slides.forEach(function(el){ el.style.transform = 'scale('+s+')'; });
+  }
+  function go(i){
+    cur = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach(function(el,k){ el.classList.toggle('on', k===cur); });
+    try{ localStorage.setItem('interface-failure-deck', String(cur)); }catch(e){}
+  }
+  document.getElementById('next').addEventListener('click', function(){ go(cur+1); });
+  document.getElementById('prev').addEventListener('click', function(){ go(cur-1); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(cur+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(cur-1); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(slides.length-1); }
+    else if(e.key==='p'||e.key==='P'){ window.print(); }
+  });
+  window.addEventListener('resize', fit);
+  fit();
+  var saved = 0;
+  try{ saved = parseInt(localStorage.getItem('interface-failure-deck'),10) || 0; }catch(e){}
+  go(saved);
+})();
+</script>
+</body>
+</html>
