@@ -1,17 +1,17 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-30T22:07:54.922108+08:00",
+  "updatedAt": "2026-10-30T22:59:23.867019+08:00",
   "generatedBy": "tools/collect.py",
   "moduleCount": 12,
-  "itemCount": 20,
+  "itemCount": 21,
   "modules": [
     {
       "no": "M01",
       "slug": "ai-ethics-policy",
       "name": "伦理与安全",
       "desc": "人工智能伦理与安全的政策依据",
-      "count": 2,
+      "count": 3,
       "items": [
         {
           "key": "ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据",
@@ -52,6 +52,26 @@
           "addedAt": "2026-10-30T18:16:35.309171+08:00",
           "no": "01-02",
           "index": 2
+        },
+        {
+          "key": "ai-ethics-policy/人工智能伦理与安全-第三部分-教师职业规范",
+          "module": "ai-ethics-policy",
+          "title": "人工智能伦理与安全 · 第三部分 教师职业规范",
+          "slug": "人工智能伦理与安全-第三部分-教师职业规范",
+          "sourceProject": "ai-ethics-teacher-norms-huashu",
+          "sourceSection": "",
+          "html": "pages/ai-ethics-policy/人工智能伦理与安全-第三部分-教师职业规范.html",
+          "pdf": "pdfs/ai-ethics-policy/人工智能伦理与安全-第三部分-教师职业规范.pdf",
+          "thumb": "thumbs/ai-ethics-policy/人工智能伦理与安全-第三部分-教师职业规范.jpg",
+          "slides": 31,
+          "kind": "deck",
+          "bytes": 83900,
+          "hash": "763569953859c027",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T22:28:11.107051+08:00",
+          "addedAt": "2026-10-30T22:59:23.695493+08:00",
+          "no": "01-03",
+          "index": 3
         }
       ]
     },
