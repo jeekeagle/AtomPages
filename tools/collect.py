@@ -626,19 +626,45 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
         for m in pub.get("modules", []):
             for it in m.get("items", []):
                 it.pop("source", None)
-        mpath.write_text(json.dumps(pub, ensure_ascii=False, indent=2), encoding="utf-8")
+        pub_text = json.dumps(pub, ensure_ascii=False, indent=2)
+
+        # 幂等：内容没变就不重写清单。
+        # 清单里的 updatedAt 是「生成时间」，每次跑都会变；若不比对内容就直接写，
+        # 清单永远处于「已修改」状态，外层脚本的「无变更」分支永远不会命中，
+        # 于是每三小时就产生一个只含时间戳的空提交。这里先比内容，
+        # 只有条目本身变了才刷新时间戳。
+        prev_text = mpath.read_text(encoding="utf-8") if mpath.exists() else ""
+        if prev_text:
+            try:
+                prev_pub = json.loads(prev_text)
+                prev_pub.pop("updatedAt", None)
+                probe = json.loads(pub_text)
+                probe.pop("updatedAt", None)
+                same = prev_pub == probe
+            except Exception:
+                same = False
+        else:
+            same = False
+        if not same:
+            mpath.write_text(pub_text, encoding="utf-8")
+            result["wroteManifest"] = True
+        else:
+            # 内容没变：保留清单里原有的 updatedAt，避免时间戳变动制造空提交
+            result["updatedAt"] = prev_pub.get("updatedAt", result["updatedAt"])
+            result["wroteManifest"] = False
 
         # 本地私有状态：保留绝对路径与加入时间，供下次采集比对
         statepath.write_text(json.dumps({"items": items}, ensure_ascii=False, indent=2),
                              encoding="utf-8")
-        # 写变更日志
-        with LOG_PATH.open("a", encoding="utf-8") as f:
-            f.write(f"\n===== {result['updatedAt']} =====\n")
-            f.write(f"模块 {len(out_modules)} 个，条目 {len(items)} 条，耗时 {time.time()-started:.1f}s\n")
-            for act, t, k in changes:
-                f.write(f"  [{act}] {t}  ->  {k}\n")
-            if not changes:
-                f.write("  无变更\n")
+        # 写变更日志：没有变更时不追加，避免日志本身制造提交
+        if changes or not prev_text:
+            with LOG_PATH.open("a", encoding="utf-8") as f:
+                f.write(f"\n===== {result['updatedAt']} =====\n")
+                f.write(f"模块 {len(out_modules)} 个，条目 {len(items)} 条，耗时 {time.time()-started:.1f}s\n")
+                for act, t, k in changes:
+                    f.write(f"  [{act}] {t}  ->  {k}\n")
+                if not changes:
+                    f.write("  无变更\n")
 
     return {"modules": out_modules, "items": items, "changes": changes}
 
