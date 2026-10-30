@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人工智能的风险从何而来</title>
+<style>
+/* ============================================================
+   课件模式 · 视觉变量源（唯一）
+   ------------------------------------------------------------
+   风格基线：Michael Alley 断言—证据
+   场景：大屏投影，我讲学生听
+   规则：任何颜色/字号/间距都只能改这里，不在页内写死
+   ============================================================ */
+
+:root{
+  /* ---------- 画布 ---------- */
+  --canvas-w: 1920px;
+  --canvas-h: 1080px;
+
+  /* ---------- 栅格 ---------- */
+  --pad-x: 128px;          /* 左右安全边 */
+  --pad-top: 104px;         /* 上安全边 */
+  --pad-bottom: 96px;      /* 下安全边 */
+  --content-w: calc(var(--canvas-w) - var(--pad-x) * 2);   /* 1664px */
+
+  /* ---------- 色板 ---------- */
+  --paper:   #FFFFFF;       /* 底 */
+  --paper-warm: #F8F6F1;    /* 暖白：图内浅色块，与纸白区分 */
+  --ink:     #14181C;       /* 主墨：标题、结构线 */
+  --ink2:    #4A5158;       /* 次墨：正文 */
+  --ink3:    #6E757D;       /* 弱墨：图内标签、注释 */
+  --ink4:    #9B978D;       /* 最弱：分隔线上的小字 */
+  --line:    #E3E1DA;       /* 分隔线 */
+  --line2:   #EFEDE7;       /* 更浅的分隔线 */
+  --accent:  #0E5C5A;       /* 主张色：深青。用于断言高亮、结构线强调 */
+  --accent-soft: #E9F2F1;   /* 主张色的极浅底 */
+  --accent-line: #B7D2D0;   /* 主张色的浅描边 */
+  --accent-pale: #C4DAD8;   /* 主张色上的次级字 */
+  --warn:    #B23A2E;       /* 警示色：砖红。只用于「禁止/追责/反面」 */
+  --warn-soft: #F6EDEB;
+  --warn-line: #E0B4AC;
+  --neutral-fill: #F4F3F0;  /* 中性块底 */
+  --neutral-line: #9B978D;  /* 中性块描边 */
+  /* 换主张色时：只改 --accent 一个值即可全页生效（CSS 变量已下沉到 SVG）。
+     不能取砖红 #B23A2E（那是警示色，两红相撞会丢掉「禁止/追责」的语义）。
+     本讲取深青 #0E5C5A（与警示色 ΔE > 75，安全线 30）。 */
+
+  /* ---------- 字体 ----------
+     只用三个族（用户硬规矩）：黑体 / 微软雅黑 / 华文中宋
+     不引入宋体、苹方、Noto，fallback 也回落到黑体 */
+  --font-sans: "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", sans-serif;
+  --font-serif: "STZhongsong", "华文中宋", "SimHei", "黑体", serif;
+
+  /* ---------- 字阶 ----------
+     下限：正文 30px，标签 24px（远高于 deck 底线 24/16） */
+  --fs-cover:   120px;      /* 封面主标题 */
+  --fs-section: 104px;      /* 章节页大字 */
+  --fs-assert:  56px;       /* 断言标题（内容页标题） */
+  --fs-lead:    34px;       /* 段标题 / 引语 */
+  --fs-body:    30px;       /* 正文 */
+  --fs-concl:   28px;       /* 结论条 */
+  --fs-label:   26px;       /* 图内标签 */
+  --fs-note:    24px;       /* 注释、脚注 */
+
+  --lh-tight: 1.24;
+  --lh-assert: 1.42;
+  --lh-body: 1.78;
+
+  /* ---------- 间距阶 ---------- */
+  --sp-1: 12px;
+  --sp-2: 20px;
+  --sp-3: 28px;
+  --sp-4: 38px;
+  --sp-5: 52px;
+  --sp-6: 72px;
+  --sp-7: 104px;
+
+  /* ---------- 动效 ---------- */
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur: .58s;
+}
+
+/* ============================================================
+   画布与基线
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family: var(--font-sans);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  position: relative;
+}
+
+/* ============================================================
+   页骨架：断言 → 分隔线 → 一张图 → 结论条
+   ============================================================ */
+.page{
+  width: var(--canvas-w);
+  height: var(--canvas-h);
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   共用零件
+   ============================================================ */
+
+/* 断言标题：完整一句，最多两行 */
+.assert{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-assert);
+  line-height: var(--lh-assert);
+  letter-spacing: .005em;
+  color: var(--ink);
+  max-width: var(--content-w);
+  flex: 0 0 auto;
+}
+.assert em{ font-style: normal; color: var(--accent); }
+
+/* 断言下的分隔线：短靛段 + 长浅线 */
+.rule{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: var(--sp-4);
+  flex: 0 0 auto;
+}
+.rule b{ display:block; width:120px; height:3px; background:var(--accent); }
+.rule i{ display:block; flex:1; height:1px; background:var(--line); }
+
+/* 底部结论条 */
+.concl{
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.concl .k{
+  font-size: var(--fs-concl);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+.concl .v{ font-size: var(--fs-concl); color: var(--ink3); }
+
+/* 眉标：课程名 / 讲次，无英文 */
+.eyebrow{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink2);
+}
+.mark{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink3);
+}
+
+/* 图区：断言下方的主场 */
+.figure{
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: var(--sp-3);
+  display: flex;
+}
+svg.figsvg{ display:block; width:100%; height:100%; }
+svg.figsvg text{ font-family: var(--font-sans); }
+
+/* 段标题（页内小标题） */
+.h3{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* 正文 */
+.body{ font-size: var(--fs-body); line-height: var(--lh-body); color: var(--ink2); }
+
+/* 图内标签 */
+.label{ font-size: var(--fs-label); fill: var(--ink2); }
+.note{ font-size: var(--fs-note); fill: var(--ink3); }
+
+/* ============================================================
+   图内常用元件与文字级
+   ============================================================ */
+.b-soft{ fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.b-solid{ fill: var(--accent); stroke: none; }
+.b-gray{ fill: var(--neutral-fill); stroke: var(--neutral-line); stroke-width: 2; }
+.b-open{ fill: var(--paper); stroke: var(--accent-line); stroke-width: 2; stroke-dasharray: 9 7; }
+.b-warn{ fill: var(--warn-soft); stroke: var(--warn); stroke-width: 2.5; }
+.b-line{ fill: none; stroke: var(--line); stroke-width: 2; }
+.b-ax{ fill: none; stroke: var(--accent); stroke-width: 3; }
+.b-dash{ fill: none; stroke: var(--neutral-line); stroke-width: 2; stroke-dasharray: 9 7; }
+
+.t-cap{ font-size: 27px; fill: var(--accent); font-weight: 700; }
+.t-cap2{ font-size: 27px; fill: var(--accent-line); font-weight: 700; }
+.t-h{ font-size: 30px; fill: var(--ink); font-weight: 700; }
+.t-hw{ font-size: 30px; fill: #FFFFFF; font-weight: 700; }
+.t-hg{ font-size: 30px; fill: var(--ink2); font-weight: 700; }
+.t-b{ font-size: 26px; fill: var(--ink2); }
+.t-m{ font-size: 25px; fill: var(--ink3); }
+.t-m2{ font-size: 24px; fill: var(--ink3); }
+.t-w{ font-size: 26px; fill: var(--warn); }
+.t-wb{ font-size: 28px; fill: var(--warn); font-weight: 700; }
+.t-k{ font-size: 24px; fill: var(--ink3); font-weight: 700; }
+.t-kw{ font-size: 24px; fill: var(--warn); font-weight: 700; }
+
+/* ============================================================
+   入场动效（轻，只做位移与淡入）
+   ------------------------------------------------------------
+   注意：.r 的初始隐藏只在「有 .on 祖先」时生效。
+   独立单页（直接双击打开、没有 .on 祖先）必须始终可见，
+   否则整页透明 —— 这是 2026-10-30 验证时踩到的坑。
+   ============================================================ */
+.r{ opacity:1; transform:none;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.on .r{ opacity:0; transform: translateY(14px); }
+.on .r.d1{ transition-delay:.07s }
+.on .r.d2{ transition-delay:.14s }
+.on .r.d3{ transition-delay:.21s }
+.on .r.d4{ transition-delay:.28s }
+.on .r.d5{ transition-delay:.35s }
+.on .r.d6{ transition-delay:.42s }
+
+/* 独立单页：直接显示，不做入场动画 */
+body:not(.anim) .r,
+html:not(.anim) body:not(.anim) .r{
+  opacity:1 !important;
+  transform:none !important;
+  transition:none !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .r{ opacity:1; transform:none; transition:none; }
+  .on .r{ opacity:1; transform:none; transition:none; }
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+body{font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{position:absolute;width:1920px;height:1080px;transform-origin:center center;display:none;background:#fff;overflow:hidden}
+.slide.on{display:block}
+#bar{position:fixed;right:26px;bottom:22px;display:flex;gap:14px;align-items:center;
+  font-family:var(--font-sans);font-size:16px;color:#9B978D;user-select:none}
+#bar button{font:inherit;border:1px solid #B7D2D0;background:#fff;color:#14181C;padding:6px 14px;cursor:pointer}
+@media print{
+  html,body{overflow:visible}
+  #stage{position:static;display:block}
+  .slide{position:relative;display:block!important;page-break-after:always;break-after:page;transform:none!important}
+  #bar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide" id="s1"><style>#s1 .page{ padding:104px 90px 96px; flex-direction:row; align-items:center; gap:40px; }#s1 .cov-left{ flex:0 0 700px; }#s1 .eyebrow{ font-size:30px; font-weight:700; color:var(--ink2); letter-spacing:.08em; }#s1 .eyebrow .em{ color:var(--accent); }#s1 .cov-title{
+    font-family:var(--font-sans); font-weight:700; font-size:112px; line-height:1.14;
+    color:var(--ink); margin-top:40px; letter-spacing:.005em;
+  }#s1 .cov-rule{ width:160px; height:8px; background:var(--accent); margin-top:48px; }#s1 .cov-right{ flex:1; min-width:0; }#s1 .figsvg{ width:100%; height:auto; display:block; }
+</style>
+<section class="page">
+  <div class="cov-left">
+    <div class="eyebrow r d1">教师人工智能伦理与安全课程　<span class="em">第二部分</span></div>
+    <h1 class="cov-title r d2">人工智能的<br>风险从何而来</h1>
+    <div class="cov-rule r d3"></div>
+  </div>
+  <div class="cov-right r d4">
+    <svg class="figsvg" viewBox="0 0 960 780" preserveAspectRatio="xMidYMid meet">
+      <!-- 左轨：内生风险 -->
+      <g>
+        <rect x="6" y="20" width="450" height="114" fill="#0E5C5A"/>
+        <text x="36" y="70" font-size="36" fill="#FFFFFF" font-weight="700">内生风险</text>
+        <text x="36" y="110" font-size="27" fill="#C4DAD8">源自技术机理</text>
+      </g>
+      <g>
+        <rect x="6" y="170" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="32" y="210" font-size="24" fill="#6E757D" font-weight="700">特性</text>
+        <text x="32" y="252" font-size="30" fill="#14181C" font-weight="700">谨慎也消不掉</text>
+        <text x="32" y="282" font-size="25" fill="#4A5158">规范无法将其消除</text>
+      </g>
+      <g>
+        <rect x="6" y="308" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="32" y="348" font-size="24" fill="#6E757D" font-weight="700">形态</text>
+        <text x="32" y="390" font-size="25" fill="#14181C">事实错误　偏差　不可解释</text>
+        <text x="32" y="420" font-size="25" fill="#14181C">可控性不足　数据风险</text>
+      </g>
+      <g>
+        <rect x="6" y="446" width="450" height="118" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="32" y="486" font-size="24" fill="#0E5C5A" font-weight="700">控制</text>
+        <rect x="32" y="500" width="118" height="48" fill="#0E5C5A"/>
+        <text x="91" y="532" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">核验</text>
+        <rect x="162" y="500" width="118" height="48" fill="#0E5C5A"/>
+        <text x="221" y="532" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">审查</text>
+        <rect x="292" y="500" width="118" height="48" fill="#0E5C5A"/>
+        <text x="351" y="532" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">留痕</text>
+      </g>
+
+      <!-- 右轨：外生风险 -->
+      <g>
+        <rect x="504" y="20" width="450" height="114" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="534" y="70" font-size="36" fill="#0E5C5A" font-weight="700">外生风险</text>
+        <text x="534" y="110" font-size="27" fill="#4A5158">源自使用方式</text>
+      </g>
+      <g>
+        <rect x="504" y="170" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="530" y="210" font-size="24" fill="#6E757D" font-weight="700">特性</text>
+        <text x="530" y="252" font-size="30" fill="#14181C" font-weight="700">做法与场景可以改</text>
+        <text x="530" y="282" font-size="25" fill="#4A5158">制度与流程防得住</text>
+      </g>
+      <g>
+        <rect x="504" y="308" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="530" y="348" font-size="24" fill="#6E757D" font-weight="700">形态</text>
+        <text x="530" y="390" font-size="25" fill="#14181C">判断权　责任　场景错配</text>
+        <text x="530" y="420" font-size="25" fill="#14181C">内容导向　数据合规</text>
+      </g>
+      <g>
+        <rect x="504" y="446" width="450" height="118" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="530" y="486" font-size="24" fill="#0E5C5A" font-weight="700">控制</text>
+        <rect x="530" y="500" width="94" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="577" y="532" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">责任</text>
+        <rect x="636" y="500" width="94" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="683" y="532" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">准入</text>
+        <rect x="742" y="500" width="94" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="789" y="532" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">边界</text>
+        <rect x="848" y="500" width="94" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="895" y="532" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">数据</text>
+      </g>
+
+      <!-- 汇入治理指向 -->
+      <path d="M231,564 L231,620 L462,620 L462,640" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M729,564 L729,620 L498,620 L498,640" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M448,626 L462,644 L476,626" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <g>
+        <rect x="6" y="644" width="948" height="112" fill="#0E5C5A"/>
+        <text x="36" y="690" font-size="26" fill="#C4DAD8" font-weight="700">治理指向</text>
+        <text x="36" y="734" font-size="33" fill="#FFFFFF" font-weight="700">内生靠谨慎义务，外生靠流程约束</text>
+      </g>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s2"><style>#s2 .page{ flex-direction:row; align-items:stretch; gap:110px; }#s2 .toc-left{ flex:0 0 380px; display:flex; flex-direction:column; justify-content:center; }#s2 .toc-word{
+    font-family:var(--font-serif); font-weight:700; font-size:120px;
+    color:var(--ink); letter-spacing:.06em; line-height:1.1;
+  }#s2 .toc-bar{ width:120px; height:8px; background:var(--accent); margin-top:44px; }#s2 .toc-right{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }#s2 .toc-row{
+    display:flex; align-items:baseline; gap:40px;
+    padding:38px 0; border-bottom:1px solid var(--line);
+  }#s2 .toc-row:first-child{ border-top:1px solid var(--line); }#s2 .toc-num{
+    font-family:var(--font-serif); font-weight:700; font-size:52px;
+    color:var(--accent); flex:0 0 120px; letter-spacing:.04em;
+  }#s2 .toc-name{ font-size:46px; font-weight:700; color:var(--ink); line-height:1.3; }#s2 .toc-sub{ font-size:28px; color:var(--ink3); margin-top:12px; line-height:1.5; }
+</style>
+<section class="page">
+  <div class="toc-left">
+    <div class="toc-word r d1">目录</div>
+    <div class="toc-bar r d2"></div>
+  </div>
+  <div class="toc-right">
+    <div class="toc-row r d1">
+      <div class="toc-num">01</div>
+      <div>
+        <div class="toc-name">概率生成机制及其三个后果</div>
+        <div class="toc-sub">风险来源须从技术本身界定</div>
+      </div>
+    </div>
+    <div class="toc-row r d2">
+      <div class="toc-num">02</div>
+      <div>
+        <div class="toc-name">源自技术机理的内生风险</div>
+        <div class="toc-sub">事实错误　偏差　不可解释　可控性与数据</div>
+      </div>
+    </div>
+    <div class="toc-row r d3">
+      <div class="toc-num">03</div>
+      <div>
+        <div class="toc-name">源自使用方式的外生风险</div>
+        <div class="toc-sub">判断权　责任　场景　内容导向与合规</div>
+      </div>
+    </div>
+    <div class="toc-row r d4">
+      <div class="toc-num">04</div>
+      <div>
+        <div class="toc-name">两类风险的治理指向</div>
+        <div class="toc-sub">谨慎义务与流程约束</div>
+      </div>
+    </div>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s3"><style>#s3 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s3 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第一章</span>　概率生成机制及其三个后果</div>
+  <div class="assert r d1">风险来源须从<em>技术本身</em>界定</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部总起 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="96" fill="#0E5C5A"/>
+        <text x="52" y="78" font-size="32" fill="#FFFFFF" font-weight="700">人工智能的风险，不全是使用不当造成的偶发失误</text>
+      </g>
+
+      <!-- 分流箭头 -->
+      <path d="M470,112 L470,152" stroke="#0E5C5A" stroke-width="3"/>
+      <path d="M456,138 L470,156 L484,138" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M1194,112 L1194,152" stroke="#0E5C5A" stroke-width="3"/>
+      <path d="M1180,138 L1194,156 L1208,138" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+      <!-- 左：源自生成机制内部 -->
+      <g>
+        <rect x="20" y="156" width="800" height="268" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="202" font-size="27" fill="#0E5C5A" font-weight="700">源自生成机制内部</text>
+        <text x="52" y="252" font-size="33" fill="#14181C" font-weight="700">无论怎样规范都无法消除</text>
+        <text x="52" y="302" font-size="27" fill="#4A5158">不是偶发失误，是机制的正常产物</text>
+        <rect x="52" y="336" width="222" height="56" fill="#0E5C5A"/>
+        <text x="163" y="373" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">识别</text>
+        <rect x="292" y="336" width="222" height="56" fill="#0E5C5A"/>
+        <text x="403" y="373" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">控制</text>
+        <rect x="532" y="336" width="222" height="56" fill="#0E5C5A"/>
+        <text x="643" y="373" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">留痕</text>
+      </g>
+
+      <!-- 右：使用不当的偶发失误 -->
+      <g>
+        <rect x="844" y="156" width="800" height="268" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="876" y="202" font-size="27" fill="#6E757D" font-weight="700">使用不当造成的偶发失误</text>
+        <text x="876" y="252" font-size="33" fill="#14181C" font-weight="700">通过调整做法可以直接避免</text>
+        <text x="876" y="302" font-size="27" fill="#4A5158">与技术机理无关，或仅部分相关</text>
+        <rect x="876" y="336" width="340" height="56" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="1046" y="373" font-size="27" fill="#4A5158" font-weight="700" text-anchor="middle">明确要求</text>
+        <rect x="1234" y="336" width="340" height="56" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="1404" y="373" font-size="27" fill="#4A5158" font-weight="700" text-anchor="middle">固定流程</text>
+      </g>
+
+      <!-- 底部：教师得到的判断坐标 -->
+      <g>
+        <rect x="20" y="456" width="800" height="104" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="500" font-size="26" fill="#0E5C5A" font-weight="700">必须谨慎核验的情形</text>
+        <text x="52" y="538" font-size="26" fill="#4A5158">对应左轨：识别、控制与留痕</text>
+        <rect x="844" y="456" width="800" height="104" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="876" y="500" font-size="26" fill="#6E757D" font-weight="700">可以通过调整做法直接避免的情形</text>
+        <text x="876" y="538" font-size="26" fill="#4A5158">对应右轨：把要求与流程定清楚</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">判断坐标</span>
+    <span class="v">把风险来源分清，才知道哪里必须核验、哪里可以避免</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s4">
+<section class="page">
+  <div class="assert r d1">规范先行于工具普及，<em>因为风险内嵌于技术机制</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部：文件信息 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="96" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="58" font-size="26" fill="#6E757D" font-weight="700">2025 年 11 月　教育部教师队伍建设专家指导委员会发布</text>
+        <text x="52" y="94" font-size="30" fill="#14181C" font-weight="700">《教师生成式人工智能应用指引（第一版）》</text>
+        <rect x="1270" y="38" width="342" height="52" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="1441" y="72" font-size="24" fill="#4A5158" text-anchor="middle">大中小学及幼儿园各级各类教师</text>
+      </g>
+
+      <!-- 左：正面清单 -->
+      <g>
+        <rect x="20" y="142" width="800" height="300" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="20" y="142" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="194" font-size="30" fill="#FFFFFF" font-weight="700">正面清单　引导可以做什么</text>
+        <text x="52" y="262" font-size="27" fill="#14181C" font-weight="700">六个方向　三十个场景示例</text>
+        <rect x="52" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="108" y="322" font-size="25" fill="#14181C" text-anchor="middle">学习</text>
+        <rect x="180" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="236" y="322" font-size="25" fill="#14181C" text-anchor="middle">教学</text>
+        <rect x="308" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="364" y="322" font-size="25" fill="#14181C" text-anchor="middle">育人</text>
+        <rect x="436" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="492" y="322" font-size="25" fill="#14181C" text-anchor="middle">评价</text>
+        <rect x="564" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="620" y="322" font-size="25" fill="#14181C" text-anchor="middle">管理</text>
+        <rect x="692" y="288" width="112" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="748" y="322" font-size="25" fill="#14181C" text-anchor="middle">研究</text>
+        <text x="52" y="392" font-size="25" fill="#4A5158">提供场景示例，把使用的路先铺出来</text>
+      </g>
+
+      <!-- 右：约束清单 -->
+      <g>
+        <rect x="844" y="142" width="800" height="300" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="844" y="142" width="800" height="80" fill="#B23A2E"/>
+        <text x="876" y="194" font-size="30" fill="#FFFFFF" font-weight="700">约束清单　划定不得逾越的边界</text>
+        <text x="876" y="262" font-size="27" fill="#14181C" font-weight="700">十八个行为示例</text>
+        <rect x="876" y="288" width="340" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1046" y="322" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">事实核查</text>
+        <rect x="1232" y="288" width="340" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1402" y="322" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">价值审查</text>
+        <text x="876" y="392" font-size="25" fill="#4A5158">生成内容须经核查与审查，方可使用</text>
+      </g>
+
+      <!-- 底部：定位 -->
+      <g>
+        <rect x="20" y="474" width="1624" height="88" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="512" font-size="27" fill="#0E5C5A" font-weight="700">定位：引导而非禁止</text>
+        <text x="52" y="548" font-size="26" fill="#4A5158">前提判断：风险有相当部分内嵌于技术机制，须以核验与审查加以控制</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">前提判断</span>
+    <span class="v">不能寄望于使用者自然规避，所以规范先行</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s5">
+<section class="page">
+  <div class="assert r d1">它不查询数据库、不检索事实，<em>只预测下一个语言单元</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- ① 训练 -->
+      <g>
+        <rect x="20" y="20" width="512" height="420" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="20" width="512" height="92" fill="#0E5C5A"/>
+        <circle cx="72" cy="66" r="24" fill="#FFFFFF"/>
+        <text x="72" y="76" font-size="28" fill="#0E5C5A" font-weight="700" text-anchor="middle">1</text>
+        <text x="112" y="78" font-size="30" fill="#FFFFFF" font-weight="700">训练环节</text>
+        <text x="52" y="164" font-size="27" fill="#14181C" font-weight="700">读取海量文本</text>
+        <text x="52" y="212" font-size="26" fill="#4A5158">统计语言单元之间的共现规律</text>
+        <text x="52" y="256" font-size="26" fill="#4A5158">哪个词后面常跟哪个词</text>
+        <text x="52" y="300" font-size="26" fill="#4A5158">何种问句后常接何种回答</text>
+        <text x="52" y="344" font-size="26" fill="#4A5158">这些统计关系被压缩进参数</text>
+        <rect x="52" y="368" width="448" height="52" fill="#E9F2F1" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="76" y="402" font-size="24" fill="#0E5C5A" font-weight="700">结果：语言如何组织的概率结构</text>
+      </g>
+
+      <!-- 箭头 1 -->
+      <path d="M532,230 L574,230" stroke="#0E5C5A" stroke-width="3"/>
+      <path d="M560,216 L578,230 L560,244" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+      <!-- ② 生成 -->
+      <g>
+        <rect x="576" y="20" width="512" height="420" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="576" y="20" width="512" height="92" fill="#0E5C5A"/>
+        <circle cx="628" cy="66" r="24" fill="#FFFFFF"/>
+        <text x="628" y="76" font-size="28" fill="#0E5C5A" font-weight="700" text-anchor="middle">2</text>
+        <text x="668" y="78" font-size="30" fill="#FFFFFF" font-weight="700">生成环节</text>
+        <text x="608" y="164" font-size="27" fill="#14181C" font-weight="700">依据概率结构逐字输出</text>
+        <text x="608" y="212" font-size="26" fill="#4A5158">每一位置上选择下一个词</text>
+        <text x="608" y="256" font-size="26" fill="#4A5158">依据的是出现可能性最高</text>
+        <text x="608" y="300" font-size="26" fill="#4A5158">接到后面，再预测下一个</text>
+        <text x="608" y="344" font-size="26" fill="#4A5158">如此循环直至形成完整段落</text>
+        <rect x="608" y="368" width="448" height="52" fill="#E9F2F1" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="632" y="402" font-size="24" fill="#0E5C5A" font-weight="700">追求表达合理，不保证事实正确</text>
+      </g>
+
+      <!-- 箭头 2 -->
+      <path d="M1088,230 L1130,230" stroke="#0E5C5A" stroke-width="3"/>
+      <path d="M1116,216 L1134,230 L1116,244" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+      <!-- ③ 对齐 -->
+      <g>
+        <rect x="1132" y="20" width="512" height="420" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="1132" y="20" width="512" height="92" fill="#0E5C5A"/>
+        <circle cx="1184" cy="66" r="24" fill="#FFFFFF"/>
+        <text x="1184" y="76" font-size="28" fill="#0E5C5A" font-weight="700" text-anchor="middle">3</text>
+        <text x="1224" y="78" font-size="30" fill="#FFFFFF" font-weight="700">对齐环节</text>
+        <text x="1164" y="164" font-size="27" fill="#14181C" font-weight="700">在基础模型之上再作微调</text>
+        <text x="1164" y="212" font-size="26" fill="#4A5158">加入人工反馈训练</text>
+        <text x="1164" y="256" font-size="26" fill="#4A5158">回答更符合人类期待的表达</text>
+        <text x="1164" y="300" font-size="26" fill="#4A5158">更愿意正面回应</text>
+        <text x="1164" y="344" font-size="26" fill="#4A5158">更少输出有害内容</text>
+        <rect x="1164" y="368" width="448" height="52" fill="#E9F2F1" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1188" y="402" font-size="24" fill="#0E5C5A" font-weight="700">改的是形式与倾向，不改底层方式</text>
+      </g>
+
+      <!-- 底部收束 -->
+      <g>
+        <rect x="20" y="472" width="1624" height="92" fill="#0E5C5A"/>
+        <text x="52" y="530" font-size="30" fill="#FFFFFF" font-weight="700">训练完成后，模型掌握的是语言的概率结构，不是世界如何运作的知识体系</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">三个环节</span>
+    <span class="v">共同点：概率生成是底层方式，对齐改变不了它</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s6">
+<section class="page">
+  <div class="assert r d1">流畅性与正确性<em>已经分离</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：过去的关联 -->
+      <g>
+        <rect x="20" y="16" width="800" height="196" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="62" font-size="26" fill="#6E757D" font-weight="700">过去的关联</text>
+        <text x="52" y="112" font-size="31" fill="#14181C" font-weight="700">写作能力与知识水平高度相关</text>
+        <text x="52" y="156" font-size="26" fill="#4A5158">写得通顺、逻辑连贯、术语准确的文字，</text>
+        <text x="52" y="192" font-size="26" fill="#4A5158">多半出自内行之手</text>
+      </g>
+
+      <!-- 右：概率模型之后 -->
+      <g>
+        <rect x="844" y="16" width="800" height="196" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="876" y="62" font-size="26" fill="#0E5C5A" font-weight="700">概率模型改变了这一关联</text>
+        <text x="876" y="112" font-size="31" fill="#14181C" font-weight="700">学到专业表达的形式，不必掌握内容</text>
+        <text x="876" y="156" font-size="26" fill="#4A5158">句式、术语、论证结构都可以被学到，</text>
+        <text x="876" y="192" font-size="26" fill="#4A5158">形式背后的实际内容不必被掌握</text>
+      </g>
+
+      <!-- 下：例证框 -->
+      <g>
+        <rect x="20" y="244" width="1624" height="320" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="20" y="244" width="1624" height="64" fill="#F6EDEB"/>
+        <text x="52" y="288" font-size="27" fill="#B23A2E" font-weight="700">一份学生作业中的表述</text>
+        <rect x="52" y="336" width="1560" height="84" fill="#F4F3F0" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="84" y="392" font-size="30" fill="#14181C" font-family="STZhongsong, 华文中宋, SimHei, serif">根据皮亚杰 1972 年在《认知发展》中提出的第四阶段理论……</text>
+
+        <rect x="52" y="448" width="316" height="56" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="210" y="485" font-size="26" fill="#4A5158" text-anchor="middle">句式规范</text>
+        <rect x="392" y="448" width="316" height="56" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="550" y="485" font-size="26" fill="#4A5158" text-anchor="middle">术语正确</text>
+        <rect x="732" y="448" width="316" height="56" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="890" y="485" font-size="26" fill="#4A5158" text-anchor="middle">出处格式标准</text>
+
+        <rect x="1080" y="448" width="532" height="56" fill="#B23A2E"/>
+        <text x="1346" y="485" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">这本书并不存在，观点也不属于皮亚杰</text>
+
+        <text x="52" y="542" font-size="26" fill="#4A5158">结果是一段读起来非常专业的文字，可能包含完全虚构的事实</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">识别难点</span>
+    <span class="v">文本没有任何一处读起来别扭，凭阅读经验很难识别</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s7">
+<section class="page">
+  <div class="assert r d1">输出不可复现，<em>依据不可追溯</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- ① 不可复现 -->
+      <g>
+        <rect x="20" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="512" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">后果二　输出不可复现</text>
+        <text x="52" y="150" font-size="27" fill="#14181C" font-weight="700">生成过程是随机采样</text>
+        <text x="52" y="198" font-size="26" fill="#4A5158">并非只取概率最高的词，</text>
+        <text x="52" y="238" font-size="26" fill="#4A5158">而是在高概率候选集合中</text>
+        <text x="52" y="278" font-size="26" fill="#4A5158">按一定分布抽取</text>
+        <rect x="52" y="310" width="448" height="60" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="76" y="348" font-size="25" fill="#0E5C5A" font-weight="700">同一问题两次问，答案可能不同</text>
+        <text x="52" y="416" font-size="25" fill="#4A5158">同一份课件，上午与下午生成，</text>
+        <text x="52" y="448" font-size="25" fill="#4A5158">引用数据可能不一致</text>
+      </g>
+
+      <!-- ② 不可追溯 -->
+      <g>
+        <rect x="576" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="576" y="16" width="512" height="80" fill="#0E5C5A"/>
+        <text x="608" y="68" font-size="29" fill="#FFFFFF" font-weight="700">后果三　依据不可追溯</text>
+        <text x="608" y="150" font-size="27" fill="#14181C" font-weight="700">模型无法给出信息来源</text>
+        <text x="608" y="198" font-size="26" fill="#4A5158">它可以生成一个出处，</text>
+        <text x="608" y="238" font-size="26" fill="#4A5158">那个出处是从统计规律中长出来的，</text>
+        <text x="608" y="278" font-size="26" fill="#4A5158">不是从某本书里查出来的</text>
+        <rect x="608" y="310" width="448" height="60" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="632" y="348" font-size="25" fill="#0E5C5A" font-weight="700">也说不清推理过程</text>
+        <text x="608" y="416" font-size="25" fill="#4A5158">输出不经过逐步论证，</text>
+        <text x="608" y="448" font-size="25" fill="#4A5158">而是整体分布下的连续采样</text>
+      </g>
+
+      <!-- ③ 能力边界 -->
+      <g>
+        <rect x="1132" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="1132" y="16" width="512" height="80" fill="#0E5C5A"/>
+        <text x="1164" y="68" font-size="29" fill="#FFFFFF" font-weight="700">限定　训练数据决定边界</text>
+        <text x="1164" y="150" font-size="27" fill="#14181C" font-weight="700">能力覆盖约等于语料覆盖</text>
+        <rect x="1164" y="182" width="448" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1188" y="216" font-size="25" fill="#0E5C5A" font-weight="700">语料未含　无法可靠输出</text>
+        <rect x="1164" y="246" width="448" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1188" y="280" font-size="25" fill="#0E5C5A" font-weight="700">语料偏差　继承并在场景中放大</text>
+        <rect x="1164" y="310" width="448" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1188" y="344" font-size="25" fill="#0E5C5A" font-weight="700">截止点后　无从知晓</text>
+        <text x="1164" y="416" font-size="25" fill="#4A5158">近两年政策文件可能已过时，</text>
+        <text x="1164" y="448" font-size="25" fill="#4A5158">地方性规定可能给的是别省做法</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">教师要向家长解释判断依据、向教研组说明材料出处，工具给不了这一层支撑</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">三个后果</span>
+    <span class="v">流畅不等于正确，答案不同不等于哪次错了</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s8"><style>#s8 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s8 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第二章</span>　源自技术机理的内生风险</div>
+  <div class="assert r d1">内生风险<em>不因使用方式</em>改变</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 定义条 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="96" fill="#0E5C5A"/>
+        <text x="52" y="58" font-size="27" fill="#C4DAD8" font-weight="700">内生风险：由技术机理直接产生，无论使用者如何谨慎都会存在</text>
+        <text x="52" y="96" font-size="27" fill="#FFFFFF" font-weight="700">不能通过规范消除，只能通过核验、审查与留痕加以控制</text>
+      </g>
+
+      <!-- 其一 标题 -->
+      <text x="20" y="176" font-size="28" fill="#0E5C5A" font-weight="700">其一　事实性错误　发生频率最高的一类，表现为四种形态</text>
+
+      <!-- 形态 1：编造文献 -->
+      <g>
+        <rect x="20" y="200" width="800" height="176" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="244" font-size="28" fill="#0E5C5A" font-weight="700">编造文献</text>
+        <text x="52" y="290" font-size="25" fill="#4A5158">作者、期刊、年份、卷期、页码俱全，</text>
+        <text x="52" y="326" font-size="25" fill="#4A5158">十条文献中三条查无此文、两条作者错配</text>
+        <rect x="52" y="338" width="736" height="0" fill="none"/>
+      </g>
+
+      <!-- 形态 2：混淆事实 -->
+      <g>
+        <rect x="844" y="200" width="800" height="176" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="876" y="244" font-size="28" fill="#0E5C5A" font-weight="700">混淆事实</text>
+        <text x="876" y="290" font-size="25" fill="#4A5158">年代、人物、事件因果容易错位，</text>
+        <text x="876" y="326" font-size="25" fill="#4A5158">整体框架合理、局部细节错误，读起来顺畅</text>
+      </g>
+
+      <!-- 两条后果 -->
+      <g>
+        <rect x="20" y="396" width="800" height="56" fill="#B23A2E"/>
+        <text x="440" y="433" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">未逐条核查即写入申报书，性质属于学术不端</text>
+        <rect x="844" y="396" width="800" height="56" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1244" y="433" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">中唐诗人置于盛唐，变法归入唐代</text>
+      </g>
+
+      <!-- 形态 3、4：虚框 -->
+      <g>
+        <rect x="20" y="476" width="800" height="88" fill="#FFFFFF" stroke="#9B978D" stroke-width="2" stroke-dasharray="9 7"/>
+        <text x="52" y="514" font-size="26" fill="#6E757D" font-weight="700">虚构引文</text>
+        <text x="52" y="548" font-size="24" fill="#9B978D">张冠李戴的名句与后人伪托之诗</text>
+        <rect x="844" y="476" width="800" height="88" fill="#FFFFFF" stroke="#9B978D" stroke-width="2" stroke-dasharray="9 7"/>
+        <text x="876" y="514" font-size="26" fill="#6E757D" font-weight="700">数据失当</text>
+        <text x="876" y="548" font-size="24" fill="#9B978D">逻辑自洽而物理上不成立</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">发生频率最高</span>
+    <span class="v">四种形态的共同点：读起来毫无破绽</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s9">
+<section class="page">
+  <div class="assert r d1">这类错误不是工具出错，<em>是工具正常工作的产物</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 虚构引文 -->
+      <g>
+        <rect x="20" y="16" width="800" height="316" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="62" font-size="28" fill="#0E5C5A" font-weight="700">虚构引文</text>
+        <text x="52" y="112" font-size="26" fill="#14181C">一句被标注为苏轼的话，实际出自明清笔记</text>
+        <text x="52" y="156" font-size="26" fill="#14181C">一首被标为杜甫所作的诗，实际是后人伪托</text>
+        <text x="52" y="212" font-size="26" fill="#4A5158">工具甚至能为伪作生成一套自洽的赏析，</text>
+        <text x="52" y="252" font-size="26" fill="#4A5158">解释其创作背景与艺术特色</text>
+        <rect x="52" y="272" width="736" height="44" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="420" y="301" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">名句赏析最难识别：它附带看似权威的出处</text>
+      </g>
+
+      <!-- 数据失当 -->
+      <g>
+        <rect x="844" y="16" width="800" height="316" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="876" y="62" font-size="28" fill="#0E5C5A" font-weight="700">数据失当</text>
+        <text x="876" y="112" font-size="26" fill="#14181C">生成的物理题，条件设置导致方程无解</text>
+        <text x="876" y="156" font-size="26" fill="#14181C">生成的化学方程式，配平错误</text>
+        <text x="876" y="200" font-size="26" fill="#14181C">生成的数据表，各列数据与说明文字不符</text>
+        <text x="876" y="244" font-size="26" fill="#14181C">生成的统计图，百分比之和超过一百</text>
+        <rect x="876" y="272" width="736" height="44" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1244" y="301" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">共同点：逻辑自洽，而物理上不成立</text>
+      </g>
+
+      <!-- 幻觉条 -->
+      <g>
+        <rect x="20" y="356" width="1624" height="208" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="404" font-size="28" fill="#B23A2E" font-weight="700">这一行为模式在技术上被称为幻觉</text>
+        <text x="52" y="454" font-size="27" fill="#14181C" font-weight="700">在缺乏可靠依据时，它依据统计规律生成一个看起来最像答案的表述，</text>
+        <text x="52" y="496" font-size="27" fill="#14181C" font-weight="700">而不是承认不知道</text>
+        <rect x="1140" y="430" width="472" height="88" fill="#B23A2E"/>
+        <text x="1376" y="470" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">更准确的表述</text>
+        <text x="1376" y="504" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">它没有区分知道与不知道的机制</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">不是故障</span>
+    <span class="v">模型的任务是生成最可能的表述，不是核实事实</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s10">
+<section class="page">
+  <div class="assert r d1">偏差以<em>客观数据的面目</em>出现</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 传递链 -->
+      <g>
+        <rect x="20" y="16" width="480" height="96" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="260" y="56" font-size="26" fill="#6E757D" font-weight="700" text-anchor="middle">训练数据</text>
+        <text x="260" y="92" font-size="26" fill="#14181C" text-anchor="middle">历史文本中呈现的世界</text>
+        <path d="M500,64 L556,64" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M542,50 L560,64 L542,78" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+        <rect x="560" y="16" width="480" height="96" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="800" y="56" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">模型学习</text>
+        <text x="800" y="92" font-size="26" fill="#14181C" text-anchor="middle">结构性倾向被继承下来</text>
+        <path d="M1040,64 L1096,64" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M1082,50 L1100,64 L1082,78" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+        <rect x="1100" y="16" width="544" height="96" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="1372" y="56" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">判断类任务</text>
+        <text x="1372" y="92" font-size="26" fill="#14181C" text-anchor="middle">在评价与分层中稳定复现</text>
+      </g>
+
+      <!-- 左：评价场景 -->
+      <g>
+        <rect x="20" y="148" width="800" height="322" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="148" width="800" height="76" fill="#B23A2E"/>
+        <text x="52" y="198" font-size="28" fill="#FFFFFF" font-weight="700">评价场景　作文评分</text>
+        <text x="52" y="266" font-size="26" fill="#4A5158">训练数据来自历年高分作文，</text>
+        <text x="52" y="304" font-size="26" fill="#4A5158">某种特定文风与题材被视为高分特征</text>
+        <rect x="52" y="328" width="356" height="56" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="230" y="365" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">引古诗多　判为高分</text>
+        <rect x="428" y="328" width="356" height="56" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="606" y="365" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">口语化叙述　判为低分</text>
+        <text x="52" y="428" font-size="25" fill="#4A5158">依据是训练数据中的统计关联，</text>
+        <text x="52" y="462" font-size="25" fill="#4A5158">不是该篇作文的实际水平</text>
+      </g>
+
+      <!-- 右：推荐与分层 -->
+      <g>
+        <rect x="844" y="148" width="800" height="322" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <rect x="844" y="148" width="800" height="76" fill="#B23A2E"/>
+        <text x="876" y="198" font-size="28" fill="#FFFFFF" font-weight="700">推荐与分层场景　系统性不利</text>
+        <text x="876" y="266" font-size="26" fill="#4A5158">对特定群体的不利不是偶然，</text>
+        <text x="876" y="304" font-size="26" fill="#4A5158">而是每次判断都朝同一个方向偏</text>
+        <rect x="876" y="328" width="736" height="56" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1244" y="365" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">某类学生答题数据被更频繁地标记为异常</text>
+        <text x="876" y="428" font-size="25" fill="#4A5158">其学习轨迹被更早判定为需要干预，</text>
+        <text x="876" y="462" font-size="25" fill="#4A5158">资源与期待随之改变</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">隐蔽性：不表现为明显的不公平，而表现为客观数据得出的结果</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">警惕点</span>
+    <span class="v">使用者不加辨析，容易将其视为中立判断</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s11">
+<section class="page">
+  <div class="assert r d1">输出给不出可核查的推理路径，<em>申诉就无法展开</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：其三 不可解释 -->
+      <g>
+        <rect x="20" y="16" width="800" height="420" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">其三　不可解释性</text>
+        <text x="52" y="146" font-size="27" fill="#14181C" font-weight="700">参数达到千亿量级之后，</text>
+        <text x="52" y="186" font-size="27" fill="#14181C" font-weight="700">技术人员也无法完整解释某一次输出</text>
+        <rect x="52" y="216" width="736" height="92" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="76" y="252" font-size="25" fill="#B23A2E" font-weight="700">学生被告知作业存在抄袭</text>
+        <text x="76" y="290" font-size="24" fill="#4A5158">家长询问依据，学校给不出具体的比对过程</text>
+        <rect x="52" y="326" width="736" height="92" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="76" y="362" font-size="25" fill="#B23A2E" font-weight="700">平台建议该生进入基础班</text>
+        <text x="76" y="400" font-size="24" fill="#4A5158">教师询问判断标准，平台以商业秘密为由不予说明</text>
+      </g>
+
+      <!-- 右：其四 可控性不足 -->
+      <g>
+        <rect x="844" y="16" width="800" height="420" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="844" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="876" y="68" font-size="29" fill="#FFFFFF" font-weight="700">其四　可控性不足</text>
+        <text x="876" y="146" font-size="27" fill="#14181C" font-weight="700">模型的输出可被诱导突破预设限制</text>
+        <rect x="876" y="176" width="352" height="80" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1052" y="210" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">提示注入</text>
+        <text x="1052" y="242" font-size="24" fill="#4A5158" text-anchor="middle">输入中嵌入指令，忽略原有设定</text>
+        <rect x="1252" y="176" width="352" height="80" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1428" y="210" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">越狱</text>
+        <text x="1428" y="242" font-size="24" fill="#4A5158" text-anchor="middle">特定表述绕过内容过滤</text>
+        <text x="876" y="308" font-size="26" fill="#4A5158">对教师的影响不在恶意攻击，而在稳定性：</text>
+        <text x="876" y="346" font-size="26" fill="#4A5158">同一份系统提示下，一次措辞变化的输入，</text>
+        <text x="876" y="384" font-size="26" fill="#4A5158">就可能使输出偏离预期</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="468" width="1624" height="96" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="508" font-size="26" fill="#14181C" font-weight="700">用于班级管理的自动化助手，可能因学生一句特殊问法而输出不当内容，</text>
+        <text x="52" y="546" font-size="26" fill="#14181C" font-weight="700">而这一情形在测试阶段并未出现</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">申诉的前提</span>
+    <span class="v">当事人能知晓自己被如何判断，否则无法有效申诉</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s12">
+<section class="page">
+  <div class="assert r d1">评分算法被撤回，<em>因为当事人无从知晓自己被如何判定</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 时间轴 -->
+      <path d="M60,40 L1604,40" stroke="#E3E1DA" stroke-width="3"/>
+      <path d="M1590,28 L1608,40 L1590,52" stroke="#C4DAD8" stroke-width="3" fill="none"/>
+      <circle cx="272" cy="40" r="10" fill="#0E5C5A"/>
+      <circle cx="812" cy="40" r="10" fill="#0E5C5A"/>
+      <circle cx="1352" cy="40" r="10" fill="#B23A2E"/>
+
+      <!-- 节点 1 -->
+      <g>
+        <rect x="20" y="66" width="504" height="368" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="66" width="504" height="80" fill="#0E5C5A"/>
+        <text x="44" y="118" font-size="28" fill="#FFFFFF" font-weight="700">2020 年 8 月上旬</text>
+        <text x="44" y="188" font-size="26" fill="#14181C" font-weight="700">成绩由模型批量生成</text>
+        <text x="44" y="234" font-size="25" fill="#4A5158">取代因疫情取消的考试，</text>
+        <text x="44" y="270" font-size="25" fill="#4A5158">依据学校历年成绩记录推算分数</text>
+        <rect x="44" y="296" width="456" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="272" y="330" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">算法细节未向公众披露</text>
+        <rect x="44" y="360" width="456" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="272" y="394" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">学生与教师无申诉通道</text>
+      </g>
+
+      <!-- 节点 2 -->
+      <g>
+        <rect x="580" y="66" width="504" height="368" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="580" y="66" width="504" height="80" fill="#0E5C5A"/>
+        <text x="604" y="118" font-size="28" fill="#FFFFFF" font-weight="700">8 月 13 日　成绩公布</text>
+        <text x="604" y="188" font-size="26" fill="#14181C" font-weight="700">大量学生分数低于教师预估</text>
+        <text x="604" y="234" font-size="25" fill="#4A5158">英格兰地区高考与会考成绩</text>
+        <text x="604" y="270" font-size="25" fill="#4A5158">由第三方机器学习模型批量给出</text>
+        <rect x="604" y="296" width="456" height="116" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="832" y="342" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">抗议迅速蔓延</text>
+        <text x="832" y="384" font-size="24" fill="#4A5158" text-anchor="middle">分数由算法决定，却无从质询</text>
+      </g>
+
+      <!-- 节点 3 -->
+      <g>
+        <rect x="1140" y="66" width="504" height="368" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="1140" y="66" width="504" height="80" fill="#B23A2E"/>
+        <text x="1164" y="118" font-size="28" fill="#FFFFFF" font-weight="700">8 月 17 日　宣布放弃</text>
+        <text x="1164" y="188" font-size="26" fill="#14181C" font-weight="700">放弃算法调整</text>
+        <text x="1164" y="234" font-size="25" fill="#4A5158">考试监管机构宣布</text>
+        <text x="1164" y="270" font-size="25" fill="#4A5158">改用教师预估成绩</text>
+        <rect x="1164" y="296" width="456" height="116" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1392" y="342" font-size="26" fill="#B23A2E" font-weight="700" text-anchor="middle">教育大臣公开道歉</text>
+        <text x="1392" y="384" font-size="24" fill="#4A5158" text-anchor="middle">评分算法被整体撤回</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="468" width="1624" height="96" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="52" y="508" font-size="27" fill="#B23A2E" font-weight="700">撤回的原因不是技术错误</text>
+        <text x="52" y="546" font-size="26" fill="#4A5158">是当事人无从知晓自己被如何判定，也无法就此提出异议</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">案例落点</span>
+    <span class="v">不可解释且无申诉通道，算法就只能被撤回</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s13">
+<section class="page">
+  <div class="assert r d1">数据风险有两个方向：<em>来路与去向</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：训练数据方向 -->
+      <g>
+        <rect x="20" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">其五之一　训练数据方向　内容的来路</text>
+        <text x="52" y="142" font-size="26" fill="#14181C" font-weight="700">语料中可能包含</text>
+        <rect x="52" y="164" width="228" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="166" y="198" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">个人信息</text>
+        <rect x="296" y="164" width="228" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="410" y="198" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">受著作权保护的作品</text>
+        <rect x="540" y="164" width="248" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="664" y="198" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">未公开的内部材料</text>
+        <text x="52" y="266" font-size="26" fill="#4A5158">使用者无法从输出端判断：</text>
+        <text x="52" y="304" font-size="26" fill="#4A5158">某个具体表述是否源自受保护的内容</text>
+        <rect x="52" y="332" width="736" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="420" y="366" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">课件中的图片、文案　存在侵权可能</text>
+        <rect x="52" y="396" width="736" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="420" y="430" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">学生作业中的段落　可能与他人作品高度重合</text>
+      </g>
+
+      <!-- 右：交互数据方向 -->
+      <g>
+        <rect x="844" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="844" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="876" y="68" font-size="29" fill="#FFFFFF" font-weight="700">其五之二　交互数据方向　材料的去向</text>
+        <text x="876" y="142" font-size="26" fill="#14181C" font-weight="700">用户与工具的对话内容</text>
+        <rect x="876" y="164" width="736" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1244" y="198" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">是否留存　是否用于后续训练　存于何处　保留多久</text>
+        <rect x="876" y="232" width="736" height="60" fill="#B23A2E"/>
+        <text x="1244" y="271" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">取决于服务条款，不取决于用户意愿</text>
+        <text x="876" y="342" font-size="26" fill="#4A5158">教师将学生材料输入工具后，</text>
+        <text x="876" y="380" font-size="26" fill="#4A5158">这些材料进入服务方的数据处理流程</text>
+        <rect x="876" y="404" width="736" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1244" y="438" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">教育机构失去了对材料流转的控制</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">一个看来路：内容是否干净　一个看去向：材料是否失控</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">两个方向</span>
+    <span class="v">训练数据决定内容来路，交互数据决定材料去向</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s14">
+<section class="page">
+  <div class="assert r d1">信息一旦离开教育机构，<em>流转即不再受机构控制</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 时间轴 -->
+      <path d="M60,44 L1604,44" stroke="#E3E1DA" stroke-width="3"/>
+      <circle cx="272" cy="44" r="10" fill="#0E5C5A"/>
+      <circle cx="812" cy="44" r="10" fill="#0E5C5A"/>
+      <circle cx="1352" cy="44" r="10" fill="#B23A2E"/>
+
+      <!-- 节点 1：2021 起 -->
+      <g>
+        <rect x="20" y="70" width="504" height="356" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="70" width="504" height="80" fill="#0E5C5A"/>
+        <text x="44" y="122" font-size="28" fill="#FFFFFF" font-weight="700">2021 年起　组建招生团队</text>
+        <text x="44" y="192" font-size="25" fill="#4A5158">以教育咨询公司与航空服务公司名义</text>
+        <text x="44" y="230" font-size="25" fill="#4A5158">向他人购买或交换获取学生信息</text>
+        <text x="44" y="268" font-size="25" fill="#4A5158">用于电话招生</text>
+        <rect x="44" y="296" width="456" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="272" y="330" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">多次将信息出售、提供给第三方</text>
+        <text x="44" y="396" font-size="24" fill="#9B978D">吴某甲、吴某乙兄弟</text>
+      </g>
+
+      <!-- 节点 2：2024.3 -->
+      <g>
+        <rect x="580" y="70" width="504" height="356" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="580" y="70" width="504" height="80" fill="#0E5C5A"/>
+        <text x="604" y="122" font-size="28" fill="#FFFFFF" font-weight="700">2024 年 3 月　非法提供</text>
+        <text x="604" y="220" font-size="72" fill="#0E5C5A" font-weight="700">7631</text>
+        <text x="604" y="266" font-size="27" fill="#14181C" font-weight="700">条学生信息</text>
+        <text x="604" y="322" font-size="25" fill="#4A5158">向他人非法提供，</text>
+        <text x="604" y="358" font-size="25" fill="#4A5158">信息从机构流出后层层转手</text>
+      </g>
+
+      <!-- 节点 3：2024.5 + 判决 -->
+      <g>
+        <rect x="1140" y="70" width="504" height="356" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="1140" y="70" width="504" height="80" fill="#B23A2E"/>
+        <text x="1164" y="122" font-size="28" fill="#FFFFFF" font-weight="700">2024 年 5 月　警方查处</text>
+        <text x="1164" y="220" font-size="72" fill="#B23A2E" font-weight="700">1557124</text>
+        <text x="1164" y="266" font-size="27" fill="#14181C" font-weight="700">条　去重后查获</text>
+        <text x="1164" y="322" font-size="25" fill="#4A5158">从电脑、手机中查获</text>
+        <text x="1164" y="358" font-size="25" fill="#4A5158">公民个人信息</text>
+      </g>
+
+      <!-- 判决条 -->
+      <g>
+        <rect x="20" y="458" width="1624" height="106" fill="#B23A2E"/>
+        <text x="52" y="502" font-size="27" fill="#FFFFFF" font-weight="700">温江法院审理认定：侵犯公民个人信息罪，情节特别严重</text>
+        <text x="52" y="544" font-size="27" fill="#FFFFFF" font-weight="700">各判处有期徒刑三年，并处罚金二万元</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">案件启示</span>
+    <span class="v">信息一旦离开教育机构，其流转即不再受机构控制</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s15"><style>#s15 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s15 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第三章</span>　源自使用方式的外生风险</div>
+  <div class="assert r d1">外生风险<em>可由制度约束</em>防范</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 定义条 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="96" fill="#0E5C5A"/>
+        <text x="52" y="58" font-size="27" fill="#C4DAD8" font-weight="700">外生风险：与技术机理无关或仅部分相关，取决于使用者的做法与场景条件</text>
+        <text x="52" y="96" font-size="27" fill="#FFFFFF" font-weight="700">可以通过明确要求、调整流程加以防范　教育领域现行规范的主体部分针对的正是这一类</text>
+      </g>
+
+      <!-- 左：其一 判断权转移 -->
+      <g>
+        <rect x="20" y="142" width="520" height="316" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="188" font-size="28" fill="#0E5C5A" font-weight="700">其一　判断权转移</text>
+        <text x="52" y="238" font-size="26" fill="#14181C" font-weight="700">工具承担生成，教师承担判断</text>
+        <text x="52" y="286" font-size="25" fill="#4A5158">分工容易被打破，</text>
+        <text x="52" y="322" font-size="25" fill="#4A5158">因为工具的输出看起来</text>
+        <text x="52" y="358" font-size="25" fill="#4A5158">已经完成了判断</text>
+        <rect x="52" y="382" width="456" height="56" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="280" y="419" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">学情分析中的表现</text>
+      </g>
+
+      <!-- 右：平均分陷阱 -->
+      <g>
+        <rect x="576" y="142" width="1068" height="316" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="608" y="188" font-size="27" fill="#14181C" font-weight="700">同一个平均分 85，教学需要看的是分布</text>
+
+        <!-- 面板 A -->
+        <text x="640" y="232" font-size="24" fill="#6E757D" font-weight="700">全班集中在 85 附近</text>
+        <path d="M640,392 C720,392 780,262 880,262 C980,262 1040,392 1120,392" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <path d="M880,252 L880,392" stroke="#B7D2D0" stroke-width="2" stroke-dasharray="8 6"/>
+        <path d="M640,392 L1120,392" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="640" y="424" font-size="24" fill="#9B978D">60</text>
+        <text x="880" y="424" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">平均分 85</text>
+        <text x="1120" y="424" font-size="24" fill="#9B978D" text-anchor="end">100</text>
+
+        <!-- 面板 B -->
+        <text x="1180" y="232" font-size="24" fill="#B23A2E" font-weight="700">一半 95 以上、一半 70 以下</text>
+        <path d="M1180,392 C1220,392 1250,272 1300,272 C1350,272 1370,382 1410,386 C1455,390 1505,282 1560,282 C1595,282 1610,392 1620,392" stroke="#B23A2E" stroke-width="3" fill="none"/>
+        <path d="M1440,252 L1440,392" stroke="#B7D2D0" stroke-width="2" stroke-dasharray="8 6"/>
+        <path d="M1180,392 L1620,392" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="1180" y="424" font-size="24" fill="#9B978D">60</text>
+        <text x="1440" y="424" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">平均分 85</text>
+        <text x="1620" y="424" font-size="24" fill="#9B978D" text-anchor="end">100</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="490" width="1624" height="74" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">成绩表是原始材料，分析报告是加工结论，中间那一步判断必须由教师完成</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">其一　判断权转移</span>
+    <span class="v">只接收结论、不回到原始数据，落后就不会被发现</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s16">
+<section class="page">
+  <div class="assert r d1">模板化输出与完整答案，<em>取消的正是教育功能</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：评语模板化 -->
+      <g>
+        <rect x="20" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">学生评语中的表现</text>
+        <text x="52" y="146" font-size="26" fill="#14181C" font-weight="700">期末评语批量生成，一个班四十余份</text>
+        <rect x="52" y="176" width="356" height="56" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="230" y="213" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">单看　每一份都通顺得体</text>
+        <rect x="428" y="176" width="356" height="56" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="606" y="213" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">比对　句式结构高度一致</text>
+        <text x="52" y="282" font-size="25" fill="#4A5158">开头句式、段落结构、鼓励用语高度一致，</text>
+        <text x="52" y="318" font-size="25" fill="#4A5158">甚至副词的使用频率都相近</text>
+        <text x="52" y="358" font-size="25" fill="#4A5158">家长会上当场比对相邻两名学生的评语，</text>
+        <text x="52" y="394" font-size="25" fill="#4A5158">除姓名与个别细节外内容雷同</text>
+      </g>
+
+      <!-- 右：答疑绕开卡点 -->
+      <g>
+        <rect x="844" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="844" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="876" y="68" font-size="29" fill="#FFFFFF" font-weight="700">答疑环节中的表现</text>
+        <text x="876" y="146" font-size="26" fill="#14181C" font-weight="700">工具生成答案后原样转发</text>
+        <text x="876" y="192" font-size="25" fill="#4A5158">知识上多半正确，两种失当：</text>
+        <rect x="876" y="216" width="736" height="88" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="900" y="252" font-size="25" fill="#B23A2E" font-weight="700">一　解答方式超出学生当前学段</text>
+        <text x="900" y="288" font-size="24" fill="#4A5158">用微积分解初中函数问题，学生看不懂</text>
+        <rect x="876" y="322" width="736" height="88" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="900" y="358" font-size="25" fill="#B23A2E" font-weight="700">二　绕开了学生真正卡住的那一步</text>
+        <text x="900" y="394" font-size="24" fill="#4A5158">学生得到完整解法，仍然不知道自己错在哪里</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">评语的功能是让学生感到被具体地看见，答疑的价值是定位卡点</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">共同问题</span>
+    <span class="v">完整答案恰恰跳过了定位卡点这一步</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s17">
+<section class="page">
+  <div class="assert r d1">责任归属取决于署名与实施，<em>不取决于用了什么工具</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 多主体链条 -->
+      <g>
+        <rect x="20" y="16" width="380" height="72" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="210" y="62" font-size="27" fill="#4A5158" text-anchor="middle">技术提供者</text>
+        <path d="M400,52 L436,52" stroke="#9B978D" stroke-width="3"/>
+        <path d="M424,40 L440,52 L424,64" stroke="#9B978D" stroke-width="3" fill="none"/>
+        <rect x="440" y="16" width="380" height="72" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="630" y="62" font-size="27" fill="#4A5158" text-anchor="middle">平台运营方</text>
+        <path d="M820,52 L856,52" stroke="#9B978D" stroke-width="3"/>
+        <path d="M844,40 L860,52 L844,64" stroke="#9B978D" stroke-width="3" fill="none"/>
+        <rect x="860" y="16" width="380" height="72" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="1050" y="62" font-size="27" fill="#4A5158" text-anchor="middle">学校</text>
+        <path d="M1240,52 L1276,52" stroke="#9B978D" stroke-width="3"/>
+        <path d="M1264,40 L1280,52 L1264,64" stroke="#9B978D" stroke-width="3" fill="none"/>
+        <rect x="1280" y="16" width="364" height="72" fill="#0E5C5A"/>
+        <text x="1462" y="62" font-size="27" fill="#FFFFFF" font-weight="700" text-anchor="middle">教师</text>
+      </g>
+
+      <!-- 案例一：教研协作 -->
+      <g>
+        <rect x="20" y="118" width="800" height="286" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="166" font-size="27" fill="#0E5C5A" font-weight="700">教研协作中的表现</text>
+        <text x="52" y="214" font-size="25" fill="#4A5158">备课组共同使用平台生成单元教学设计，</text>
+        <text x="52" y="250" font-size="25" fill="#4A5158">材料进入课堂后发现史料引证有误，</text>
+        <text x="52" y="286" font-size="25" fill="#4A5158">追溯时无人明确该份材料由谁审核</text>
+        <rect x="52" y="312" width="736" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="420" y="344" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">集体使用不构成免责</text>
+        <text x="420" y="376" font-size="24" fill="#14181C" text-anchor="middle">授课教师对本班教学内容承担责任</text>
+      </g>
+
+      <!-- 案例二：学校采购 -->
+      <g>
+        <rect x="844" y="118" width="800" height="286" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="876" y="166" font-size="27" fill="#0E5C5A" font-weight="700">学校采购系统后的表现</text>
+        <text x="876" y="214" font-size="25" fill="#4A5158">作业批改系统评分直接计入平时成绩，</text>
+        <text x="876" y="250" font-size="25" fill="#4A5158">学生提出评分有误，教师答「系统算的」，</text>
+        <text x="876" y="286" font-size="25" fill="#4A5158">学校答「由平台负责」</text>
+        <rect x="876" y="312" width="736" height="76" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1244" y="344" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">这一答复在制度上不成立</text>
+        <text x="1244" y="376" font-size="24" fill="#14181C" text-anchor="middle">学校作为使用方，对系统输出结果承担责任</text>
+      </g>
+
+      <!-- 类比条 -->
+      <g>
+        <rect x="20" y="434" width="800" height="130" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="478" font-size="25" fill="#6E757D" font-weight="700">工程图纸由软件绘制</text>
+        <text x="52" y="522" font-size="28" fill="#14181C" font-weight="700">签字的设计师承担责任</text>
+        <rect x="844" y="434" width="800" height="130" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="876" y="478" font-size="25" fill="#6E757D" font-weight="700">会计凭证由系统生成</text>
+        <text x="876" y="522" font-size="28" fill="#14181C" font-weight="700">签章的会计承担责任</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">责任落点</span>
+    <span class="v">工具的介入不改变责任的落点，只改变作业的方式</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s18">
+<section class="page">
+  <div class="assert r d1">署名者承担核查义务，<em>工具不承担任何责任</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 时间轴 -->
+      <path d="M60,44 L1604,44" stroke="#E3E1DA" stroke-width="3"/>
+      <circle cx="380" cy="44" r="10" fill="#0E5C5A"/>
+      <circle cx="1100" cy="44" r="10" fill="#B23A2E"/>
+
+      <!-- 节点 1：事发 -->
+      <g>
+        <rect x="20" y="70" width="720" height="240" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="70" width="720" height="80" fill="#0E5C5A"/>
+        <text x="52" y="122" font-size="28" fill="#FFFFFF" font-weight="700">2026 年　论文被质疑</text>
+        <text x="52" y="192" font-size="26" fill="#14181C">安徽财经大学法学院教师蒋某某与学生万某某</text>
+        <text x="52" y="232" font-size="26" fill="#14181C">联合发表的学术论文，被媒体质疑注释编造</text>
+        <text x="52" y="282" font-size="25" fill="#4A5158">问题出在对智能检索结果的误信</text>
+      </g>
+
+      <!-- 节点 2：调查 -->
+      <g>
+        <rect x="780" y="70" width="864" height="240" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="780" y="70" width="864" height="80" fill="#0E5C5A"/>
+        <text x="812" y="122" font-size="28" fill="#FFFFFF" font-weight="700">调查组认定</text>
+        <text x="812" y="192" font-size="26" fill="#14181C">五名校内外专家组成调查组</text>
+        <text x="812" y="232" font-size="26" fill="#14181C">对生成内容缺乏应有的警惕性与严谨性，</text>
+        <text x="812" y="272" font-size="26" fill="#14181C">存在使用不当行为</text>
+      </g>
+
+      <!-- 处理结果 -->
+      <g>
+        <rect x="20" y="340" width="1624" height="132" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="52" y="386" font-size="27" fill="#B23A2E" font-weight="700">同年 9 月 2 日　学校通报处理结果</text>
+        <rect x="52" y="404" width="480" height="52" fill="#B23A2E"/>
+        <text x="292" y="438" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">科研诚信诫勉谈话</text>
+        <rect x="552" y="404" width="480" height="52" fill="#B23A2E"/>
+        <text x="792" y="438" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">通报批评</text>
+        <rect x="1052" y="404" width="560" height="52" fill="#B23A2E"/>
+        <text x="1332" y="438" font-size="25" fill="#FFFFFF" font-weight="700" text-anchor="middle">暂停评先评优、晋升、科研奖励两年</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="502" width="1624" height="62" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="543" font-size="27" fill="#14181C" font-weight="700">核查义务落在署名者身上，工具不承担任何责任</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">责任确认</span>
+    <span class="v">对生成内容缺乏警惕与严谨，就是责任的落点</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s19">
+<section class="page">
+  <div class="assert r d1">认知负荷落在哪里，<em>决定工具是风险还是资源</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左上：四年级案例（靠近小学档） -->
+      <g>
+        <rect x="20" y="90" width="520" height="216" fill="#F4F3F0" stroke="#B23A2E" stroke-width="2"/>
+        <text x="52" y="134" font-size="26" fill="#B23A2E" font-weight="700">四年级动物作业的教训</text>
+        <text x="52" y="178" font-size="24" fill="#4A5158">工具给出的材料中混入了</text>
+        <text x="52" y="212" font-size="24" fill="#4A5158">已被学界否定的分类说法，</text>
+        <text x="52" y="246" font-size="24" fill="#4A5158">作业格式规范、语句通顺，</text>
+        <text x="52" y="280" font-size="24" fill="#4A5158">知识是错的，学生无从识别</text>
+        <path d="M280,306 L280,330" stroke="#B23A2E" stroke-width="3"/>
+        <path d="M266,318 L280,334 L294,318" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      </g>
+
+      <!-- 小学 -->
+      <g>
+        <rect x="20" y="330" width="512" height="234" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="20" y="330" width="512" height="72" fill="#B23A2E"/>
+        <text x="52" y="378" font-size="28" fill="#FFFFFF" font-weight="700">小学　不具备真伪判断能力</text>
+        <text x="52" y="440" font-size="25" fill="#4A5158">独立使用开放式生成，</text>
+        <text x="52" y="476" font-size="25" fill="#4A5158">得到的内容会整体接受</text>
+        <rect x="52" y="496" width="448" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="276" y="530" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">格式规范、语句通顺、知识是错的</text>
+      </g>
+
+      <!-- 初中 -->
+      <g>
+        <rect x="576" y="210" width="512" height="354" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="576" y="210" width="512" height="72" fill="#0E5C5A"/>
+        <text x="608" y="258" font-size="28" fill="#FFFFFF" font-weight="700">初中　初步的逻辑检验能力</text>
+        <text x="608" y="322" font-size="25" fill="#4A5158">可以承担分析比较类任务：</text>
+        <text x="608" y="358" font-size="25" fill="#4A5158">让工具生成两种对立观点，</text>
+        <text x="608" y="394" font-size="25" fill="#4A5158">再找出各自论证的漏洞</text>
+        <rect x="608" y="418" width="448" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="832" y="452" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">认知负荷落在鉴别上</text>
+        <rect x="608" y="482" width="448" height="52" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="832" y="516" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">工具的错误反而成为教学资源</text>
+      </g>
+
+      <!-- 高中 -->
+      <g>
+        <rect x="1132" y="90" width="512" height="474" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="1132" y="90" width="512" height="72" fill="#0E5C5A"/>
+        <text x="1164" y="138" font-size="28" fill="#FFFFFF" font-weight="700">高中　可进入原理层面</text>
+        <text x="1164" y="202" font-size="25" fill="#4A5158">测试同一问题</text>
+        <text x="1164" y="238" font-size="25" fill="#4A5158">在不同提示方式下的输出差异，</text>
+        <text x="1164" y="274" font-size="25" fill="#4A5158">从而理解概率生成机制的局限</text>
+        <rect x="1164" y="306" width="448" height="52" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1388" y="340" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">错误成为理解机制的入口</text>
+        <rect x="1164" y="378" width="448" height="52" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1388" y="412" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">输出差异本身就是教材</text>
+        <rect x="1164" y="450" width="448" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1388" y="484" font-size="24" fill="#4A5158" text-anchor="middle">从会用工具到理解工具的边界</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="56" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="54" font-size="26" fill="#0E5C5A" font-weight="700">其三　教育场景风险　第一种情形：学段能力与工具能力错配</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">学段不同</span>
+    <span class="v">同一个工具，风险性质就不同</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s20">
+<section class="page">
+  <div class="assert r d1">检测与追查都靠不住，<em>留痕与真实交往才靠得住</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：学术诚信 -->
+      <g>
+        <rect x="20" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">学术诚信边界模糊</text>
+        <text x="52" y="142" font-size="25" fill="#4A5158">读后感：情感饱满、结构完整、引用得当，</text>
+        <text x="52" y="178" font-size="25" fill="#4A5158">教师怀疑由工具生成，但无法举证</text>
+        <rect x="52" y="202" width="736" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="420" y="236" font-size="25" fill="#B23A2E" font-weight="700" text-anchor="middle">事后追查基本无效</text>
+        <text x="52" y="292" font-size="24" fill="#4A5158">输出无固定特征可比对，</text>
+        <text x="52" y="326" font-size="24" fill="#4A5158">检测工具准确率不足以作处分依据</text>
+        <rect x="52" y="348" width="736" height="92" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="420" y="384" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">可行路径是事前设计</text>
+        <text x="420" y="420" font-size="24" fill="#14181C" text-anchor="middle">提纲草稿、修改痕迹、资料出处，以过程性材料判断投入</text>
+      </g>
+
+      <!-- 右：情感支持 -->
+      <g>
+        <rect x="844" y="16" width="800" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="844" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="876" y="68" font-size="29" fill="#FFFFFF" font-weight="700">师生关系与情感支持被替代</text>
+        <text x="876" y="142" font-size="25" fill="#4A5158">学生遇同伴矛盾、家庭冲突、升学焦虑，</text>
+        <text x="876" y="178" font-size="25" fill="#4A5158">转向工具倾诉</text>
+        <rect x="876" y="202" width="736" height="52" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1244" y="236" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">不会不耐烦　不会评价　随时可用</text>
+        <text x="876" y="292" font-size="24" fill="#4A5158">回应结构完整、情感中立、与处境缺少实质关联，</text>
+        <text x="876" y="326" font-size="24" fill="#4A5158">但即时且无条件，往往被认为比谁都懂我</text>
+        <rect x="876" y="348" width="736" height="92" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1244" y="384" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">工具给情绪安抚，不给教育性陪伴</text>
+        <text x="1244" y="420" font-size="24" fill="#14181C" text-anchor="middle">社会性发展依赖真实交往：被误解、需解释、要妥协</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#B23A2E" font-weight="700">实验课要求提交原始数据记录而非仅提交结论报告　记录本身构成学习证据</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">识别途径</span>
+    <span class="v">班主任留意学生表达方式与交往状态的变化</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s21">
+<section class="page">
+  <div class="assert r d1">作业成绩体现的是工具能力，<em>不是学生自己的思考能力</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：研究信息 -->
+      <g>
+        <rect x="20" y="16" width="480" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="480" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="28" fill="#FFFFFF" font-weight="700">回顾性研究</text>
+        <text x="52" y="150" font-size="72" fill="#0E5C5A" font-weight="700">26811</text>
+        <text x="52" y="192" font-size="26" fill="#14181C" font-weight="700">名初高中学生</text>
+        <text x="52" y="248" font-size="25" fill="#4A5158">我国中部某县 9 所中学</text>
+        <text x="52" y="288" font-size="25" fill="#4A5158">跨度 30 个月的学业记录</text>
+        <rect x="52" y="316" width="416" height="56" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="260" y="352" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">使用智能工具完成作业之后</text>
+        <text x="52" y="416" font-size="24" fill="#9B978D">香港大学经济学教授吴延晖牵头</text>
+      </g>
+
+      <!-- 右：分歧曲线 -->
+      <g>
+        <rect x="536" y="16" width="1108" height="440" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="568" y="62" font-size="27" fill="#14181C" font-weight="700">作业成绩与考试成绩，向两个方向分开</text>
+
+        <!-- 坐标轴 -->
+        <path d="M640,400 L1580,400" stroke="#E3E1DA" stroke-width="2"/>
+        <path d="M640,400 L640,110" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="620" y="128" font-size="24" fill="#9B978D" text-anchor="end">成绩</text>
+        <text x="760" y="436" font-size="24" fill="#9B978D">起始</text>
+        <text x="1010" y="436" font-size="24" fill="#9B978D">6 个月</text>
+        <text x="1270" y="436" font-size="24" fill="#9B978D">1 年</text>
+        <text x="1520" y="436" font-size="24" fill="#9B978D">2 年</text>
+
+        <!-- 曲线：作业成绩上行 -->
+        <path d="M700,300 C820,258 920,196 1030,172 C1200,138 1400,128 1560,124" stroke="#0E5C5A" stroke-width="4" fill="none"/>
+        <circle cx="1030" cy="172" r="8" fill="#0E5C5A"/>
+        <text x="1058" y="150" font-size="25" fill="#0E5C5A" font-weight="700">作业成绩　更快更好</text>
+        <text x="1058" y="184" font-size="24" fill="#6E757D">体现的是工具能力</text>
+
+        <!-- 曲线：考试成绩下行 -->
+        <path d="M700,300 C820,316 950,342 1030,352 C1220,372 1400,382 1560,388" stroke="#B23A2E" stroke-width="4" fill="none"/>
+        <circle cx="1030" cy="352" r="8" fill="#B23A2E"/>
+        <circle cx="1400" cy="382" r="8" fill="#B23A2E"/>
+        <circle cx="1560" cy="388" r="8" fill="#B23A2E"/>
+
+        <!-- 标注 -->
+        <rect x="1018" y="252" width="252" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1144" y="286" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">月考成绩　下降 20%</text>
+        <rect x="1292" y="252" width="348" height="52" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1466" y="286" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">中考基线降 24%　高考降 18%</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">作业完成质量已不足以反映实际投入　过程性材料因此必要</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">研究判断</span>
+    <span class="v">作业成绩越好，越不能证明学生的思考能力在增长</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s22">
+<section class="page">
+  <div class="assert r d1">分层依据不公开，<em>差距就被机制化放大</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左：分层机制 -->
+      <g>
+        <rect x="20" y="16" width="1020" height="440" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="62" font-size="27" fill="#0E5C5A" font-weight="700">算法分层机制</text>
+
+        <rect x="52" y="88" width="290" height="72" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="197" y="132" font-size="26" fill="#14181C" font-weight="700" text-anchor="middle">正确率与答题时长</text>
+        <path d="M342,124 L398,124" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M384,110 L402,124 L384,138" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="402" y="88" width="250" height="72" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="527" y="132" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">自动分层</text>
+        <path d="M652,124 L708,124" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M694,110 L712,124 L694,138" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="712" y="88" width="296" height="72" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="860" y="132" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">推送不同难度内容</text>
+
+        <rect x="52" y="196" width="956" height="104" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="76" y="238" font-size="26" fill="#B23A2E" font-weight="700">失效点一　分层依据不向学生与家长公开</text>
+        <text x="76" y="280" font-size="24" fill="#4A5158">学生无从知晓自己为何被归入某一层，也无从申诉</text>
+
+        <rect x="52" y="320" width="956" height="104" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="76" y="362" font-size="26" fill="#B23A2E" font-weight="700">失效点二　分层结果一旦固化</text>
+        <text x="76" y="404" font-size="24" fill="#4A5158">低层级学生获得的资源、期待与自我认知同步下降，差距被机制化放大</text>
+      </g>
+
+      <!-- 右：其四 开端 -->
+      <g>
+        <rect x="1076" y="16" width="568" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="1076" y="16" width="568" height="80" fill="#0E5C5A"/>
+        <text x="1108" y="68" font-size="27" fill="#FFFFFF" font-weight="700">其四　内容与价值导向风险</text>
+        <text x="1108" y="146" font-size="25" fill="#14181C" font-weight="700">共同特征：错误内容看起来不像错误</text>
+        <text x="1108" y="186" font-size="24" fill="#4A5158">通顺、连贯、结构完整，</text>
+        <text x="1108" y="220" font-size="24" fill="#4A5158">甚至附带看似权威的出处</text>
+        <text x="1108" y="270" font-size="25" fill="#0E5C5A" font-weight="700">历史与地理素材</text>
+        <rect x="1108" y="290" width="504" height="48" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1360" y="322" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">地图边界画法错误　政治性问题</text>
+        <rect x="1108" y="350" width="504" height="48" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1360" y="382" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">历史叙述分期、因果、民族关系偏差</text>
+        <rect x="1108" y="410" width="504" height="48" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1360" y="442" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">人物图像服饰器物与史实不符</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">政策强调保障自主决策权　落点正在于分层依据须可查询、可申诉、可调整</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">其四　内容与价值导向</span>
+    <span class="v">课件插图被学生当作信史接受，纠正成本远高于教学成本</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s23">
+<section class="page">
+  <div class="assert r d1">分层标准是否公开，<em>是争议的共同焦点</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部案例带 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="88" fill="#0E5C5A"/>
+        <text x="52" y="54" font-size="26" fill="#C4DAD8" font-weight="700">2026 年秋季学期</text>
+        <text x="52" y="88" font-size="28" fill="#FFFFFF" font-weight="700">武汉多所初中在阳光分班基础上推行分层走班</text>
+      </g>
+
+      <!-- 左：学校做法 -->
+      <g>
+        <rect x="20" y="132" width="1020" height="252" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="178" font-size="26" fill="#0E5C5A" font-weight="700">学校的做法</text>
+        <text x="52" y="224" font-size="25" fill="#14181C" font-weight="700">汉阳三初</text>
+        <text x="52" y="262" font-size="24" fill="#4A5158">11 月期中考试后，依据期中成绩对数学、英语分层，</text>
+        <text x="52" y="298" font-size="24" fill="#4A5158">学生按成绩进入三个层级，由不同师资团队授课</text>
+        <rect x="52" y="316" width="180" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="142" y="348" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">拔高</text>
+        <rect x="248" y="316" width="180" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="338" y="348" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">提升</text>
+        <rect x="444" y="316" width="180" height="48" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="534" y="348" font-size="24" fill="#0E5C5A" font-weight="700" text-anchor="middle">基础</text>
+        <text x="700" y="224" font-size="25" fill="#14181C" font-weight="700">二桥中学</text>
+        <text x="700" y="262" font-size="24" fill="#4A5158">两校区已启动数学周测，</text>
+        <text x="700" y="298" font-size="24" fill="#4A5158">分层细则待公布</text>
+      </g>
+
+      <!-- 右：家长争论 -->
+      <g>
+        <rect x="1076" y="132" width="568" height="252" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1108" y="178" font-size="26" fill="#B23A2E" font-weight="700">同期杭州、济南等地</text>
+        <text x="1108" y="226" font-size="25" fill="#14181C" font-weight="700">家长公开争论</text>
+        <text x="1108" y="266" font-size="24" fill="#4A5158">分层依据与资源配置，</text>
+        <text x="1108" y="302" font-size="24" fill="#4A5158">部分学校被要求说明分层标准</text>
+      </g>
+
+      <!-- 三问 -->
+      <g>
+        <rect x="20" y="412" width="512" height="152" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="276" y="474" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">按什么分？</text>
+        <text x="276" y="522" font-size="24" fill="#4A5158" text-anchor="middle">成绩之外还看什么</text>
+        <rect x="576" y="412" width="512" height="152" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="832" y="474" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">依据是否公开？</text>
+        <text x="832" y="522" font-size="24" fill="#4A5158" text-anchor="middle">学生与家长能否查到</text>
+        <rect x="1132" y="412" width="512" height="152" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="1388" y="474" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">资源是否跟进？</text>
+        <text x="1388" y="522" font-size="24" fill="#4A5158" text-anchor="middle">分层后师资与资源同步吗</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">三问</span>
+    <span class="v">争议集中于按什么分、依据是否公开、资源是否同步</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s24">
+<section class="page">
+  <div class="assert r d1">错误内容看起来<em>不像错误</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部特征条 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="72" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="62" font-size="26" fill="#14181C" font-weight="700">通顺、连贯、结构完整，甚至附带看似权威的出处</text>
+      </g>
+
+      <!-- 三栏素材 -->
+      <g>
+        <rect x="20" y="112" width="512" height="308" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="112" width="512" height="68" fill="#B23A2E"/>
+        <text x="52" y="158" font-size="27" fill="#FFFFFF" font-weight="700">文献与文学素材</text>
+        <text x="52" y="220" font-size="24" fill="#4A5158">古诗赏析朝代混淆、作者错配</text>
+        <text x="52" y="258" font-size="24" fill="#4A5158">引文标注看似规范，出处不存在</text>
+        <text x="52" y="296" font-size="24" fill="#4A5158">名人名言归属错误</text>
+        <rect x="52" y="322" width="448" height="76" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="276" y="356" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">最难识别</text>
+        <text x="276" y="386" font-size="24" fill="#4A5158" text-anchor="middle">教师通常没有时间逐条核对原书</text>
+      </g>
+      <g>
+        <rect x="576" y="112" width="512" height="308" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <rect x="576" y="112" width="512" height="68" fill="#B23A2E"/>
+        <text x="608" y="158" font-size="27" fill="#FFFFFF" font-weight="700">科学素材</text>
+        <text x="608" y="220" font-size="24" fill="#4A5158">例题数据设置导致无解</text>
+        <text x="608" y="258" font-size="24" fill="#4A5158">化学方程式配平错误</text>
+        <text x="608" y="296" font-size="24" fill="#4A5158">图表与文字说明不一致，流程缺环节</text>
+        <rect x="608" y="322" width="448" height="76" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="832" y="356" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">直接进入知识结构</text>
+        <text x="832" y="386" font-size="24" fill="#4A5158" text-anchor="middle">学生以错误前提继续推理</text>
+      </g>
+      <g>
+        <rect x="1132" y="112" width="512" height="308" fill="#FFFFFF" stroke="#9B978D" stroke-width="2"/>
+        <rect x="1132" y="112" width="512" height="68" fill="#B23A2E"/>
+        <text x="1164" y="158" font-size="27" fill="#FFFFFF" font-weight="700">价值导向方面</text>
+        <text x="1164" y="220" font-size="24" fill="#4A5158">民族、宗教、领土主权等议题上，</text>
+        <text x="1164" y="258" font-size="24" fill="#4A5158">生成内容可能出现表述偏差</text>
+        <rect x="1164" y="322" width="448" height="76" fill="#B23A2E"/>
+        <text x="1388" y="356" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">不属于教学疏忽</text>
+        <text x="1388" y="386" font-size="24" fill="#FFFFFF" text-anchor="middle">属于未履行审查义务</text>
+      </g>
+
+      <!-- 其五 数据合规 -->
+      <g>
+        <rect x="20" y="448" width="1624" height="116" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="52" y="490" font-size="26" fill="#0E5C5A" font-weight="700">其五　数据合规风险</text>
+        <text x="52" y="532" font-size="25" fill="#4A5158">学生名册、成绩表、家庭情况说明、心理健康记录、身份信息，均属个人信息，部分属敏感个人信息</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">其五　数据合规</span>
+    <span class="v">将其输入外部服务，等同于把信息转移给第三方</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s25">
+<section class="page">
+  <div class="assert r d1">图省事、没意识、随意选工具，<em>合规就在这些地方失守</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- ① 图省事 -->
+      <g>
+        <rect x="20" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="20" y="16" width="512" height="80" fill="#B23A2E"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">情形一　图省事</text>
+        <text x="52" y="148" font-size="25" fill="#14181C" font-weight="700">为分析成绩，上传完整成绩表</text>
+        <text x="52" y="192" font-size="24" fill="#4A5158">连同姓名、学号一并上传，</text>
+        <text x="52" y="228" font-size="24" fill="#4A5158">而分析所需仅是分数一列</text>
+        <rect x="52" y="260" width="448" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="276" y="294" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">最小必要原则被越过</text>
+        <rect x="52" y="340" width="448" height="92" fill="#B23A2E"/>
+        <text x="276" y="378" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">全班身份信息与成绩信息</text>
+        <text x="276" y="412" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">同时进入外部服务</text>
+      </g>
+
+      <!-- ② 无意识 -->
+      <g>
+        <rect x="576" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="576" y="16" width="512" height="80" fill="#B23A2E"/>
+        <text x="608" y="68" font-size="29" fill="#FFFFFF" font-weight="700">情形二　无意识</text>
+        <text x="608" y="148" font-size="25" fill="#14181C" font-weight="700">班级群内上传学生活动照片</text>
+        <text x="608" y="192" font-size="24" fill="#4A5158">用工具生成活动集锦，</text>
+        <text x="608" y="228" font-size="24" fill="#4A5158">照片中的面部信息已被处理</text>
+        <rect x="608" y="260" width="448" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="832" y="294" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">监护人未作单独授权</text>
+        <rect x="608" y="340" width="448" height="92" fill="#B23A2E"/>
+        <text x="832" y="378" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">入学告知书中的概括条款</text>
+        <text x="832" y="412" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">不构成对肖像、音视频的单独授权</text>
+      </g>
+
+      <!-- ③ 工具选择随意 -->
+      <g>
+        <rect x="1132" y="16" width="512" height="440" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="1132" y="16" width="512" height="80" fill="#B23A2E"/>
+        <text x="1164" y="68" font-size="29" fill="#FFFFFF" font-weight="700">情形三　工具选择随意</text>
+        <text x="1164" y="148" font-size="25" fill="#14181C" font-weight="700">用来源不明的免费工具</text>
+        <text x="1164" y="192" font-size="24" fill="#4A5158">处理学生材料，数据存储于</text>
+        <text x="1164" y="228" font-size="24" fill="#4A5158">境外服务器，出境未履行程序</text>
+        <rect x="1164" y="260" width="448" height="52" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2"/>
+        <text x="1388" y="294" font-size="24" fill="#B23A2E" font-weight="700" text-anchor="middle">服务条款保留了训练使用权</text>
+        <rect x="1164" y="340" width="448" height="92" fill="#B23A2E"/>
+        <text x="1388" y="378" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">学生材料因此进入训练语料</text>
+        <text x="1388" y="412" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">永久留存于模型之中</text>
+      </g>
+
+      <!-- 底部 -->
+      <g>
+        <rect x="20" y="488" width="1624" height="76" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="52" y="538" font-size="27" fill="#14181C" font-weight="700">三种情形的共同后果：材料进入第三方处理流程，机构失去流转控制</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">合规底线</span>
+    <span class="v">输入外部服务之前，先问材料该不该出去、出去多少</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s26"><style>#s26 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s26 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第四章</span>　两类风险的治理指向</div>
+  <div class="assert r d1">内生风险靠谨慎义务，<em>外生风险靠流程约束</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 左轨：内生 -->
+      <g>
+        <rect x="20" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="52" y="68" font-size="29" fill="#FFFFFF" font-weight="700">内生风险　无法通过规范消除</text>
+        <rect x="20" y="112" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="44" y="134" width="150" height="54" fill="#0E5C5A"/>
+        <text x="119" y="170" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">使用前</text>
+        <text x="220" y="170" font-size="26" fill="#14181C" font-weight="700">核验　对事实性内容逐项比对权威来源</text>
+        <rect x="20" y="226" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="44" y="248" width="150" height="54" fill="#0E5C5A"/>
+        <text x="119" y="284" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">使用中</text>
+        <text x="220" y="284" font-size="26" fill="#14181C" font-weight="700">审查　评价、分层、价值导向由人复核</text>
+        <rect x="20" y="340" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="44" y="362" width="150" height="54" fill="#0E5C5A"/>
+        <text x="119" y="398" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">使用后</text>
+        <text x="220" y="398" font-size="26" fill="#14181C" font-weight="700">留痕　保留原始材料与加工过程</text>
+        <rect x="20" y="454" width="800" height="64" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="420" y="495" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">这是谨慎义务，不是禁止使用</text>
+      </g>
+
+      <!-- 右轨：外生 -->
+      <g>
+        <rect x="844" y="16" width="800" height="80" fill="#0E5C5A"/>
+        <text x="876" y="68" font-size="29" fill="#FFFFFF" font-weight="700">外生风险　制度约束可以防范</text>
+        <rect x="844" y="112" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="868" y="134" width="150" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="943" y="170" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">责任</text>
+        <text x="1044" y="170" font-size="26" fill="#14181C" font-weight="700">明确谁审核、谁署名、谁承担</text>
+        <rect x="844" y="226" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="868" y="248" width="150" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="943" y="284" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">准入</text>
+        <text x="1044" y="284" font-size="26" fill="#14181C" font-weight="700">明确工具准入的标准与程序</text>
+        <rect x="844" y="340" width="800" height="98" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="868" y="362" width="150" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="943" y="398" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">边界</text>
+        <text x="1044" y="398" font-size="26" fill="#14181C" font-weight="700">明确学生使用的边界与记录方式</text>
+        <rect x="844" y="454" width="800" height="64" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1244" y="486" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">明确数据处理的规范</text>
+        <text x="1244" y="512" font-size="24" fill="#4A5158" text-anchor="middle">第一部分已涉及，第三部分落为可执行的要求</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">治理指向</span>
+    <span class="v">两条路径都不要求教师放弃使用工具</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s27">
+<section class="page">
+  <div class="assert r d1">治理强度随风险<em>可否被规范消除</em>而分档</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶部 -->
+      <g>
+        <rect x="20" y="16" width="1624" height="88" fill="#0E5C5A"/>
+        <text x="52" y="54" font-size="26" fill="#C4DAD8" font-weight="700">2026 年　《北京市教育领域人工智能应用指南》</text>
+        <text x="52" y="88" font-size="28" fill="#FFFFFF" font-weight="700">高等教育领域　覆盖教学、科研、管理等七类场景</text>
+      </g>
+
+      <!-- 三类清单 -->
+      <g>
+        <rect x="20" y="132" width="512" height="248" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <rect x="20" y="132" width="512" height="76" fill="#B23A2E"/>
+        <text x="276" y="182" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">禁止准入</text>
+        <text x="52" y="252" font-size="24" fill="#14181C" font-weight="700">需要体现以下能力的场景，</text>
+        <text x="52" y="288" font-size="24" fill="#14181C" font-weight="700">人工智能不得介入</text>
+        <text x="52" y="330" font-size="24" fill="#4A5158">独立学术能力　独立思考能力</text>
+        <text x="52" y="362" font-size="24" fill="#4A5158">专业判断力　伦理思辨力</text>
+      </g>
+      <g>
+        <rect x="576" y="132" width="512" height="248" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <rect x="576" y="132" width="512" height="76" fill="#9B978D"/>
+        <text x="832" y="182" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">有限使用</text>
+        <text x="608" y="252" font-size="24" fill="#14181C" font-weight="700">机理层面无法消除的风险，</text>
+        <text x="608" y="288" font-size="24" fill="#14181C" font-weight="700">以有限使用加以约束</text>
+        <text x="608" y="330" font-size="24" fill="#4A5158">内生风险的治理档位</text>
+      </g>
+      <g>
+        <rect x="1132" y="132" width="512" height="248" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="1132" y="132" width="512" height="76" fill="#0E5C5A"/>
+        <text x="1388" y="182" font-size="30" fill="#FFFFFF" font-weight="700" text-anchor="middle">鼓励使用</text>
+        <text x="1164" y="252" font-size="24" fill="#14181C" font-weight="700">使用方式层面的风险，</text>
+        <text x="1164" y="288" font-size="24" fill="#14181C" font-weight="700">以鼓励使用加流程要求规范</text>
+        <text x="1164" y="330" font-size="24" fill="#4A5158">外生风险的治理档位</text>
+      </g>
+
+      <!-- 同构条 -->
+      <g>
+        <rect x="20" y="410" width="800" height="154" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="456" font-size="27" fill="#0E5C5A" font-weight="700">与两类风险的区分同构</text>
+        <text x="52" y="502" font-size="25" fill="#4A5158">机理层面无法消除的风险，</text>
+        <text x="52" y="538" font-size="25" fill="#4A5158">以禁止准入与有限使用加以约束</text>
+        <rect x="844" y="410" width="800" height="154" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="876" y="456" font-size="27" fill="#0E5C5A" font-weight="700">使用方式层面的风险</text>
+        <text x="876" y="502" font-size="25" fill="#4A5158">以鼓励使用加流程要求加以规范，</text>
+        <text x="876" y="538" font-size="25" fill="#4A5158">治理强度随风险可否被规范消除而分档</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">同构关系</span>
+    <span class="v">机理管不了的用准入管，使用层面的用流程管</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s28">
+<section class="page">
+  <div class="assert r d1">工具扩展作业能力，<em>不替代专业判断</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 580" preserveAspectRatio="xMidYMid meet">
+      <!-- 两个入口 -->
+      <g>
+        <rect x="20" y="16" width="800" height="120" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="52" y="62" font-size="27" fill="#0E5C5A" font-weight="700">对内生风险</text>
+        <text x="52" y="108" font-size="30" fill="#14181C" font-weight="700">不指望工具可靠，只保证核验到位</text>
+        <rect x="844" y="16" width="800" height="120" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="876" y="62" font-size="27" fill="#0E5C5A" font-weight="700">对外生风险</text>
+        <text x="876" y="108" font-size="30" fill="#14181C" font-weight="700">不依赖个人谨慎，只依靠流程约束</text>
+      </g>
+
+      <!-- 汇入 -->
+      <path d="M420,136 L420,178 L832,178 L832,198" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M1244,136 L1244,178 L832,178" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M818,184 L832,202 L846,184" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+      <!-- 准确定位 -->
+      <g>
+        <rect x="20" y="202" width="1624" height="112" fill="#0E5C5A"/>
+        <text x="832" y="252" font-size="30" fill="#C4DAD8" font-weight="700" text-anchor="middle">保持对工具的准确定位</text>
+        <text x="832" y="296" font-size="34" fill="#FFFFFF" font-weight="700" text-anchor="middle">作业能力的扩展，不是专业判断的替代</text>
+      </g>
+
+      <!-- 三条回扣 -->
+      <g>
+        <rect x="20" y="350" width="512" height="112" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="276" y="400" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">分清风险来源</text>
+        <text x="276" y="438" font-size="24" fill="#4A5158" text-anchor="middle">内生消不掉，外生防得住</text>
+        <rect x="576" y="350" width="512" height="112" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="832" y="400" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">核验与留痕</text>
+        <text x="832" y="438" font-size="24" fill="#4A5158" text-anchor="middle">使用前核验，使用后留痕</text>
+        <rect x="1132" y="350" width="512" height="112" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1388" y="400" font-size="26" fill="#0E5C5A" font-weight="700" text-anchor="middle">流程约束</text>
+        <text x="1388" y="438" font-size="24" fill="#4A5158" text-anchor="middle">责任、准入、边界、数据定清楚</text>
+      </g>
+
+      <!-- 结语 -->
+      <g>
+        <rect x="20" y="486" width="1624" height="78" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="832" y="536" font-size="30" fill="#14181C" font-weight="700" text-anchor="middle">技术改变的是完成工作的方式，未改变对工作结果的责任</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">收口</span>
+    <span class="v">工具越快，判断越要慢；生成越容易，核验越不能省</span>
+  </div>
+</section>
+</section>
+</div>
+<div id="bar"><button id="prev">上一页</button><button id="next">下一页</button></div>
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var cur = 0;
+  function fit(){
+    var s = Math.min(innerWidth/1920, innerHeight/1080);
+    slides.forEach(function(el){ el.style.transform = 'scale('+s+')'; });
+  }
+  function go(i){
+    cur = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach(function(el,k){ el.classList.toggle('on', k===cur); });
+    try{ localStorage.setItem('ai-risk-origin-deck', String(cur)); }catch(e){}
+  }
+  document.getElementById('next').addEventListener('click', function(){ go(cur+1); });
+  document.getElementById('prev').addEventListener('click', function(){ go(cur-1); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(cur+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(cur-1); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(slides.length-1); }
+    else if(e.key==='p'||e.key==='P'){ window.print(); }
+  });
+  window.addEventListener('resize', fit);
+  fit();
+  var saved = 0;
+  try{ saved = parseInt(localStorage.getItem('ai-risk-origin-deck'),10) || 0; }catch(e){}
+  go(saved);
+})();
+</script>
+</body>
+</html>

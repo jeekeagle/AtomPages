@@ -1,10 +1,10 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-30T18:16:35.491162+08:00",
+  "updatedAt": "2026-10-30T22:07:54.922108+08:00",
   "generatedBy": "tools/collect.py",
-  "moduleCount": 11,
-  "itemCount": 19,
+  "moduleCount": 12,
+  "itemCount": 20,
   "modules": [
     {
       "no": "M01",
@@ -46,9 +46,9 @@
           "slides": 18,
           "kind": "deck",
           "bytes": 110205,
-          "hash": "5c1cc5d621e01545",
+          "hash": "1b00752e1c639b7b",
           "selfContained": true,
-          "updatedAt": "2026-10-30T18:13:50.143193+08:00",
+          "updatedAt": "2026-10-30T18:23:01.989470+08:00",
           "addedAt": "2026-10-30T18:16:35.309171+08:00",
           "no": "01-02",
           "index": 2
@@ -481,6 +481,35 @@
           "updatedAt": "2026-10-29T22:23:13.403992+08:00",
           "addedAt": "2026-10-30T17:22:46.685103+08:00",
           "no": "11-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M12",
+      "slug": "misc",
+      "name": "未归档",
+      "desc": "自动归集的条目",
+      "count": 1,
+      "items": [
+        {
+          "key": "misc/人工智能的风险从何而来",
+          "module": "misc",
+          "title": "人工智能的风险从何而来",
+          "slug": "人工智能的风险从何而来",
+          "sourceProject": "ai-risk-origin-huashu",
+          "sourceSection": "",
+          "html": "pages/misc/人工智能的风险从何而来.html",
+          "pdf": "pdfs/misc/人工智能的风险从何而来.pdf",
+          "thumb": "thumbs/misc/人工智能的风险从何而来.jpg",
+          "slides": 28,
+          "kind": "deck",
+          "bytes": 126979,
+          "hash": "43c75a8d6ffcdc40",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T19:52:06.776843+08:00",
+          "addedAt": "2026-10-30T22:07:54.651155+08:00",
+          "no": "12-01",
           "index": 1
         }
       ]
