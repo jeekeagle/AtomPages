@@ -1,7 +1,7 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-30T23:54:17.924590+08:00",
+  "updatedAt": "2026-10-31T02:02:38.165847+08:00",
   "generatedBy": "tools/collect.py",
   "moduleCount": 12,
   "itemCount": 23,
@@ -423,7 +423,7 @@
       "slug": "interface",
       "name": "交互界面",
       "desc": "交互界面与人的认知瓶颈",
-      "count": 2,
+      "count": 3,
       "items": [
         {
           "key": "interface/交互界面-翻译成本在人与机器之间转移的历史",
@@ -464,6 +464,26 @@
           "addedAt": "2026-10-30T23:16:31.295980+08:00",
           "no": "09-02",
           "index": 2
+        },
+        {
+          "key": "interface/识别界面的同时失效",
+          "module": "interface",
+          "title": "识别界面的同时失效",
+          "slug": "识别界面的同时失效",
+          "sourceProject": "interface-failure-huashu",
+          "sourceSection": "",
+          "html": "pages/interface/识别界面的同时失效.html",
+          "pdf": "pdfs/interface/识别界面的同时失效.pdf",
+          "thumb": "thumbs/interface/识别界面的同时失效.jpg",
+          "slides": 10,
+          "kind": "deck",
+          "bytes": 32135,
+          "hash": "dad0951d456e13dc",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T23:53:30.741132+08:00",
+          "addedAt": "2026-10-30T23:16:31.295980+08:00",
+          "no": "09-03",
+          "index": 3
         }
       ]
     },
