@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人工智能的风险从何而来·两类风险的治理指向与结论</title>
+<style>
+/* ============================================================
+   课件模式 · 视觉变量源（唯一）
+   ------------------------------------------------------------
+   风格基线：Michael Alley 断言—证据
+   场景：大屏投影，我讲学生听
+   规则：任何颜色/字号/间距都只能改这里，不在页内写死
+   ============================================================ */
+
+:root{
+  /* ---------- 画布 ---------- */
+  --canvas-w: 1920px;
+  --canvas-h: 1080px;
+
+  /* ---------- 栅格 ---------- */
+  --pad-x: 128px;          /* 左右安全边 */
+  --pad-top: 104px;         /* 上安全边 */
+  --pad-bottom: 96px;      /* 下安全边 */
+  --content-w: calc(var(--canvas-w) - var(--pad-x) * 2);   /* 1664px */
+
+  /* ---------- 色板 ---------- */
+  --paper:   #FFFFFF;       /* 底 */
+  --paper-warm: #F8F6F1;    /* 暖白：图内浅色块，与纸白区分 */
+  --ink:     #14181C;       /* 主墨：标题、结构线 */
+  --ink2:    #4A5158;       /* 次墨：正文 */
+  --ink3:    #6E757D;       /* 弱墨：图内标签、注释 */
+  --ink4:    #9B978D;       /* 最弱：分隔线上的小字 */
+  --line:    #E3E1DA;       /* 分隔线 */
+  --line2:   #EFEDE7;       /* 更浅的分隔线 */
+  --accent:  #0E5C5A;       /* 主张色：深青。用于断言高亮、结构线强调 */
+  --accent-soft: #E9F2F1;   /* 主张色的极浅底 */
+  --accent-line: #B7D2D0;   /* 主张色的浅描边 */
+  --accent-pale: #C4DAD8;   /* 主张色上的次级字 */
+  --warn:    #B23A2E;       /* 警示色：砖红。只用于「禁止/追责/反面」 */
+  --warn-soft: #F6EDEB;
+  --warn-line: #E0B4AC;
+  --neutral-fill: #F4F3F0;  /* 中性块底 */
+  --neutral-line: #9B978D;  /* 中性块描边 */
+  /* 换主张色时：只改 --accent 一个值即可全页生效（CSS 变量已下沉到 SVG）。
+     不能取砖红 #B23A2E（那是警示色，两红相撞会丢掉「禁止/追责」的语义）。
+     本讲取深青 #0E5C5A（与警示色 ΔE > 75，安全线 30）。 */
+
+  /* ---------- 字体 ----------
+     只用三个族（用户硬规矩）：黑体 / 微软雅黑 / 华文中宋
+     不引入宋体、苹方、Noto，fallback 也回落到黑体 */
+  --font-sans: "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", sans-serif;
+  --font-serif: "STZhongsong", "华文中宋", "SimHei", "黑体", serif;
+
+  /* ---------- 字阶 ----------
+     下限：正文 30px，标签 24px（远高于 deck 底线 24/16） */
+  --fs-cover:   120px;      /* 封面主标题 */
+  --fs-section: 104px;      /* 章节页大字 */
+  --fs-assert:  56px;       /* 断言标题（内容页标题） */
+  --fs-lead:    34px;       /* 段标题 / 引语 */
+  --fs-body:    30px;       /* 正文 */
+  --fs-concl:   28px;       /* 结论条 */
+  --fs-label:   26px;       /* 图内标签 */
+  --fs-note:    24px;       /* 注释、脚注 */
+
+  --lh-tight: 1.24;
+  --lh-assert: 1.42;
+  --lh-body: 1.78;
+
+  /* ---------- 间距阶 ---------- */
+  --sp-1: 12px;
+  --sp-2: 20px;
+  --sp-3: 28px;
+  --sp-4: 38px;
+  --sp-5: 52px;
+  --sp-6: 72px;
+  --sp-7: 104px;
+
+  /* ---------- 动效 ---------- */
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur: .58s;
+}
+
+/* ============================================================
+   画布与基线
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family: var(--font-sans);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  position: relative;
+}
+
+/* ============================================================
+   页骨架：断言 → 分隔线 → 一张图 → 结论条
+   ============================================================ */
+.page{
+  width: var(--canvas-w);
+  height: var(--canvas-h);
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   共用零件
+   ============================================================ */
+
+/* 断言标题：完整一句，最多两行 */
+.assert{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-assert);
+  line-height: var(--lh-assert);
+  letter-spacing: .005em;
+  color: var(--ink);
+  max-width: var(--content-w);
+  flex: 0 0 auto;
+}
+.assert em{ font-style: normal; color: var(--accent); }
+
+/* 断言下的分隔线：短靛段 + 长浅线 */
+.rule{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: var(--sp-4);
+  flex: 0 0 auto;
+}
+.rule b{ display:block; width:120px; height:3px; background:var(--accent); }
+.rule i{ display:block; flex:1; height:1px; background:var(--line); }
+
+/* 底部结论条 */
+.concl{
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.concl .k{
+  font-size: var(--fs-concl);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+.concl .v{ font-size: var(--fs-concl); color: var(--ink3); }
+
+/* 眉标：课程名 / 讲次，无英文 */
+.eyebrow{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink2);
+}
+.mark{
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--ink3);
+}
+
+/* 图区：断言下方的主场 */
+.figure{
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: var(--sp-3);
+  display: flex;
+}
+svg.figsvg{ display:block; width:100%; height:100%; }
+svg.figsvg text{ font-family: var(--font-sans); }
+
+/* 段标题（页内小标题） */
+.h3{
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* 正文 */
+.body{ font-size: var(--fs-body); line-height: var(--lh-body); color: var(--ink2); }
+
+/* 图内标签 */
+.label{ font-size: var(--fs-label); fill: var(--ink2); }
+.note{ font-size: var(--fs-note); fill: var(--ink3); }
+
+/* ============================================================
+   图内常用元件与文字级
+   ============================================================ */
+.b-soft{ fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.b-solid{ fill: var(--accent); stroke: none; }
+.b-gray{ fill: var(--neutral-fill); stroke: var(--neutral-line); stroke-width: 2; }
+.b-open{ fill: var(--paper); stroke: var(--accent-line); stroke-width: 2; stroke-dasharray: 9 7; }
+.b-warn{ fill: var(--warn-soft); stroke: var(--warn); stroke-width: 2.5; }
+.b-line{ fill: none; stroke: var(--line); stroke-width: 2; }
+.b-ax{ fill: none; stroke: var(--accent); stroke-width: 3; }
+.b-dash{ fill: none; stroke: var(--neutral-line); stroke-width: 2; stroke-dasharray: 9 7; }
+
+.t-cap{ font-size: 27px; fill: var(--accent); font-weight: 700; }
+.t-cap2{ font-size: 27px; fill: var(--accent-line); font-weight: 700; }
+.t-h{ font-size: 30px; fill: var(--ink); font-weight: 700; }
+.t-hw{ font-size: 30px; fill: #FFFFFF; font-weight: 700; }
+.t-hg{ font-size: 30px; fill: var(--ink2); font-weight: 700; }
+.t-b{ font-size: 26px; fill: var(--ink2); }
+.t-m{ font-size: 25px; fill: var(--ink3); }
+.t-m2{ font-size: 24px; fill: var(--ink3); }
+.t-w{ font-size: 26px; fill: var(--warn); }
+.t-wb{ font-size: 28px; fill: var(--warn); font-weight: 700; }
+.t-k{ font-size: 24px; fill: var(--ink3); font-weight: 700; }
+.t-kw{ font-size: 24px; fill: var(--warn); font-weight: 700; }
+
+/* ============================================================
+   入场动效（轻，只做位移与淡入）
+   ------------------------------------------------------------
+   注意：.r 的初始隐藏只在「有 .on 祖先」时生效。
+   独立单页（直接双击打开、没有 .on 祖先）必须始终可见，
+   否则整页透明 —— 这是 2026-10-30 验证时踩到的坑。
+   ============================================================ */
+.r{ opacity:1; transform:none;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.on .r{ opacity:0; transform: translateY(14px); }
+.on .r.d1{ transition-delay:.07s }
+.on .r.d2{ transition-delay:.14s }
+.on .r.d3{ transition-delay:.21s }
+.on .r.d4{ transition-delay:.28s }
+.on .r.d5{ transition-delay:.35s }
+.on .r.d6{ transition-delay:.42s }
+
+/* 独立单页：直接显示，不做入场动画 */
+body:not(.anim) .r,
+html:not(.anim) body:not(.anim) .r{
+  opacity:1 !important;
+  transform:none !important;
+  transition:none !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .r{ opacity:1; transform:none; transition:none; }
+  .on .r{ opacity:1; transform:none; transition:none; }
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+body{font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{position:absolute;width:1920px;height:1080px;transform-origin:center center;display:none;background:#fff;overflow:hidden}
+.slide.on{display:block}
+#bar{position:fixed;right:26px;bottom:22px;display:flex;gap:14px;align-items:center;
+  font-family:var(--font-sans);font-size:16px;color:#9B978D;user-select:none}
+#bar button{font:inherit;border:1px solid #B7D2D0;background:#fff;color:#14181C;padding:6px 14px;cursor:pointer}
+@media print{
+  #bar{display:none}
+  .slide{display:block;position:relative;page-break-after:always;width:1920px;height:1080px}
+  #stage{position:static;display:block}
+  html,body{width:auto;height:auto;overflow:visible}
+}
+@page{size:1920px 1080px;margin:0}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<section class="slide" id="s1"><style>#s1 .page{ padding:104px 90px 96px; flex-direction:row; align-items:center; gap:40px; }#s1 .cov-left{ flex:0 0 700px; }#s1 .eyebrow{ font-size:30px; font-weight:700; color:var(--ink2); letter-spacing:.08em; }#s1 .eyebrow .em{ color:var(--accent); }#s1 .cov-title{
+    font-family:var(--font-sans); font-weight:700; font-size:112px; line-height:1.14;
+    color:var(--ink); margin-top:40px; letter-spacing:.005em;
+  }#s1 .cov-rule{ width:160px; height:8px; background:var(--accent); margin-top:48px; }#s1 .cov-kicker{ margin-top:22px; font-size:40px; font-weight:700; color:var(--ink2); letter-spacing:.02em; }#s1 .cov-right{ flex:1; min-width:0; }#s1 .figsvg{ width:100%; height:auto; display:block; }
+</style>
+<section class="page">
+  <div class="cov-left">
+    <div class="eyebrow r d1">教师人工智能伦理与安全课程　<span class="em">第二部分之二</span></div>
+    <div class="cov-kicker r d2">两类风险的治理指向与结论</div>
+    <h1 class="cov-title r d3">人工智能的<br>风险从何而来</h1>
+    <div class="cov-rule r d4"></div>
+  </div>
+  <div class="cov-right r d4">
+    <svg class="figsvg" viewBox="0 0 960 780" preserveAspectRatio="xMidYMid meet">
+      <!-- 左轨：内生风险 -->
+      <g>
+        <rect x="6" y="20" width="450" height="114" fill="#0E5C5A"/>
+        <text x="36" y="70" font-size="36" fill="#FFFFFF" font-weight="700">内生风险</text>
+        <text x="36" y="110" font-size="27" fill="#C4DAD8">规范不能消除</text>
+      </g>
+      <g>
+        <rect x="6" y="170" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="32" y="210" font-size="24" fill="#6E757D" font-weight="700">应对</text>
+        <text x="32" y="252" font-size="30" fill="#14181C" font-weight="700">核验　审查　留痕</text>
+        <text x="32" y="282" font-size="25" fill="#4A5158">不改变工具，只改变人的做法</text>
+      </g>
+
+      <!-- 右轨：外生风险 -->
+      <g>
+        <rect x="504" y="20" width="450" height="114" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="534" y="70" font-size="36" fill="#0E5C5A" font-weight="700">外生风险</text>
+        <text x="534" y="110" font-size="27" fill="#4A5158">规则与流程防得住</text>
+      </g>
+      <g>
+        <rect x="504" y="170" width="450" height="118" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="530" y="210" font-size="24" fill="#6E757D" font-weight="700">应对</text>
+        <text x="530" y="252" font-size="30" fill="#14181C" font-weight="700">明确责任　明确边界</text>
+        <text x="530" y="282" font-size="25" fill="#4A5158">规则清楚，概率显著下降</text>
+      </g>
+
+      <!-- 汇入 -->
+      <path d="M231,288 L231,352 L462,372" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M729,288 L729,352 L498,372" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+
+      <!-- 规则缺失横带 -->
+      <g>
+        <rect x="6" y="378" width="948" height="104" fill="#FFFFFF" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="36" y="420" font-size="25" fill="#B23A2E" font-weight="700">规则缺失</text>
+        <text x="36" y="458" font-size="27" fill="#14181C" font-weight="700">制度供给滞后于实践，须单独处理</text>
+      </g>
+
+      <!-- 结论带 -->
+      <path d="M480,482 L480,520" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <g>
+        <rect x="6" y="526" width="948" height="230" fill="#0E5C5A"/>
+        <text x="36" y="574" font-size="26" fill="#C4DAD8" font-weight="700">全篇结论</text>
+        <text x="36" y="626" font-size="33" fill="#FFFFFF" font-weight="700">风险有来源、可分辨、可控制</text>
+        <text x="36" y="676" font-size="27" fill="#C4DAD8">出错先分辨风险属于哪一类</text>
+        <text x="36" y="722" font-size="25" fill="#C4DAD8">内生完成核验　外生补足流程</text>
+      </g>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s2"><style>#s2 .page{ flex-direction:row; align-items:stretch; gap:110px; }#s2 .toc-left{ flex:0 0 380px; display:flex; flex-direction:column; justify-content:center; }#s2 .toc-word{
+    font-family:var(--font-serif); font-weight:700; font-size:120px;
+    color:var(--ink); letter-spacing:.06em; line-height:1.1;
+  }#s2 .toc-bar{ width:120px; height:8px; background:var(--accent); margin-top:44px; }#s2 .toc-right{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }#s2 .toc-row{
+    display:flex; align-items:baseline; gap:40px;
+    padding:46px 0; border-bottom:1px solid var(--line);
+  }#s2 .toc-row:first-child{ border-top:1px solid var(--line); }#s2 .toc-num{
+    font-family:var(--font-sans); font-weight:700; font-size:34px;
+    color:var(--accent); flex:0 0 190px; letter-spacing:.04em;
+  }#s2 .toc-name{ font-size:46px; font-weight:700; color:var(--ink); line-height:1.3; }#s2 .toc-sub{ font-size:28px; color:var(--ink3); margin-top:12px; line-height:1.5; }
+</style>
+<section class="page">
+  <div class="toc-left">
+    <div class="toc-word r d1">目录</div>
+    <div class="toc-bar r d2"></div>
+  </div>
+  <div class="toc-right">
+    <div class="toc-row r d1">
+      <div class="toc-num">第一章</div>
+      <div>
+        <div class="toc-name">内生风险的三个控制环节</div>
+        <div class="toc-sub">规范不能消除　核验　审查　留痕</div>
+      </div>
+    </div>
+    <div class="toc-row r d2">
+      <div class="toc-num">第二章</div>
+      <div>
+        <div class="toc-name">外生风险的制度防范</div>
+        <div class="toc-sub">规则与流程　规则缺失　制度滞后　空白期处理</div>
+      </div>
+    </div>
+    <div class="toc-row r d3">
+      <div class="toc-num">第三章</div>
+      <div>
+        <div class="toc-name">规则缺失与全篇结论</div>
+        <div class="toc-sub">风险有来源　可分辨　可控制　出错先分辨类型</div>
+      </div>
+    </div>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s3"><style>#s3 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s3 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第一章</span>　内生风险的三个控制环节</div>
+  <div class="assert r d1">规范不能消除内生风险，<em>区分是为了选对应对方式</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 640" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶带：区分的意义 -->
+      <rect x="0" y="0" width="1664" height="76" fill="#E9F2F1"/>
+      <text x="32" y="49" font-size="27" fill="#0E5C5A" font-weight="700">两类风险的区分，不是概念上的分类，而是指向不同的应对方式</text>
+
+      <!-- 断链一：要求教师更谨慎 -->
+      <g>
+        <rect x="0" y="120" width="430" height="110" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="34" y="163" font-size="24" fill="#6E757D" font-weight="700">规范尝试一</text>
+        <text x="34" y="204" font-size="29" fill="#14181C" font-weight="700">要求教师更谨慎</text>
+        <path d="M430,175 L620,175" stroke="#4A5158" stroke-width="3"/>
+        <path d="M606,163 L630,175 L606,187" stroke="#4A5158" stroke-width="3" fill="none"/>
+        <circle cx="525" cy="175" r="30" fill="#FFFFFF" stroke="#B23A2E" stroke-width="3"/>
+        <path d="M510,160 L540,190 M540,160 L510,190" stroke="#B23A2E" stroke-width="3"/>
+        <rect x="656" y="120" width="1008" height="110" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="690" y="163" font-size="24" fill="#B23A2E" font-weight="700">消除不了</text>
+        <text x="690" y="204" font-size="29" fill="#14181C" font-weight="700">不能使模型不再编造文献</text>
+      </g>
+
+      <!-- 断链二：要求学校加强管理 -->
+      <g>
+        <rect x="0" y="266" width="430" height="110" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="34" y="309" font-size="24" fill="#6E757D" font-weight="700">规范尝试二</text>
+        <text x="34" y="350" font-size="29" fill="#14181C" font-weight="700">要求学校加强管理</text>
+        <path d="M430,321 L620,321" stroke="#4A5158" stroke-width="3"/>
+        <path d="M606,309 L630,321 L606,333" stroke="#4A5158" stroke-width="3" fill="none"/>
+        <circle cx="525" cy="321" r="30" fill="#FFFFFF" stroke="#B23A2E" stroke-width="3"/>
+        <path d="M510,306 L540,336 M540,306 L510,336" stroke="#B23A2E" stroke-width="3"/>
+        <rect x="656" y="266" width="1008" height="110" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="690" y="309" font-size="24" fill="#B23A2E" font-weight="700">消除不了</text>
+        <text x="690" y="350" font-size="29" fill="#14181C" font-weight="700">不能使输出变得可复现、可解释</text>
+      </g>
+
+      <!-- 出处说明 -->
+      <text x="0" y="436" font-size="27" fill="#6E757D">原因在机理：编造、不可复现、不可解释，都来自概率生成机制本身，与使用者的态度和管理者的力度无关</text>
+
+      <!-- 出路带 -->
+      <path d="M832,456 L832,492" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,480 L832,498 L844,480" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <rect x="0" y="504" width="1664" height="112" fill="#0E5C5A"/>
+      <text x="36" y="550" font-size="26" fill="#C4DAD8" font-weight="700">出路</text>
+      <text x="150" y="550" font-size="30" fill="#FFFFFF" font-weight="700">不改变工具的行为，只改变人的工作方式</text>
+      <text x="150" y="592" font-size="25" fill="#C4DAD8">应对落在三个环节：核验、审查、留痕</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">本章落点</span>
+    <span class="v">内生风险的出路不在要求更严，而在环节更实</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s4">
+<section class="page">
+  <div class="assert r d1">应对内生风险，落在<em>核验、审查、留痕</em>三个环节</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 620" preserveAspectRatio="xMidYMid meet">
+      <!-- 三环节横排 -->
+      <!-- 卡一：核验 -->
+      <g>
+        <rect x="0" y="10" width="520" height="380" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="0" y="10" width="520" height="92" fill="#0E5C5A"/>
+        <circle cx="66" cy="56" r="30" fill="#FFFFFF"/>
+        <text x="66" y="67" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">一</text>
+        <text x="118" y="68" font-size="34" fill="#FFFFFF" font-weight="700">核验</text>
+        <text x="420" y="66" font-size="24" fill="#C4DAD8" text-anchor="end">使用前</text>
+        <text x="36" y="164" font-size="27" fill="#14181C" font-weight="700">对事实性内容</text>
+        <text x="36" y="204" font-size="27" fill="#14181C" font-weight="700">比对权威来源</text>
+        <path d="M36,238 L484,238" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="36" y="288" font-size="25" fill="#4A5158">文献、数据、史实、引文</text>
+        <text x="36" y="328" font-size="25" fill="#4A5158">逐项回到可靠出处</text>
+        <text x="36" y="368" font-size="25" fill="#6E757D">流畅不等于正确</text>
+      </g>
+
+      <!-- 卡二：审查 -->
+      <g>
+        <rect x="572" y="10" width="520" height="380" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="572" y="10" width="520" height="92" fill="#0E5C5A"/>
+        <circle cx="638" cy="56" r="30" fill="#FFFFFF"/>
+        <text x="638" y="67" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">二</text>
+        <text x="690" y="68" font-size="34" fill="#FFFFFF" font-weight="700">审查</text>
+        <text x="992" y="66" font-size="24" fill="#C4DAD8" text-anchor="end">使用中</text>
+        <text x="608" y="164" font-size="27" fill="#14181C" font-weight="700">对进入课堂与评价环节的</text>
+        <text x="608" y="204" font-size="27" fill="#14181C" font-weight="700">内容作出判断</text>
+        <path d="M608,238 L1056,238" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="608" y="288" font-size="25" fill="#4A5158">能不能用、用到什么程度</text>
+        <text x="608" y="328" font-size="25" fill="#4A5158">由教师与学校判断</text>
+        <text x="608" y="368" font-size="25" fill="#6E757D">判断权不转移给工具</text>
+      </g>
+
+      <!-- 卡三：留痕 -->
+      <g>
+        <rect x="1144" y="10" width="520" height="380" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <rect x="1144" y="10" width="520" height="92" fill="#0E5C5A"/>
+        <circle cx="1210" cy="56" r="30" fill="#FFFFFF"/>
+        <text x="1210" y="67" font-size="30" fill="#0E5C5A" font-weight="700" text-anchor="middle">三</text>
+        <text x="1262" y="68" font-size="34" fill="#FFFFFF" font-weight="700">留痕</text>
+        <text x="1564" y="66" font-size="24" fill="#C4DAD8" text-anchor="end">使用后</text>
+        <text x="1180" y="164" font-size="27" fill="#14181C" font-weight="700">记录生成与修改的过程</text>
+        <text x="1180" y="204" font-size="27" fill="#14181C" font-weight="700">使事后追溯成为可能</text>
+        <path d="M1180,238 L1628,238" stroke="#E3E1DA" stroke-width="2"/>
+        <text x="1180" y="288" font-size="25" fill="#4A5158">原始材料、加工过程</text>
+        <text x="1180" y="328" font-size="25" fill="#4A5158">保存到可回查</text>
+        <text x="1180" y="368" font-size="25" fill="#6E757D">追溯是责任的凭据</text>
+      </g>
+
+      <!-- 共同点带 -->
+      <path d="M832,398 L832,436" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,424 L832,442 L844,424" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <rect x="0" y="448" width="1664" height="148" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+      <text x="832" y="506" font-size="27" fill="#0E5C5A" font-weight="700" text-anchor="middle">三个环节的共同点</text>
+      <text x="832" y="558" font-size="31" fill="#14181C" font-weight="700" text-anchor="middle">不改变工具的行为，只改变人的工作方式</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">要点</span>
+    <span class="v">三个环节都是职业习惯，不是技术动作</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s5"><style>#s5 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s5 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第二章</span>　外生风险的制度防范</div>
+  <div class="assert r d1">外生风险靠规则与流程下降，<em>一类风险对应一条制度</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 600" preserveAspectRatio="xMidYMid meet">
+      <!-- 表头 -->
+      <text x="40" y="34" font-size="25" fill="#6E757D" font-weight="700">外生风险形态</text>
+      <text x="1624" y="34" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="end">制度对策</text>
+
+      <!-- 行一：判断权转移 -->
+      <g>
+        <rect x="0" y="60" width="680" height="118" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="40" y="110" font-size="29" fill="#14181C" font-weight="700">判断权转移</text>
+        <text x="40" y="150" font-size="25" fill="#4A5158">该由人判断的事，交给了工具</text>
+        <path d="M680,119 L900,119" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M886,107 L910,119 L886,131" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="924" y="60" width="740" height="118" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="964" y="110" font-size="29" fill="#0E5C5A" font-weight="700">明确核验责任</text>
+        <text x="964" y="150" font-size="25" fill="#14181C">谁使用、谁核验、谁署名</text>
+      </g>
+
+      <!-- 行二：责任分散 -->
+      <g>
+        <rect x="0" y="194" width="680" height="118" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="40" y="244" font-size="29" fill="#14181C" font-weight="700">责任分散</text>
+        <text x="40" y="284" font-size="25" fill="#4A5158">人和工具各做了一半，出事说不清</text>
+        <path d="M680,253 L900,253" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M886,241 L910,253 L886,265" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="924" y="194" width="740" height="118" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="964" y="244" font-size="29" fill="#0E5C5A" font-weight="700">明确责任落点</text>
+        <text x="964" y="284" font-size="25" fill="#14181C">每一环有明确的责任人</text>
+      </g>
+
+      <!-- 行三：教育场景错配与失范 -->
+      <g>
+        <rect x="0" y="328" width="680" height="118" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="40" y="378" font-size="29" fill="#14181C" font-weight="700">教育场景中的错配与失范</text>
+        <text x="40" y="418" font-size="25" fill="#4A5158">学段、作业、过程各行其是</text>
+        <path d="M680,387 L900,387" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M886,375 L910,387 L886,399" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="924" y="328" width="740" height="118" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <rect x="964" y="360" width="216" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1072" y="396" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">明确学段边界</text>
+        <rect x="1196" y="360" width="216" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1304" y="396" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">明确作业要求</text>
+        <rect x="1428" y="360" width="216" height="54" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1536" y="396" font-size="25" fill="#0E5C5A" font-weight="700" text-anchor="middle">明确过程留痕</text>
+      </g>
+
+      <!-- 效果带 -->
+      <path d="M832,458 L832,492" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,480 L832,498 L844,480" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <rect x="0" y="504" width="1664" height="96" fill="#0E5C5A"/>
+      <text x="36" y="564" font-size="30" fill="#FFFFFF" font-weight="700">这一类风险的特点：只要规则清楚、流程到位，发生概率会显著下降</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">前提</span>
+    <span class="v">防范生效的前提，是规则本身存在——下一页处理规则缺失</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s6">
+<section class="page">
+  <div class="assert r d1">规则缺失<em>不属于使用方式问题</em>，属于制度供给滞后于实践</div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 620" preserveAspectRatio="xMidYMid meet">
+      <!-- 顶带：定性 -->
+      <rect x="0" y="0" width="1664" height="80" fill="#E9F2F1"/>
+      <text x="32" y="50" font-size="27" fill="#0E5C5A" font-weight="700">三类风险的防范，前提是规则本身存在；现行学校管理制度多形成于生成式人工智能普及之前</text>
+
+      <!-- 左区：四项缺失 2×2 -->
+      <text x="0" y="130" font-size="26" fill="#6E757D" font-weight="700">缺少明确规定的情形</text>
+      <g>
+        <rect x="0" y="152" width="524" height="180" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="32" y="196" font-size="24" fill="#0E5C5A" font-weight="700">其一　作业认定</text>
+        <text x="32" y="244" font-size="27" fill="#14181C" font-weight="700">学生作业的作者</text>
+        <text x="32" y="282" font-size="27" fill="#14181C" font-weight="700">如何认定</text>
+        <rect x="548" y="152" width="524" height="180" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="580" y="196" font-size="24" fill="#0E5C5A" font-weight="700">其二　教研评比</text>
+        <text x="580" y="244" font-size="27" fill="#14181C" font-weight="700">教师用工具生成的材料</text>
+        <text x="580" y="282" font-size="27" fill="#14181C" font-weight="700">贡献如何计算</text>
+        <rect x="0" y="356" width="524" height="180" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="32" y="400" font-size="24" fill="#0E5C5A" font-weight="700">其三　信息审批</text>
+        <text x="32" y="448" font-size="27" fill="#14181C" font-weight="700">学生信息输入外部工具</text>
+        <text x="32" y="486" font-size="27" fill="#14181C" font-weight="700">审批流程如何设置</text>
+        <rect x="548" y="356" width="524" height="180" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="580" y="400" font-size="24" fill="#0E5C5A" font-weight="700">其四　审查归属</text>
+        <text x="580" y="448" font-size="27" fill="#14181C" font-weight="700">生成内容进入课堂与评价</text>
+        <text x="580" y="486" font-size="27" fill="#14181C" font-weight="700">审查由谁负责</text>
+      </g>
+
+      <!-- 右区：状态分档 -->
+      <text x="1132" y="130" font-size="26" fill="#6E757D" font-weight="700">各项的状态</text>
+      <g>
+        <rect x="1132" y="152" width="532" height="180" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1164" y="196" font-size="24" fill="#0E5C5A" font-weight="700">检测结果作处理依据</text>
+        <text x="1164" y="244" font-size="27" fill="#14181C" font-weight="700">技术判断已较明确</text>
+        <text x="1164" y="282" font-size="26" fill="#4A5158">缺的是把判断写入制度</text>
+        <rect x="1132" y="356" width="532" height="180" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="1164" y="400" font-size="24" fill="#B23A2E" font-weight="700">其余各项</text>
+        <text x="1164" y="448" font-size="27" fill="#14181C" font-weight="700">规则尚未建立</text>
+        <text x="1164" y="486" font-size="26" fill="#4A5158">应对路径与前三类不同</text>
+      </g>
+
+      <!-- 底带 -->
+      <rect x="0" y="560" width="1664" height="60" fill="#0E5C5A"/>
+      <text x="32" y="600" font-size="27" fill="#FFFFFF" font-weight="700">所以规则缺失须单独处理：它不是使用方式问题，也不是技术机理问题</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">性质</span>
+    <span class="v">制度供给滞后于实践，是建立规则的问题，不是纠正用法的问题</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s7">
+<section class="page">
+  <div class="assert r d1">制度滞后属于新兴技术早期常态，<em>不宜理解为管理疏漏</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 620" preserveAspectRatio="xMidYMid meet">
+      <!-- 风险来源层次 -->
+      <g>
+        <rect x="0" y="0" width="1664" height="70" fill="#F4F3F0"/>
+        <text x="32" y="45" font-size="26" fill="#4A5158" font-weight="700">研究指出：应用风险构成多层次体系，来源不止技术本身</text>
+        <text x="1632" y="45" font-size="24" fill="#6E757D" text-anchor="end">清华大学　李焕宏、薛澜的研究</text>
+      </g>
+      <g>
+        <rect x="0" y="96" width="530" height="120" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="36" y="148" font-size="29" fill="#14181C" font-weight="700">技术本身</text>
+        <text x="36" y="188" font-size="25" fill="#4A5158">概率生成机制的固有属性</text>
+        <rect x="567" y="96" width="530" height="120" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="603" y="148" font-size="29" fill="#14181C" font-weight="700">人际竞争</text>
+        <text x="603" y="188" font-size="25" fill="#4A5158">由社会互动引发的冲击</text>
+        <rect x="1134" y="96" width="530" height="120" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1170" y="148" font-size="29" fill="#14181C" font-weight="700">新旧制度摩擦</text>
+        <text x="1170" y="188" font-size="25" fill="#4A5158">由社会互动引发的冲击</text>
+      </g>
+
+      <!-- 早期常态带 -->
+      <path d="M832,216 L832,252" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,240 L832,258 L844,240" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <rect x="0" y="264" width="1664" height="110" fill="#0E5C5A"/>
+      <text x="36" y="310" font-size="26" fill="#C4DAD8" font-weight="700">早期阶段的普遍状态</text>
+      <text x="420" y="310" font-size="30" fill="#FFFFFF" font-weight="700">制度滞后于实践，属于常态而非例外</text>
+      <text x="420" y="352" font-size="25" fill="#C4DAD8">可行的规制方向，不是等待完备规则</text>
+
+      <!-- 规制方向两条 -->
+      <path d="M832,374 L832,404" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <g>
+        <rect x="0" y="410" width="808" height="126" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="36" y="458" font-size="29" fill="#0E5C5A" font-weight="700">其一　提升驾驭能力</text>
+        <text x="36" y="504" font-size="26" fill="#4A5158">提升组织与人员的技术驾驭能力</text>
+        <rect x="856" y="410" width="808" height="126" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="892" y="458" font-size="29" fill="#0E5C5A" font-weight="700">其二　同步完善配套</text>
+        <text x="892" y="504" font-size="26" fill="#4A5158">在实践中同步完善制度配套</text>
+      </g>
+
+      <!-- 学校落点 -->
+      <path d="M832,536 L832,564" stroke="#B23A2E" stroke-width="3" fill="none"/>
+      <rect x="0" y="570" width="1664" height="50" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+      <text x="832" y="605" font-size="27" fill="#B23A2E" font-weight="700" text-anchor="middle">就学校而言：空白期的处理方式尤为关键</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">研究判断</span>
+    <span class="v">空白期不是等出来的，是靠能力与配套一起填出来的</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s8">
+<section class="page">
+  <div class="assert r d1">制度空白之下，处理方式<em>取决于具体经办人的判断</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 620" preserveAspectRatio="xMidYMid meet">
+      <!-- 同一学生分叉 -->
+      <g>
+        <rect x="0" y="30" width="360" height="150" fill="#F4F3F0" stroke="#9B978D" stroke-width="2"/>
+        <text x="36" y="82" font-size="24" fill="#6E757D" font-weight="700">同一情形</text>
+        <text x="36" y="126" font-size="29" fill="#14181C" font-weight="700">同一位学生</text>
+        <text x="36" y="162" font-size="25" fill="#4A5158">同一种工具使用</text>
+        <path d="M360,105 L520,105" stroke="#4A5158" stroke-width="3"/>
+        <path d="M520,105 L700,62 M520,105 L700,150" stroke="#4A5158" stroke-width="3" fill="none"/>
+        <rect x="704" y="30" width="440" height="120" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2.5"/>
+        <text x="740" y="74" font-size="26" fill="#B23A2E" font-weight="700">甲班　认定违规</text>
+        <text x="740" y="118" font-size="25" fill="#4A5158">经办人理解为违规使用</text>
+        <rect x="704" y="170" width="440" height="120" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="740" y="214" font-size="26" fill="#0E5C5A" font-weight="700">乙班　视为正常使用</text>
+        <text x="740" y="258" font-size="25" fill="#4A5158">经办人理解为正常使用</text>
+        <text x="1224" y="105" font-size="24" fill="#6E757D">不同班级、不同学校</text>
+        <text x="1224" y="140" font-size="24" fill="#6E757D">可能得到不同结论</text>
+      </g>
+
+      <!-- 后果 -->
+      <g>
+        <rect x="0" y="330" width="800" height="110" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="36" y="376" font-size="26" fill="#B23A2E" font-weight="700">后果一</text>
+        <text x="170" y="376" font-size="29" fill="#14181C" font-weight="700">处理不公</text>
+        <text x="170" y="416" font-size="25" fill="#4A5158">同样的行为，两种截然不同的处理</text>
+        <rect x="864" y="330" width="800" height="110" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="900" y="376" font-size="26" fill="#B23A2E" font-weight="700">后果二</text>
+        <text x="1034" y="376" font-size="29" fill="#14181C" font-weight="700">规范失去说服力</text>
+        <text x="1034" y="416" font-size="25" fill="#4A5158">规则形同虚设，师生无从遵循</text>
+      </g>
+
+      <!-- 规范的作用 -->
+      <path d="M832,448 L832,478" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,466 L832,484 L844,466" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <rect x="0" y="490" width="1664" height="130" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+      <text x="36" y="538" font-size="26" fill="#0E5C5A" font-weight="700">规范的作用</text>
+      <text x="240" y="538" font-size="30" fill="#14181C" font-weight="700">把这类判断从个人裁量，转为共同标准</text>
+      <text x="240" y="586" font-size="26" fill="#4A5158">共同标准未必一开始就完备，但须先行确立，再在实践中修订——落点在制度，不在个人，与前三类分列</text>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">空白期</span>
+    <span class="v">规则可以不完美，但不能没有</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s9"><style>#s9 .eyebrow{ font-size:28px; letter-spacing:.14em; color:var(--ink2); flex:0 0 auto; margin-bottom:18px; }#s9 .eyebrow .em{ color:var(--accent); font-weight:700; }
+</style>
+<section class="page">
+  <div class="eyebrow r d1"><span class="em">第三章</span>　规则缺失与全篇结论</div>
+  <div class="assert r d1">本部分的结论是三句：<em>风险有来源、可分辨、可控制</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 640" preserveAspectRatio="xMidYMid meet">
+      <!-- 栏一：风险有来源 -->
+      <g>
+        <rect x="0" y="0" width="528" height="72" fill="#0E5C5A"/>
+        <text x="32" y="47" font-size="30" fill="#FFFFFF" font-weight="700">一　风险有来源</text>
+        <rect x="0" y="94" width="528" height="148" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="30" y="140" font-size="26" fill="#14181C" font-weight="700">相当一部分风险来自概率生成</text>
+        <text x="30" y="178" font-size="26" fill="#14181C" font-weight="700">机制本身，不是使用不当的</text>
+        <text x="30" y="216" font-size="26" fill="#14181C" font-weight="700">偶然结果</text>
+        <rect x="0" y="262" width="528" height="252" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="30" y="304" font-size="24" fill="#0E5C5A" font-weight="700">它改变的是职业要求落实的条件</text>
+        <text x="30" y="352" font-size="26" fill="#14181C" font-weight="700">诚实——要求真实的出处</text>
+        <text x="30" y="392" font-size="26" fill="#14181C" font-weight="700">公正——要求可核验的依据</text>
+        <text x="30" y="432" font-size="26" fill="#14181C" font-weight="700">关爱——要求具体的了解</text>
+        <text x="30" y="480" font-size="25" fill="#4A5158">概率生成使这三项都更难做到、</text>
+        <text x="30" y="508" font-size="25" fill="#4A5158">更难验证</text>
+        <rect x="0" y="524" width="528" height="100" fill="#0E5C5A"/>
+        <text x="30" y="566" font-size="25" fill="#C4DAD8">理解这一层，才能理解政策</text>
+        <text x="30" y="602" font-size="26" fill="#FFFFFF" font-weight="700">走核验与留痕，而非简单禁止</text>
+      </g>
+
+      <!-- 栏二：风险可分辨 -->
+      <g>
+        <rect x="568" y="0" width="528" height="72" fill="#0E5C5A"/>
+        <text x="600" y="47" font-size="30" fill="#FFFFFF" font-weight="700">二　风险可分辨</text>
+        <rect x="568" y="94" width="528" height="196" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="598" y="140" font-size="26" fill="#14181C" font-weight="700">内生风险与外生风险</text>
+        <text x="598" y="180" font-size="26" fill="#14181C" font-weight="700">性质不同，应对方式不同</text>
+        <text x="598" y="234" font-size="25" fill="#4A5158">一类消不掉，只能改变人的做法；</text>
+        <text x="598" y="266" font-size="25" fill="#4A5158">一类防得住，靠规则与流程</text>
+        <rect x="568" y="310" width="528" height="196" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="598" y="356" font-size="26" fill="#14181C" font-weight="700">教师日常遇到具体问题时：</text>
+        <text x="598" y="414" font-size="27" fill="#0E5C5A" font-weight="700">先分辨类型</text>
+        <text x="598" y="470" font-size="27" fill="#0E5C5A" font-weight="700">再决定处置方式</text>
+        <rect x="568" y="520" width="528" height="104" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="598" y="564" font-size="25" fill="#4A5158">分辨先于处置，</text>
+        <text x="598" y="600" font-size="25" fill="#4A5158">处置才不会用错力气</text>
+      </g>
+
+      <!-- 栏三：风险可控制 -->
+      <g>
+        <rect x="1136" y="0" width="528" height="72" fill="#0E5C5A"/>
+        <text x="1168" y="47" font-size="30" fill="#FFFFFF" font-weight="700">三　风险可控制</text>
+        <rect x="1136" y="94" width="528" height="252" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="1166" y="138" font-size="26" fill="#14181C" font-weight="700">内生风险——核验、审查、留痕</text>
+        <text x="1166" y="178" font-size="26" fill="#14181C" font-weight="700">外生风险——明确要求、</text>
+        <text x="1196" y="216" font-size="26" fill="#14181C" font-weight="700">调整流程</text>
+        <text x="1166" y="268" font-size="25" fill="#4A5158">两条路径各有落点，</text>
+        <text x="1166" y="304" font-size="25" fill="#4A5158">都不要求放弃使用工具</text>
+        <rect x="1136" y="356" width="528" height="268" fill="#FFFFFF" stroke="#B7D2D0" stroke-width="2"/>
+        <text x="1166" y="404" font-size="26" fill="#14181C" font-weight="700">两类控制都不依赖教师</text>
+        <text x="1166" y="442" font-size="26" fill="#14181C" font-weight="700">掌握技术细节</text>
+        <text x="1166" y="500" font-size="27" fill="#0E5C5A" font-weight="700">依赖的是既有职业习惯</text>
+        <text x="1166" y="540" font-size="27" fill="#0E5C5A" font-weight="700">在新的条件下落实到位</text>
+        <text x="1166" y="596" font-size="25" fill="#6E757D">会教书、会把关，就会控制风险</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">三句结论</span>
+    <span class="v">有来源，所以不能只怪人；可分辨，所以处置有章法；可控制，所以不必恐惧</span>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s10">
+<section class="page">
+  <div class="assert r d1">遇到生成内容出错，<em>先分辨它属于哪一类风险</em></div>
+  <div class="rule r d1"><b></b><i></i></div>
+
+  <div class="figure r d2">
+    <svg class="figsvg" viewBox="0 0 1664 620" preserveAspectRatio="xMidYMid meet">
+      <!-- 分流 -->
+      <g>
+        <rect x="0" y="20" width="400" height="120" fill="#0E5C5A"/>
+        <text x="36" y="70" font-size="26" fill="#C4DAD8" font-weight="700">操作判断</text>
+        <text x="36" y="112" font-size="30" fill="#FFFFFF" font-weight="700">生成内容出错</text>
+        <path d="M400,80 L560,80" stroke="#0E5C5A" stroke-width="3"/>
+        <path d="M560,80 L720,50 M560,80 L720,150" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+        <rect x="724" y="10" width="420" height="86" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="760" y="64" font-size="28" fill="#0E5C5A" font-weight="700">属于内生风险</text>
+        <rect x="724" y="130" width="420" height="86" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="760" y="184" font-size="28" fill="#0E5C5A" font-weight="700">属于外生风险</text>
+        <rect x="1184" y="10" width="480" height="86" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="1214" y="46" font-size="25" fill="#14181C" font-weight="700">不必归咎自己使用不当</text>
+        <text x="1214" y="82" font-size="25" fill="#14181C" font-weight="700">但必须完成核验</text>
+        <rect x="1184" y="130" width="480" height="86" fill="#FFFFFF" stroke="#0E5C5A" stroke-width="2.5"/>
+        <text x="1214" y="166" font-size="25" fill="#14181C" font-weight="700">检视流程中哪一环缺失</text>
+        <text x="1214" y="202" font-size="25" fill="#14181C" font-weight="700">从流程上补足</text>
+      </g>
+
+      <!-- 混淆的两种失误 -->
+      <g>
+        <text x="0" y="282" font-size="26" fill="#B23A2E" font-weight="700">混淆两者，会导致两种失误</text>
+        <rect x="0" y="304" width="808" height="120" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="36" y="350" font-size="26" fill="#B23A2E" font-weight="700">失误一</text>
+        <text x="170" y="350" font-size="26" fill="#14181C" font-weight="700">把内生风险当作个人过失</text>
+        <text x="170" y="396" font-size="26" fill="#B23A2E" font-weight="700">从而不敢使用工具</text>
+        <rect x="856" y="304" width="808" height="120" fill="#F6EDEB" stroke="#B23A2E" stroke-width="2"/>
+        <text x="892" y="350" font-size="26" fill="#B23A2E" font-weight="700">失误二</text>
+        <text x="1026" y="350" font-size="26" fill="#14181C" font-weight="700">把外生风险当作技术局限</text>
+        <text x="1026" y="396" font-size="26" fill="#B23A2E" font-weight="700">从而不去改进做法</text>
+      </g>
+
+      <!-- 政策文本结构 -->
+      <path d="M832,432 L832,462" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <path d="M820,450 L832,468 L844,450" stroke="#0E5C5A" stroke-width="3" fill="none"/>
+      <g>
+        <rect x="0" y="474" width="1664" height="146" fill="#E9F2F1" stroke="#0E5C5A" stroke-width="2"/>
+        <text x="32" y="518" font-size="26" fill="#0E5C5A" font-weight="700">这一区分同时说明政策文本的结构（第一部分梳理的各类文件）</text>
+        <text x="32" y="564" font-size="27" fill="#14181C" font-weight="700">约束条款主要针对外生风险：明确责任主体、明确使用边界、明确审查义务</text>
+        <text x="32" y="604" font-size="27" fill="#14181C" font-weight="700">针对内生风险，文件要求核验与标识，而非禁止使用——技术前提正是两类风险性质不同</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="concl r d3">
+    <span class="k">操作结论</span>
+    <span class="v">先分辨，再处置：内生完成核验，外生补足流程</span>
+  </div>
+</section>
+</section>
+
+</div>
+<div id="bar">
+  <button id="prev">上一页</button>
+  <button id="next">下一页</button>
+</div>
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var cur=Math.min(parseInt(localStorage.getItem('gov-deck-pos')||'0',10),slides.length-1);
+  function show(i){
+    cur=(i+slides.length)%slides.length;
+    slides.forEach(function(s,k){s.classList.toggle('on',k===cur)});
+    localStorage.setItem('gov-deck-pos',String(cur));
+    var s=slides[cur];
+    var scale=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+    s.style.transform='scale('+scale+')';
+    s.classList.add('anim');
+  }
+  document.getElementById('prev').onclick=function(){show(cur-1)};
+  document.getElementById('next').onclick=function(){show(cur+1)};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ')show(cur+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(cur-1);
+  });
+  window.addEventListener('resize',function(){show(cur)});
+  show(cur);
+})();
+</script>
+</body>
+</html>

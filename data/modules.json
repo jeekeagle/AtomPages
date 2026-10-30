@@ -1,10 +1,10 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-30T23:16:31.546838+08:00",
+  "updatedAt": "2026-10-30T23:54:17.924590+08:00",
   "generatedBy": "tools/collect.py",
   "moduleCount": 12,
-  "itemCount": 22,
+  "itemCount": 23,
   "modules": [
     {
       "no": "M01",
@@ -457,10 +457,10 @@
           "thumb": "thumbs/interface/识别界面的同时失效.jpg",
           "slides": 10,
           "kind": "deck",
-          "bytes": 53475,
-          "hash": "13beca479ccca86a",
+          "bytes": 32135,
+          "hash": "dad0951d456e13dc",
           "selfContained": true,
-          "updatedAt": "2026-10-30T23:15:13.477209+08:00",
+          "updatedAt": "2026-10-30T23:53:30.741132+08:00",
           "addedAt": "2026-10-30T23:16:31.295980+08:00",
           "no": "09-02",
           "index": 2
@@ -530,7 +530,7 @@
       "slug": "misc",
       "name": "未归档",
       "desc": "自动归集的条目",
-      "count": 1,
+      "count": 2,
       "items": [
         {
           "key": "misc/人工智能的风险从何而来",
@@ -551,6 +551,26 @@
           "addedAt": "2026-10-30T22:07:54.651155+08:00",
           "no": "12-01",
           "index": 1
+        },
+        {
+          "key": "misc/人工智能的风险从何而来-两类风险的治理指向与结论",
+          "module": "misc",
+          "title": "人工智能的风险从何而来·两类风险的治理指向与结论",
+          "slug": "人工智能的风险从何而来-两类风险的治理指向与结论",
+          "sourceProject": "ai-risk-governance-huashu",
+          "sourceSection": "",
+          "html": "pages/misc/人工智能的风险从何而来-两类风险的治理指向与结论.html",
+          "pdf": "pdfs/misc/人工智能的风险从何而来-两类风险的治理指向与结论.pdf",
+          "thumb": "thumbs/misc/人工智能的风险从何而来-两类风险的治理指向与结论.jpg",
+          "slides": 10,
+          "kind": "deck",
+          "bytes": 51482,
+          "hash": "d5452b09e892d086",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T23:48:34.254401+08:00",
+          "addedAt": "2026-10-30T23:54:17.628943+08:00",
+          "no": "12-02",
+          "index": 2
         }
       ]
     }
