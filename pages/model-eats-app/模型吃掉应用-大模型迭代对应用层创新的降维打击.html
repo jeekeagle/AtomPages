@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>模型吃掉应用：大模型迭代对应用层创新的降维打击</title>
+<style>
+  :root{
+    --ink:#14161a;
+    --soft:#4b5158;
+    --accent:#3b49c4;
+    --line:#e3e4e8;
+    --wash:#f6f6f9;
+    --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --serif:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:#fff;color:var(--ink);font-family:var(--sans);}
+  .deck{scroll-snap-type:y mandatory;overflow-y:scroll;height:100vh;}
+  .slide{
+    width:1280px;height:720px;margin:0 auto;background:#fff;
+    scroll-snap-align:start;position:relative;overflow:hidden;
+    padding:64px 92px 56px;display:flex;flex-direction:column;
+  }
+  .head{display:flex;align-items:center;gap:18px;border-bottom:3px solid var(--ink);padding-bottom:22px;}
+  .head .sq{width:16px;height:16px;background:var(--accent);flex:none;}
+  .head h2{font-size:40px;font-weight:900;letter-spacing:1.5px;line-height:1.2;}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding-top:26px;}
+  p.lead{font-size:18.5px;line-height:1.85;color:var(--soft);}
+  p.lead strong{color:var(--ink);font-weight:700;}
+  .cols{display:grid;gap:20px;}
+  .c2{grid-template-columns:1fr 1fr;}
+  .c3{grid-template-columns:1fr 1fr 1fr;}
+  .card{border-top:4px solid var(--accent);background:var(--wash);padding:20px 24px;}
+  .card h3{font-size:21px;font-weight:900;letter-spacing:1px;margin-bottom:10px;}
+  .card p{font-size:17px;line-height:1.72;color:var(--soft);}
+  .card p strong{color:var(--ink);}
+  .note{border-left:4px solid var(--ink);padding:4px 0 4px 22px;font-size:17.5px;line-height:1.78;color:var(--soft);}
+  .note strong{color:var(--accent);font-weight:700;}
+  .quote{border-left:6px solid var(--accent);padding:6px 0 6px 28px;font-family:var(--serif);font-size:26px;font-weight:700;line-height:1.75;}
+  .steps{display:flex;flex-direction:column;gap:0;}
+  .step{display:grid;grid-template-columns:150px 1fr;gap:22px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline;}
+  .step:last-child{border-bottom:none;}
+  .step .n{font-size:19px;font-weight:900;color:var(--accent);letter-spacing:1px;white-space:nowrap;}
+  .step .t{font-size:17.5px;line-height:1.72;color:var(--soft);}
+  .step .t strong{color:var(--ink);}
+  .cover{justify-content:center;}
+  .cover .tag{width:96px;height:10px;background:var(--accent);margin-bottom:54px;}
+  .cover h1{font-size:92px;font-weight:900;letter-spacing:5px;line-height:1.15;}
+  .cover .sub{margin-top:40px;font-size:28px;font-weight:700;letter-spacing:2px;color:var(--soft);}
+  .end{justify-content:center;}
+  .end h2{font-size:56px;font-weight:900;letter-spacing:2px;line-height:1.5;}
+  .end .after{margin-top:42px;font-size:23px;line-height:1.9;color:var(--soft);}
+  .end .after strong{color:var(--accent);}
+  @page{size:13.333in 7.5in;margin:0;}
+  @media print{
+    html,body{height:auto;}
+    .deck{height:auto;overflow:visible;scroll-snap-type:none;}
+    .slide{page-break-after:always;break-after:page;}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="slide cover">
+    <div class="tag"></div>
+    <h1>模型吃掉应用</h1>
+    <div class="sub">大模型迭代对应用层创新的降维打击</div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>一条反复出现的死亡曲线</h2></div>
+    <div class="body">
+      <p class="lead">2022年11月30日，通用对话机器人发布，两个月内月活破亿。同一时期，生成式写作应用贾斯珀正处巅峰：2021年成立，十八个月估值十五亿美元，年度经常性收入从四千万美元翻倍到八千万美元，被视为生成式人工智能商业化的样板。</p>
+      <p class="lead">随后发生的事情是：2023年7月宣布裁员；10月估值缩水两成、收入预期下调。开发者的判断很直接——它本质上是底座厂商的<strong>简单包装</strong>：基于上一代语言模型的接口做营销文案生成。当底座厂商自己把同样的能力<strong>免费、以更低价格直接交付终端用户</strong>，包装层的价值在几个月内被抽空。</p>
+      <p class="note">这不是孤例，而是一条<strong>反复出现的曲线</strong>。把后来者的死亡方式排成一列，能看到六种典型的死法。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>六种死亡方式（上）</h2></div>
+    <div class="body">
+      <div class="cols c3">
+        <div class="card">
+          <h3>能力被直接覆盖</h3>
+          <p>文案生成与早期通用写作、绘画工具，都落在通用模型迭代的射程之内。文心一言发布时，业内对「缺少技术原创性的套壳应用」的判断是<strong>「毁灭性打击」</strong>。</p>
+        </div>
+        <div class="card">
+          <h3>技术路线的必要性被取消</h3>
+          <p>检索增强生成、向量数据库、文档切块这套工程栈，存在的理由是模型读不完资料。上下文窗口扩到<strong>百万词元</strong>量级后，其中相当一部分工作被底座吸收，替代路径从讨论变成<strong>默认选项</strong>。</p>
+        </div>
+        <div class="card">
+          <h3>能力差归零</h3>
+          <p>新一代基座模型内测消息传出时，一位应用层从业者的记录是：<strong>「突然不知道自己手上这个项目在干什么了。」</strong>套壳、提示词工程、微调这些依赖旧模型能力不足而成立的模式，正在快速失效。</p>
+        </div>
+      </div>
+      <p class="note">前三类死法有一个共同点：<strong>死因都在模型这边</strong>——能力被覆盖、路线被取消、差距被抹平。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>六种死亡方式（下）</h2></div>
+    <div class="body">
+      <div class="cols c3">
+        <div class="card">
+          <h3>被成本结构杀死</h3>
+          <p>角色扮演应用约一千二百万月活、用户日均使用约两小时，但每次对话都要重新生成，<strong>聊得越久算力开支越高</strong>：月度计算成本一度一千三百八十万美元，订阅收入峰值仅二百八十万美元，2026年10月申请破产保护。同赛道的猫箱用户仅百万级，却在中国苹果应用商店收入榜居首，上线不到两年内购累计超两千二百万美元。<strong>规模不等于生意。</strong></p>
+        </div>
+        <div class="card">
+          <h3>入口被收编</h3>
+          <p>腾讯智能体入口产品内测一百九十九天即宣布年底停运；智能体创建平台元器发布停服公告，存量智能体不可用；阿里把多条自研产品线整合进千问办公。死因不是能力被超越，而是大厂在模型层投入巨大后<strong>必须向应用层要回报</strong>，分散入口被收拢成统一出口。</p>
+        </div>
+        <div class="card">
+          <h3>创业窗口整体收窄</h3>
+          <p>自通用对话机器人发布至2024年7月，国内78612家新注册人工智能企业消失，占同期新增总量8.9%。这个数字要谨慎读——包含大量本就无法存活的注册主体，但至少说明<strong>应用层淘汰率处在极高水平</strong>。</p>
+        </div>
+      </div>
+      <p class="note">后三类死法的死因不在模型这边：<strong>成本结构、生态收编、窗口收窄</strong>——它们是模型迭代的次生灾害。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>机制的四个环节（一）</h2></div>
+    <div class="body">
+      <div class="cols c2">
+        <div class="card">
+          <h3>第一环：价值来自底座的缺陷</h3>
+          <p>一个应用成立，往往因为底座做不到某件事：贾斯珀成立是因为模型不会写营销文案的界面和流程；检索增强生成成立是因为模型读不完长文档。于是有一条不太舒服的等式——<strong>应用层的价值量约等于「底座缺陷的规模」</strong>。缺陷越大，包装层越值钱；缺陷消失，包装层随之归零。</p>
+        </div>
+        <div class="card">
+          <h3>第二环：底座单向增长，且由别人的资本推动</h3>
+          <p>训练一个新模型费用在<strong>十几亿美元量级</strong>，底座只有少数玩家能留在牌桌上，迭代节奏不受应用层控制。更麻烦的是，底座的迭代方向天然指向<strong>通用能力提升</strong>，而通用能力提升的第一批受害者，恰恰是把通用能力做成产品的公司——<strong>底座每补上一块短板，就有一批应用失去存在理由。</strong></p>
+        </div>
+      </div>
+      <p class="note">这两个环节决定了包装层的宿命：<strong>它寄生在缺陷上，而缺陷注定被修复。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>机制的四个环节（二）</h2></div>
+    <div class="body">
+      <div class="cols c2">
+        <div class="card">
+          <h3>第三环：底座有向应用层渗透的结构性动力</h3>
+          <p>只卖接口的商业模式<strong>撑不起底座的资本开支</strong>；应用层又是数据闭环的关键节点，入口定义权决定生态规则。渗透路径四条：嵌入存量产品、自建独立应用、开放平台绑定、资本并购。于是出现不对称——<strong>应用层把底座当供应商，底座把应用层当自己的下一站</strong>。贾斯珀面对的不是更强的竞品，而是自己的供应商开始直接卖给自己的客户。</p>
+        </div>
+        <div class="card">
+          <h3>第四环：能力同质化后，竞争维度被迫上移</h3>
+          <p>开源生态压低门槛，接口价格战摊薄推理成本，用户不关心模型架构，只关心<strong>任务有没有一次办好</strong>。底座趋同之后，差异化只能往上层走——比的是行业理解、工作流嵌入深度、数据积累，<strong>这些恰好是纯套壳公司最缺的东西</strong>。</p>
+        </div>
+      </div>
+      <p class="note">四个环节连成一条完整的因果链：<strong>价值寄生缺陷 → 缺陷注定修复 → 修复者亲自下场 → 幸存者被迫上移。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>命题一：价值来源决定生死</h2></div>
+    <div class="body">
+      <div class="quote">价值来源在模型之内，则必被吃掉；<br>价值来源在模型之外，则可能存活。</div>
+      <p class="lead">判断标准很朴素：把最新一代模型的能力上限当作一把尺子，问一句——<strong>「这个产品做的事情，模型能不能直接做。」</strong>如果答案是能，那这个产品只是在等一个发布日期。</p>
+      <p class="note">贾斯珀的失败不在于它做营销文案，而在于它的营销文案<strong>没有任何模型之外的东西</strong>：没有客户自己的品牌资产、没有历史投放数据、没有跨渠道的执行闭环。它卖的是模型的输出，而模型的输出正在变便宜。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>命题二：被吃掉的顺序</h2></div>
+    <div class="body">
+      <div class="steps">
+        <div class="step"><div class="n">最先被吸收</div><div class="t"><strong>通用能力</strong>：写作、翻译、摘要、问答、绘图。这些能力不依赖特定场景，底座一升级就覆盖。</div></div>
+        <div class="step"><div class="n">随后被内置</div><div class="t"><strong>工程性能力</strong>：检索、切块、长文档处理、格式转换。曾经需要专门的技术栈，随着上下文窗口扩大和工具调用标准化，正被逐步内置。</div></div>
+        <div class="step"><div class="n">较难被吸收</div><div class="t"><strong>私有数据的持续积累、行业现场的隐性知识、跨系统的流程编排、需要承担责任的结果交付。</strong>它们的共同点是：不在模型的训练分布里，也不在模型的迭代方向上。</div></div>
+      </div>
+      <p class="note">把产品放到这三档里对号入座，就能大致判断它<strong>在下一轮模型迭代中的存活概率</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>命题三：吃掉一层，也抬高一层</h2></div>
+    <div class="body">
+      <p class="lead">这一点常被忽略。每一次模型能力跃迁都会<strong>解锁新的应用场景</strong>，先一步发现需求的团队，在能力进步时更有机会抓住指数级增长。</p>
+      <div class="card">
+        <h3>库尔索的路径</h3>
+        <p>这个编程编辑器应用长期被称作「套壳」，靠调用外部模型起家。2025年它推出<strong>自研编码模型</strong>，重构了开发环境的交互逻辑，把产品重心从「调用模型」转向<strong>「重构开发流程」</strong>。它没有试图比模型更聪明，而是<strong>把模型的每一次进步都变成自己产品体验的一部分</strong>。</p>
+      </div>
+      <p class="note">所以正确的问法不是「模型会不会吃掉我」，而是「模型变强之后，我这个产品是变强了还是没必要了」——<strong>前者是寄生，后者是共生。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>存活的四个维度</h2></div>
+    <div class="body">
+      <div class="cols c2">
+        <div class="card">
+          <h3>私有数据管道</h3>
+          <p>服务过程中是否<strong>持续积累</strong>别人拿不到的数据。数据飞轮一旦转起来，后来者很难追上。注意关键词是「持续积累」而非「拥有数据」——一次性爬来的公开数据，底座一拳就能打倒。</p>
+        </div>
+        <div class="card">
+          <h3>现场混乱态知识</h3>
+          <p>行业真实运行的知识，大量存在于<strong>非结构化的现场经验</strong>里，不在公开语料中。这正是垂直行业模型能在港口排泊、矿山场景跑出采纳率的原因——通用模型在这些场景里只能给建议。</p>
+        </div>
+        <div class="card">
+          <h3>流程嵌入深度</h3>
+          <p>是业务之外的工具，还是<strong>嵌在客户的业务链路里</strong>。后者替换成本极高——不只是技术迁移，还包括组织习惯、数据格式和工作流程的重建。</p>
+        </div>
+        <div class="card">
+          <h3>结果责任</h3>
+          <p>是否<strong>对结果负责</strong>，而不只是提供能力。承担结果责任的一方天然获得定价权，也天然不被底座替代——因为底座不承担后果。</p>
+        </div>
+      </div>
+      <p class="note">四个维度有一个共同点：<strong>它们都不在模型的迭代方向上。</strong>模型会越来越会写、越来越会推理，但它不会替你积累客户数据，不会替你蹲在港口现场，不会替你承担结果。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>三条边界：规律不能推得太远</h2></div>
+    <div class="body">
+      <div class="cols c3">
+        <div class="card">
+          <h3>不等同于创业无意义</h3>
+          <p>杀手级应用历史上出现在平台成熟之后<strong>一到三年</strong>，这是规律而非异常。<strong>窗口收窄是真的，窗口关闭是假的。</strong></p>
+        </div>
+        <div class="card">
+          <h3>不把「套壳」一概当贬义</h3>
+          <p>一款智能搜索应用早期是典型套壳，其首席执行官公开说：拥有十万用户的套壳产品，<strong>比拥有自有模型却没有用户更有价值</strong>。问题只在于能不能在窗口期内长出模型之外的东西。</p>
+        </div>
+        <div class="card">
+          <h3>不把「模型之外」浪漫化</h3>
+          <p>数据、场景、流程、责任，做起来都要付出真实的时间和人力。它们不是避风港，而是<strong>另一条更慢、更重的路</strong>——不像套壳那样能在三个月内做出漂亮数字。</p>
+        </div>
+      </div>
+      <p class="note">克制住这三点，这条规律才是<strong>判断工具</strong>，而不是情绪。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="sq"></div><h2>一条正在推向上身的规律</h2></div>
+    <div class="body">
+      <p class="lead">这条规律最初的版本是关于产品的：<strong>基于底座缺陷做出来的东西，会被底座的进步抹平。</strong></p>
+      <p class="lead">但它的适用范围可能比产品更宽。任何价值如果建立在「当前工具做不到」这个前提上，它的保质期就和<strong>工具的迭代周期</strong>绑定——<strong>工具越强，前提消失得越快。</strong></p>
+      <div class="quote">真正稳的价值，建立在工具做不到的地方——<br>需要长期在场、需要承担后果、需要把混乱经验结构化的地方。</div>
+      <p class="note">这条边界不是固定的，它会随模型能力提升而移动，<strong>但它不会消失</strong>。对做产品的人是如此，对做工作的人也是如此。</p>
+    </div>
+  </section>
+
+  <section class="slide end">
+    <h2>工具越强，前提消失得越快。<br>站到工具做不到的地方去。</h2>
+    <div class="after">模型吃掉的是<strong>寄生于缺陷的应用</strong>；<br>吃不掉的，是长期在场、承担后果、把混乱经验结构化的人。</div>
+  </section>
+
+</div>
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let idx=0;
+  const go=i=>{idx=Math.max(0,Math.min(slides.length-1,i));slides[idx].scrollIntoView({behavior:'smooth'});};
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(idx+1);}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}
+    if(e.key==='Home'){e.preventDefault();go(0);}
+    if(e.key==='End'){e.preventDefault();go(slides.length-1);}
+  });
+  document.addEventListener('click',e=>go(e.clientX>innerWidth/2?idx+1:idx-1));
+</script>
+</body>
+</html>

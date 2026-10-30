@@ -1,0 +1,8 @@
+# 本地私有状态（含本机绝对路径），不进版本库
+data/.state.json
+
+# 临时产物
+shots-*.png
+*.pyc
+__pycache__/
+.DS_Store

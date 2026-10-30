@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AtomPages · 个人作品档案库</title>
+<meta name="description" content="jeekeagle 的个人 Pages 站点：按模块归档的幻灯片与文档，每三小时自动汇集一次。">
+<meta name="theme-color" content="#0B0B0D">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%230B0B0D'/><rect x='12' y='12' width='40' height='40' rx='3' fill='none' stroke='%23E8A33D' stroke-width='3'/><rect x='23' y='23' width='18' height='4' fill='%23E8A33D'/><rect x='23' y='33' width='18' height='4' fill='%23EDEAE4'/></svg>">
+<link rel="stylesheet" href="assets/tokens.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__in">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">AtomPages</span>
+      <span class="brand__dot">·</span>
+      <span class="brand__sub">jeekeagle</span>
+    </a>
+    <nav class="topnav">
+      <a href="index.html" class="on">档案库</a>
+      <a href="#modules">模块</a>
+      <a href="https://github.com/jeekeagle/AtomPages" target="_blank" rel="noopener">仓库</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section class="page-head">
+      <div class="kicker">个人独立站点 · 自动汇集</div>
+      <h1>作品档案库</h1>
+      <p class="lede">
+        这里收录我在对话中产出的全部幻灯片与文档。它们按主题自动归入模块，条目编号只增不改，
+        每三小时重新汇集一次。点击任意条目即可在站内全屏预览。
+      </p>
+    </section>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="toolbar">
+      <label class="toolbar__search">
+        <span>检索</span>
+        <input type="search" id="q" placeholder="按标题、模块或来源检索" autocomplete="off">
+      </label>
+      <div id="filters" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </section>
+
+    <section id="modules"></section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span>AtomPages · jeekeagle</span>
+    <span>·</span>
+    <span id="stamp">载入中</span>
+    <span style="margin-left:auto">采集周期 每三小时</span>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+{
+  "site": "AtomPages",
+  "owner": "jeekeagle",
+  "updatedAt": "2026-10-30T16:55:20.478279+08:00",
+  "generatedBy": "tools/collect.py",
+  "moduleCount": 9,
+  "itemCount": 9,
+  "modules": [
+    {
+      "no": "M01",
+      "slug": "ai-ethics-policy",
+      "name": "伦理与安全",
+      "desc": "人工智能伦理与安全的政策依据",
+      "count": 1,
+      "items": [
+        {
+          "key": "ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据",
+          "module": "ai-ethics-policy",
+          "title": "人工智能伦理与安全 · 第一部分 政策依据",
+          "slug": "人工智能伦理与安全-第一部分-政策依据",
+          "sourceProject": "ai-ethics-policy-huashu",
+          "html": "pages/ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据.html",
+          "pdf": "pdfs/ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据.pdf",
+          "thumb": "thumbs/ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据.jpg",
+          "slides": 10,
+          "bytes": 64576,
+          "hash": "ccc29b1a951ffb3b",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T16:32:40.433768+08:00",
+          "addedAt": "2026-10-30T16:55:20.444367+08:00",
+          "no": "01-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M02",
+      "slug": "training-product",
+      "name": "培训交付",
+      "desc": "培训从交付理念转向直接交付产品",
+      "count": 1,
+      "items": [
+        {
+          "key": "training-product/交付的不再是理念-而是产品",
+          "module": "training-product",
+          "title": "交付的不再是理念，而是产品",
+          "slug": "交付的不再是理念-而是产品",
+          "sourceProject": "training-product-huashu",
+          "html": "pages/training-product/交付的不再是理念-而是产品.html",
+          "pdf": "pdfs/training-product/交付的不再是理念-而是产品.pdf",
+          "thumb": "thumbs/training-product/交付的不再是理念-而是产品.jpg",
+          "slides": 13,
+          "bytes": 29879,
+          "hash": "a308ea2e604495aa",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T11:49:04.295134+08:00",
+          "addedAt": "2026-10-30T16:55:20.472778+08:00",
+          "no": "02-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M03",
+      "slug": "selfmedia-gap",
+      "name": "自媒体鸿沟",
+      "desc": "自媒体与自我应用之间的效果落差",
+      "count": 1,
+      "items": [
+        {
+          "key": "selfmedia-gap/自媒体与自我应用的鸿沟",
+          "module": "selfmedia-gap",
+          "title": "自媒体与自我应用的鸿沟",
+          "slug": "自媒体与自我应用的鸿沟",
+          "sourceProject": "selfmedia-gap-huashu",
+          "html": "pages/selfmedia-gap/自媒体与自我应用的鸿沟.html",
+          "pdf": "pdfs/selfmedia-gap/自媒体与自我应用的鸿沟.pdf",
+          "thumb": "thumbs/selfmedia-gap/自媒体与自我应用的鸿沟.jpg",
+          "slides": 10,
+          "bytes": 37334,
+          "hash": "719b9e7e3cf74394",
+          "selfContained": true,
+          "updatedAt": "2026-10-30T13:48:51.414185+08:00",
+          "addedAt": "2026-10-30T16:55:20.462941+08:00",
+          "no": "03-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M04",
+      "slug": "microcourse",
+      "name": "智能体微课",
+      "desc": "基于智能体的微课全流程制作方法",
+      "count": 1,
+      "items": [
+        {
+          "key": "microcourse/基于智能体的微课全流程制作方法综述",
+          "module": "microcourse",
+          "title": "基于智能体的微课全流程制作方法综述",
+          "slug": "基于智能体的微课全流程制作方法综述",
+          "sourceProject": "agent-microcourse-slides",
+          "html": "pages/microcourse/基于智能体的微课全流程制作方法综述.html",
+          "pdf": null,
+          "thumb": "thumbs/microcourse/基于智能体的微课全流程制作方法综述.jpg",
+          "slides": 25,
+          "bytes": 34006,
+          "hash": "b7bfd8cff54a220b",
+          "selfContained": true,
+          "updatedAt": "2026-10-28T19:52:16.098529+08:00",
+          "addedAt": "2026-10-30T16:55:20.438856+08:00",
+          "no": "04-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M05",
+      "slug": "skill-engineering",
+      "name": "技能化开发",
+      "desc": "从 Agent 调用模式抽取 Skill 的开发方法",
+      "count": 1,
+      "items": [
+        {
+          "key": "skill-engineering/从调用到工程-智能体时代的技能化开发",
+          "module": "skill-engineering",
+          "title": "从调用到工程：智能体时代的技能化开发",
+          "slug": "从调用到工程-智能体时代的技能化开发",
+          "sourceProject": "skill-engineering-slides",
+          "html": "pages/skill-engineering/从调用到工程-智能体时代的技能化开发.html",
+          "pdf": null,
+          "thumb": "thumbs/skill-engineering/从调用到工程-智能体时代的技能化开发.jpg",
+          "slides": 10,
+          "bytes": 15102,
+          "hash": "5ef064cd157ccbb5",
+          "selfContained": true,
+          "updatedAt": "2026-10-29T10:40:28.619895+08:00",
+          "addedAt": "2026-10-30T16:55:20.469472+08:00",
+          "no": "05-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M06",
+      "slug": "agent-basics",
+      "name": "智能体基础",
+      "desc": "Chatbot 与 Agent 的区别、调用模式与技能化",
+      "count": 1,
+      "items": [
+        {
+          "key": "agent-basics/Chatbot-与-Agent-从对话-到行动",
+          "module": "agent-basics",
+          "title": "Chatbot 与 Agent：从对话，到行动",
+          "slug": "Chatbot-与-Agent-从对话-到行动",
+          "sourceProject": "chatbot-vs-agent-huashu",
+          "html": "pages/agent-basics/Chatbot-与-Agent-从对话-到行动.html",
+          "pdf": null,
+          "thumb": "thumbs/agent-basics/Chatbot-与-Agent-从对话-到行动.jpg",
+          "slides": 11,
+          "bytes": 16765,
+          "hash": "8d08956623041d8f",
+          "selfContained": true,
+          "updatedAt": "2026-10-29T10:25:12.809012+08:00",
+          "addedAt": "2026-10-30T16:55:20.450672+08:00",
+          "no": "06-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M07",
+      "slug": "interface",
+      "name": "交互界面",
+      "desc": "交互界面与人的认知瓶颈",
+      "count": 1,
+      "items": [
+        {
+          "key": "interface/交互界面-翻译成本在人与机器之间转移的历史",
+          "module": "interface",
+          "title": "交互界面：翻译成本在人与机器之间转移的历史",
+          "slug": "交互界面-翻译成本在人与机器之间转移的历史",
+          "sourceProject": "interface-slides",
+          "html": "pages/interface/交互界面-翻译成本在人与机器之间转移的历史.html",
+          "pdf": null,
+          "thumb": "thumbs/interface/交互界面-翻译成本在人与机器之间转移的历史.jpg",
+          "slides": 8,
+          "bytes": 14050,
+          "hash": "2f237ffbb588dcfe",
+          "selfContained": true,
+          "updatedAt": "2026-10-28T17:14:33.705340+08:00",
+          "addedAt": "2026-10-30T16:55:20.455684+08:00",
+          "no": "07-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M08",
+      "slug": "model-eats-app",
+      "name": "模型与应用",
+      "desc": "大模型迭代对应用层创新的降维打击",
+      "count": 1,
+      "items": [
+        {
+          "key": "model-eats-app/模型吃掉应用-大模型迭代对应用层创新的降维打击",
+          "module": "model-eats-app",
+          "title": "模型吃掉应用：大模型迭代对应用层创新的降维打击",
+          "slug": "模型吃掉应用-大模型迭代对应用层创新的降维打击",
+          "sourceProject": "model-eats-app-slides",
+          "html": "pages/model-eats-app/模型吃掉应用-大模型迭代对应用层创新的降维打击.html",
+          "pdf": null,
+          "thumb": "thumbs/model-eats-app/模型吃掉应用-大模型迭代对应用层创新的降维打击.jpg",
+          "slides": 13,
+          "bytes": 18892,
+          "hash": "f3b1d714bbf31353",
+          "selfContained": true,
+          "updatedAt": "2026-10-29T00:26:07.070619+08:00",
+          "addedAt": "2026-10-30T16:55:20.458644+08:00",
+          "no": "08-01",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "no": "M09",
+      "slug": "cognition",
+      "name": "认知瓶颈",
+      "desc": "介质转换成本归零之后，认知成为唯一瓶颈",
+      "count": 1,
+      "items": [
+        {
+          "key": "cognition/介质转换成本归零之后",
+          "module": "cognition",
+          "title": "介质转换成本归零之后",
+          "slug": "介质转换成本归零之后",
+          "sourceProject": "cognition-bottleneck-slides",
+          "html": "pages/cognition/介质转换成本归零之后.html",
+          "pdf": null,
+          "thumb": "thumbs/cognition/介质转换成本归零之后.jpg",
+          "slides": 13,
+          "bytes": 12618,
+          "hash": "e9e3a0e64c707620",
+          "selfContained": true,
+          "updatedAt": "2026-10-29T22:23:13.403992+08:00",
+          "addedAt": "2026-10-30T16:55:20.453148+08:00",
+          "no": "09-01",
+          "index": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>介质转换成本归零之后</title>
+<style>
+  :root{ --ink:#1c1c1c; --sub:#5a6472; --line:#d8dce1; --accent:#a03a2a; --soft:#faf6f2; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:#fff; color:var(--ink); font-family:"Noto Serif SC","Songti SC","SimSun",serif; }
+  .deck{ height:100vh; overflow:hidden; }
+  .slide{ height:100vh; display:none; flex-direction:column; justify-content:center;
+          padding:70px 96px; position:relative; }
+  .slide.active{ display:flex; }
+  body{ overflow:hidden; }
+  @page{size:13.333in 7.5in;margin:0;}
+  @media print{
+    html,body{height:auto;}
+    body{ overflow:visible; height:auto; }
+    .deck{ height:auto; overflow:visible; }
+    .slide{ display:flex !important; height:7.5in; width:13.333in; page-break-after:always; break-after:page; }
+    .slide:last-child{ page-break-after:auto; break-after:auto; }
+  }
+  .kicker{ font-size:16px; color:var(--accent); letter-spacing:.35em; margin-bottom:26px; }
+  h1{ font-size:44px; line-height:1.45; font-weight:700; }
+  h1 .em{ color:var(--accent); }
+  .rule{ width:64px; height:3px; background:var(--ink); margin:30px 0 34px; }
+  .body{ font-size:20px; line-height:2.0; color:#2c2c2c; max-width:1000px; }
+  .body p{ margin:14px 0; }
+  .body b{ color:var(--ink); }
+  .accent{ color:var(--accent); font-weight:700; }
+  .quote{ border-left:5px solid var(--accent); background:var(--soft);
+          padding:22px 30px; font-size:23px; line-height:1.9; margin:26px 0; }
+  .cols{ display:flex; gap:36px; margin-top:8px; }
+  .col{ flex:1; border-top:3px solid var(--ink); padding-top:18px; }
+  .col h3{ font-size:22px; margin-bottom:12px; }
+  .col p{ font-size:18px; line-height:1.9; color:#333; }
+  .col .tag{ font-size:16px; color:var(--accent); letter-spacing:.2em; display:block; margin-bottom:8px; }
+  .pair{ display:flex; gap:0; margin-top:10px; align-items:stretch; }
+  .pair .side{ flex:1; padding:26px 30px; }
+  .pair .side.a{ border:2px solid var(--ink); border-right:none; }
+  .pair .side.b{ border:2px solid var(--accent); background:var(--soft); }
+  .pair h3{ font-size:21px; margin-bottom:10px; }
+  .pair p{ font-size:18px; line-height:1.9; color:#333; }
+  .big{ font-size:30px; line-height:1.9; }
+  .num{ font-size:16px; color:var(--sub); letter-spacing:.3em; margin-bottom:18px; }
+  ul.pts{ list-style:none; margin-top:6px; }
+  ul.pts li{ font-size:19px; line-height:1.95; margin:14px 0; padding-left:26px; position:relative; }
+  ul.pts li::before{ content:""; position:absolute; left:0; top:16px; width:10px; height:3px; background:var(--accent); }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<section class="slide active">
+  <div class="kicker">写 作 灵 感 · 深 度 分 析</div>
+  <h1>介质转换成本归零之后<br><span class="em">人的认知成为唯一瓶颈</span></h1>
+  <div class="rule"></div>
+  <div class="body">当表达成本趋近于零，表达就变成认知的透明投影；<br>于是认知本身成为唯一的瓶颈，也成为唯一的价值来源。</div>
+</section>
+
+<section class="slide">
+  <div class="num">壹 · 推进的实质</div>
+  <h1>从「信息可以自由变形」<br>到「变形之后剩下什么」</h1>
+  <div class="rule"></div>
+  <div class="body">
+    <p>原来的判断落在效率：过去几天的课件，现在几分钟出来。</p>
+    <p>今天的推进把落点移到了本体：<b>转换近乎免费之后，最终呈现的东西不再受介质能力限制，只受源头的质量限制。</b></p>
+    <p>介质曾经既是一种保护，也是一种遮蔽——它保护了不擅长表达的人，也遮蔽了想得深的人。遮蔽拆掉的同时，保护也一起没了。<span class="accent">现在，差距完全暴露在认知上。</span></p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="num">贰 · 前提检验之一</div>
+  <h1>转换真的趋近于无损吗</h1>
+  <div class="rule"></div>
+  <div class="body">
+    <p>不完全。文字擅长逻辑，图像擅长整体感，视频擅长情绪，演示文稿擅长把复杂的东西切成可消化的块——<b>每种介质都有自己的偏向，转换总有损失。</b></p>
+  </div>
+  <div class="quote">严格说，不是「无损转换」，而是「损失变得可以承受」。介质不再限制你能不能表达，但仍然影响别人怎么接收。</div>
+  <div class="body"><p>所以选择哪种介质，本身仍然是一个认知判断。</p></div>
+</section>
+
+<section class="slide">
+  <div class="num">叁 · 前提检验之二</div>
+  <h1>转换真的免费吗</h1>
+  <div class="rule"></div>
+  <div class="body">
+    <p>不免费，但成本结构变了。过去的成本在制作，现在的成本在判断。</p>
+  </div>
+  <div class="pair">
+    <div class="side a"><h3>消失的成本</h3><p>生成十个版本几乎不花时间——手的工作被替代了。</p></div>
+    <div class="side b"><h3>放大的成本</h3><p>从十个版本里挑出对的那一个，花的是判断力——脑的工作被放大了。</p></div>
+  </div>
+  <div class="body" style="margin-top:26px"><p><span class="accent">成本没有消失，从手上转移到了脑子里。</span></p></div>
+</section>
+
+<section class="slide">
+  <div class="num">肆 · 前提检验之三</div>
+  <h1>幻灯片真的等于你脑子里想的吗</h1>
+  <div class="rule"></div>
+  <div class="body">
+    <p>转换成本降低，降低的是「能不能做出来」，不是「想清楚了没有」。工具越流畅，这个混淆越危险：生成物看起来很完整，会给人「我已经想清楚了」的错觉。</p>
+    <p>两个已知的风险：<b>认知卸载</b>——把认知任务交给外部载体，短期效率提高，撤掉支持后表现回落到基线；<b>认知债务</b>——使用生成成果却不理解它，所呈现的与所能辩护的之间出现缺口，越往上叠加缺口越大。</p>
+  </div>
+  <div class="quote">准确的表述是：呈现内容的<b>上限</b>等于你脑子里想的，<b>下限</b>可能远低于你脑子里想的。上限由认知决定，下限由审查决定，两件事不能混为一谈。</div>
+</section>
+
+<section class="slide">
+  <div class="num">伍 · 理论接口</div>
+  <h1>脑文本与物质文本</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col"><span class="tag">本 源</span><h3>脑文本</h3><p>人在大脑中把概念编辑组合成脑文本，再经发音转换为语言。它是决定思想与行为的既定程序。</p></div>
+    <div class="col"><span class="tag">派 生</span><h3>物质文本</h3><p>历史上从脑文本到物质文本的转换昂贵、有损、需要专门技能——谁掌握书写、印刷、拍摄，谁就掌握话语权。</p></div>
+  </div>
+  <div class="quote" style="margin-top:34px">转换成本归零，等于把文明的重心掰回了脑文本一侧：从「如何表达」回到「表达什么」。围绕转换技能建立的能力评价体系，需要重新校准。</div>
+</section>
+
+<section class="slide">
+  <div class="num">陆 · 推论一二</div>
+  <h1>溢价的两端</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col"><span class="tag">推 论 一</span><h3>表达溢价下降，认知溢价上升</h3><p>会做课件、会剪视频，从竞争性优势变成及格线——做不到是短板，做到了不构成优势。新的稀缺性，是想得清楚。</p></div>
+    <div class="col"><span class="tag">推 论 二</span><h3>判断力成为新的核心工种</h3><p>工作重心从生产内容转向审核内容。教师的核心工作从制作教学材料，变成判断哪些能用、怎么改、改到什么程度。</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="num">柒 · 推论三四</div>
+  <h1>差距与教育</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col"><span class="tag">推 论 三</span><h3>认知差距被放大，而不是抹平</h3><p>表达层面的差距确实缩小；认知层面反而放大——工具把表达水平拉平，认知强的人产出有取舍的东西，认知弱的人产出经不起追问的东西，差距更显眼。</p></div>
+    <div class="col"><span class="tag">推 论 四</span><h3>教育目标重新定位</h3><p>转换技能教到够用即可，腾出的空间给认知训练：怎么拆开复杂问题、怎么判断说法站不站得住、怎么在不完美的方案里取舍。</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="num">捌 · 反面检验</div>
+  <h1>这个判断的三个边界</h1>
+  <div class="rule"></div>
+  <ul class="pts">
+    <li><b>认知本身也可能被外包。</b>若「建构理解」也被替代，稀缺的将是提出问题的能力与承担后果的能力。稀缺性沿可计算性边界移动，边界在哪里是经验问题。</li>
+    <li><b>介质会反向塑造认知。</b>媒介不只是承载内容，它改变思考方式。用什么表达，会影响你想什么——长期依赖某种介质的人，脑文本的结构可能随之改变。</li>
+    <li><b>适用范围有内外。</b>内容已想清楚的场景，转换归零是纯粹红利；内容还在生成的场景，介质是思考工具本身，不能完全外包。</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <div class="num">玖 · 已有工作的接口</div>
+  <h1>两条线，接上了</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col"><span class="tag">微 课 线</span><h3>成本结构变了</h3><p>微课是高成本年代以标准化录制换取可复制分发的折中。折中的前提不成立了——不是形式过时，是它赖以成立的成本结构变了。这给「广义微课」提供了更底层的理由。</p></div>
+    <div class="col"><span class="tag">培 训 线</span><h3>同一个逻辑的两面</h3><p>「用它做你懂的事效率最高，做你不懂的事风险最大」讲操作层怎么分工；今天的判断讲价值层为什么人的认知更值钱。转换成本降低让生成物太像样，正是「看过不等于核查」的原因。</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="num">拾 · 用 法</div>
+  <h1>这个判断怎么讲</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col"><span class="tag">开 头</span><h3>现象切入</h3><p>过去做讲座：两天课件、一天讲稿、一天想内容；现在前两样合计不到一小时——重心挪了位置。</p></div>
+    <div class="col"><span class="tag">中 段</span><h3>给判断</h3><p>表达不再是瓶颈，认知成为唯一瓶颈；遮蔽拆掉，差距暴露在认知上。</p></div>
+    <div class="col"><span class="tag">转 折</span><h3>给警示</h3><p>降低的是「能不能做出来」，不是「想清楚了没有」。</p></div>
+    <div class="col"><span class="tag">结 尾</span><h3>落行动</h3><p>该练的不是让工具生成得更好看，是让自己想得更清楚——前者三个月能学会，后者要十年。</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="num">拾壹 · 待深化</div>
+  <h1>四个可以继续追的问题</h1>
+  <div class="rule"></div>
+  <ul class="pts">
+    <li>认知差距被放大，有没有实证支持？教育领域的生成工具研究，是否显示强者更强的马太效应？</li>
+    <li>介质反向塑造认知若成立，长期依赖生成工具的人，脑文本结构会朝哪个方向变化——这是一个可以设计实验的问题。</li>
+    <li>「可计算性边界」目前还是直觉判断，能否给出更精确的刻画？</li>
+    <li>在职业教育场景里，中职学生要练的认知能力，和普通教育一样吗？</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <div class="kicker">结</div>
+  <h1>表达变成认知的透明投影，<br><span class="em">认知是唯一瓶颈，也是唯一的价值来源。</span></h1>
+  <div class="rule"></div>
+  <div class="body big">手上的活交出去了，<br>脑子里的活，一寸都交不出去。</div>
+</section>
+
+</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let i=0;
+function show(n){slides[i].classList.remove('active');i=(n+slides.length)%slides.length;slides[i].classList.add('active');}
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key))show(i+1);
+if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))show(i-1);});
+document.addEventListener('click',e=>{e.clientX>innerWidth/2?show(i+1):show(i-1);});
+</script>
+</body>
+</html>

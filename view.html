@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>条目预览 · AtomPages</title>
+<meta name="theme-color" content="#0B0B0D">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%230B0B0D'/><rect x='12' y='12' width='40' height='40' rx='3' fill='none' stroke='%23E8A33D' stroke-width='3'/><rect x='23' y='23' width='18' height='4' fill='%23E8A33D'/><rect x='23' y='33' width='18' height='4' fill='%23EDEAE4'/></svg>">
+<link rel="stylesheet" href="assets/tokens.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__in">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">AtomPages</span>
+      <span class="brand__dot">·</span>
+      <span class="brand__sub">jeekeagle</span>
+    </a>
+    <nav class="topnav">
+      <a href="index.html">档案库</a>
+      <a href="https://github.com/jeekeagle/AtomPages" target="_blank" rel="noopener">仓库</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <a class="backlink" href="index.html">← 返回档案库</a>
+
+    <section class="page-head" style="margin-top:22px">
+      <div class="kicker" id="kicker"></div>
+      <h1 id="title">载入中</h1>
+    </section>
+
+    <section class="viewer">
+      <div class="viewer__bar">
+        <span class="viewer__title" id="bar-title"></span>
+        <span class="viewer__spacer"></span>
+        <a class="viewer__act" id="act-open" target="_blank" rel="noopener">独立打开</a>
+        <a class="viewer__act" id="act-pdf" target="_blank" rel="noopener" hidden>PDF</a>
+        <a class="viewer__act" id="act-src" target="_blank" rel="noopener">源文件</a>
+      </div>
+      <div class="stage" id="stage">
+        <iframe id="frame" title="预览"></iframe>
+      </div>
+    </section>
+
+    <section class="desc">
+      <h3>条目信息</h3>
+      <p id="desc-text"></p>
+      <dl id="desc-kv"></dl>
+    </section>
+
+    <section id="siblings"></section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span>AtomPages · jeekeagle</span>
+    <span style="margin-left:auto" id="stamp"></span>
+  </div>
+</footer>
+
+<script src="assets/view.js"></script>
+</body>
+</html>

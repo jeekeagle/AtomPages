@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatbot 与 Agent：从对话，到行动</title>
+<style>
+  :root{
+    --ink:#17181d;          /* ground-ink：微冷偏置 */
+    --soft:#555963;
+    --hair:#e6e7ea;
+    --wash:#f6f6f8;
+    --accent:#d6215f;       /* 强调色只用于「智能体」这一层含义 */
+    --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:#fff;color:var(--ink);font-family:var(--sans);}
+  .deck{scroll-snap-type:y mandatory;overflow-y:scroll;height:100vh;}
+  .slide{
+    width:1280px;height:720px;margin:0 auto;background:#fff;
+    scroll-snap-align:start;position:relative;overflow:hidden;
+    padding:56px 84px 50px;display:flex;flex-direction:column;
+  }
+  /* HUD 章节标记 */
+  .hud{position:absolute;top:34px;left:84px;right:84px;display:flex;justify-content:space-between;align-items:center;font-size:16px;letter-spacing:4px;color:#9aa0ab;font-weight:600;}
+  .hud .mark{display:flex;align-items:center;gap:12px;}
+  .hud .dot{width:10px;height:10px;background:var(--ink);}
+  .hud .dot.on{background:var(--accent);}
+  .head{margin-top:44px;padding-bottom:18px;border-bottom:2px solid var(--ink);}
+  .head h2{font-size:46px;font-weight:900;letter-spacing:1px;line-height:1.2;}
+  .head h2 em{font-style:normal;color:var(--accent);}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;padding-top:18px;}
+  .kicker{font-size:17px;font-weight:700;letter-spacing:6px;color:var(--soft);}
+  p.lead{font-size:19px;line-height:1.85;color:var(--soft);max-width:1020px;}
+  p.lead strong{color:var(--ink);font-weight:800;}
+  .grid{display:grid;gap:14px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:1fr 1fr 1fr;}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .cell{background:var(--wash);padding:22px 24px;}
+  .cell.hot{background:#fdeef4;}
+  .cell .big{font-size:30px;font-weight:900;letter-spacing:1px;margin-bottom:10px;line-height:1.35;}
+  .cell.hot .big{color:var(--accent);}
+  .cell p{font-size:17px;line-height:1.7;color:var(--soft);}
+  .cell p strong{color:var(--ink);}
+  .note{border-left:6px solid var(--ink);padding:4px 0 4px 22px;font-size:18px;line-height:1.8;color:var(--soft);}
+  .note strong{color:var(--accent);font-weight:800;}
+  /* 巨字 */
+  .giant{font-weight:900;line-height:1.05;letter-spacing:2px;}
+  .pill{display:inline-block;background:var(--accent);color:#fff;padding:6px 26px;border-radius:999px;}
+  /* 表 */
+  table{width:100%;border-collapse:collapse;}
+  th,td{text-align:left;vertical-align:top;line-height:1.55;}
+  thead th{font-size:19px;font-weight:900;padding:12px 16px;border-bottom:3px solid var(--ink);}
+  thead th.dim{color:var(--soft);font-weight:700;}
+  tbody td,tbody th{font-size:17px;padding:10px 16px;border-bottom:1px solid var(--hair);}
+  tbody th{color:var(--ink);font-weight:800;white-space:nowrap;}
+  tbody td{color:var(--soft);}
+  tbody td.hot{color:var(--accent);font-weight:700;}
+  tbody tr:last-child td,tbody tr:last-child th{border-bottom:none;}
+  /* 气泡 */
+  .bubble{border-radius:20px;padding:18px 28px;font-size:18px;line-height:1.75;max-width:920px;}
+  .bubble .who{display:block;font-size:16px;font-weight:900;letter-spacing:3px;margin-bottom:7px;color:var(--soft);}
+  .bubble.left{background:var(--wash);border-bottom-left-radius:4px;margin-right:auto;}
+  .bubble.right{background:#fdeef4;border-bottom-right-radius:4px;margin-left:auto;}
+  .bubble.right .who{color:var(--accent);}
+  /* 对撞布局 */
+  .clash{display:grid;grid-template-columns:1fr 110px 1fr;align-items:center;}
+  .clash .side{padding:36px 34px;}
+  .clash .side .char{font-size:120px;font-weight:900;line-height:1;}
+  .clash .side .lab{font-size:18px;font-weight:800;letter-spacing:2px;margin:16px 0 12px;}
+  .clash .side p{font-size:17.5px;line-height:1.75;color:var(--soft);}
+  .clash .side p strong{color:var(--ink);}
+  .clash .side.b{background:var(--wash);}
+  .clash .side.a{background:#fdeef4;}
+  .clash .side.a .char,.clash .side.a .lab{color:var(--accent);}
+  .clash .mid{font-size:24px;font-weight:900;color:#c4c8cf;text-align:center;}
+  .steps{display:flex;flex-direction:column;}
+  .step{display:grid;grid-template-columns:132px 1fr;gap:24px;padding:15px 0;border-bottom:1px solid var(--hair);align-items:center;}
+  .step:last-child{border-bottom:none;}
+  .step .w{font-size:30px;font-weight:900;letter-spacing:2px;white-space:nowrap;}
+  .step .t{font-size:17.5px;line-height:1.7;color:var(--soft);}
+  .step .t strong{color:var(--ink);}
+  /* 封面 */
+  .cover{justify-content:center;padding-top:0;}
+  .cover .rule{width:110px;height:12px;background:var(--ink);margin-bottom:50px;}
+  .cover h1{font-size:110px;font-weight:900;line-height:1.12;letter-spacing:2px;}
+  .cover h1 .to{font-size:64px;color:#c4c8cf;font-weight:900;padding:0 18px;}
+  .cover h1 .hot{color:var(--accent);}
+  .cover .period{display:inline-block;width:30px;height:30px;background:var(--accent);margin-left:14px;}
+  .cover .chips{margin-top:54px;display:flex;gap:16px;font-size:19px;font-weight:800;letter-spacing:2px;}
+  .cover .chips span{border:2px solid var(--ink);padding:12px 30px;border-radius:999px;}
+  .cover .chips span.hot{border-color:var(--accent);color:var(--accent);}
+  /* 结尾 */
+  .end{justify-content:center;}
+  .end h2{font-size:88px;font-weight:900;line-height:1.3;letter-spacing:2px;}
+  .end h2 .hot{color:var(--accent);}
+  .end .after{margin-top:46px;font-size:22px;line-height:1.9;color:var(--soft);}
+  .end .after strong{color:var(--accent);}
+  @page{size:13.333in 7.5in;margin:0;}
+  @media print{
+    html,body{height:auto;}
+    .deck{height:auto;overflow:visible;scroll-snap-type:none;}
+    .slide{page-break-after:always;break-after:page;}
+    *{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="slide cover">
+    <div class="rule"></div>
+    <h1>从对话<span class="to">→</span>到<span class="hot">行动</span><span class="period"></span></h1>
+    <div class="chips"><span>Chatbot · 对话机器人</span><span class="hot">Agent · 智能体</span></div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot"></div><span>对话机器人</span></div><span>窗口之内</span></div>
+    <div class="head"><h2>它是一个很会聊天的窗口</h2></div>
+    <div class="body">
+      <p class="lead">对话机器人以<strong>对话</strong>为核心交互形式：你问一句，它答一句，所有能力都发生在<strong>一个输入框</strong>里。</p>
+      <div class="grid g3">
+        <div class="cell"><div class="big">问答解释</div><p>知识提问、概念解释、翻译总结，随问随答。</p></div>
+        <div class="cell"><div class="big">内容生成</div><p>写文章、写邮件、写代码、做表格，产出都是文字。</p></div>
+        <div class="cell"><div class="big">头脑风暴</div><p>给思路、列方案、改措辞，高质量讨论伙伴。</p></div>
+      </div>
+      <p class="note">本质上，它是一个<strong>「会说很多话的窗口」</strong>——再聪明，也只负责「说」。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot"></div><span>对话机器人</span></div><span>优势</span></div>
+    <div class="head"><h2>零门槛的即问即答</h2></div>
+    <div class="body">
+      <div class="grid g2">
+        <div class="cell"><div class="big">上手零门槛</div><p>会打字就会用，打开对话框直接说人话。</p></div>
+        <div class="cell"><div class="big">响应即时</div><p>问完立刻得到回答，适合快问快答的节奏。</p></div>
+        <div class="cell"><div class="big">覆盖面极广</div><p>背后是通用大模型，知识横跨几乎所有领域。</p></div>
+        <div class="cell"><div class="big">没有学习成本</div><p>不用配置、不用授权、不用等待，问完就走。</p></div>
+      </div>
+      <p class="note">一句话：在「问」和「答」这个范围内，<strong>它已经做到足够好了</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot"></div><span>对话机器人</span></div><span>边界</span></div>
+    <div class="head"><h2>只负责说，不负责做</h2></div>
+    <div class="body">
+      <div class="grid g2">
+        <div class="cell"><div class="big">不能动手</div><p>只能输出文字，<strong>不能操作文件、软件和网页</strong>。</p></div>
+        <div class="cell"><div class="big">多步靠人推</div><p>复杂任务要拆成很多次提问，<strong>人在一步步追问</strong>。</p></div>
+        <div class="cell"><div class="big">记不住长期</div><p>会话结束即清空，跨会话的偏好<strong>难以延续</strong>。</p></div>
+        <div class="cell"><div class="big">完全被动</div><p>你不开口，它不动，<strong>驱动力永远在人这边</strong>。</p></div>
+      </div>
+      <p class="note">这不是缺陷，是形态决定的：<strong>对话即全部，对话框就是边界。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>智能体</span></div><span>定义</span></div>
+    <div class="head"><h2>你给目标，<em>它给结果</em></h2></div>
+    <div class="body">
+      <p class="lead">智能体是能<strong>理解目标、自主规划步骤、调用工具执行、并根据结果修正</strong>的智能系统。你不需要给步骤，只需要给一个想达成的结果。</p>
+      <div class="bubble left"><span class="who">你</span>把这三个文件夹里的合同整理成一张汇总表，按到期日排序。</div>
+      <div class="bubble right"><span class="who">智能体</span>已读取 47 份文件，提取关键字段并汇总，发现 3 份缺到期日，已单独列出。表格已生成。</div>
+      <p class="note">它和对话机器人共享同一个大脑——大模型。<strong>差别不在聪明程度，而在于多了手和脚。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>智能体</span></div><span>四个部件</span></div>
+    <div class="head"><h2>多出来的四个部件</h2></div>
+    <div class="body">
+      <div class="steps">
+        <div class="step"><div class="w">规划</div><div class="t"><strong>把目标拆成步骤。</strong>「整理汇总表」会拆成读取、提取、核对、生成。</div></div>
+        <div class="step"><div class="w">工具</div><div class="t"><strong>能调用环境。</strong>浏览器、代码执行、文件读写、数据库查询——不再只是输出文字。</div></div>
+        <div class="step"><div class="w">记忆</div><div class="t"><strong>跨会话延续。</strong>记住你的偏好、任务进展和历史结论，下次接着干。</div></div>
+        <div class="step"><div class="w">反思</div><div class="t"><strong>检查自己的结果。</strong>发现错误会重试，路径不通会换路，直到交付。</div></div>
+      </div>
+      <p class="note">四个部件合起来，智能体才从「会说」变成<strong>「会做」</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>核心区别 · 一</span></div><span>交互方式</span></div>
+    <div class="head"><h2>从「问」，到「交」</h2></div>
+    <div class="body">
+      <div class="clash">
+        <div class="side b">
+          <div class="char">问</div>
+          <div class="lab">对话机器人 · 人在驱动</div>
+          <p>拆任务的是你，追问的是你，汇总的还是你。<br><br>产出是——<strong>一段话</strong>。</p>
+        </div>
+        <div class="mid">对比</div>
+        <div class="side a">
+          <div class="char">交</div>
+          <div class="lab">智能体 · 它在驱动</div>
+          <p>你只交代目标，它自己拆解、自己执行、自己修正。<br><br>产出是——<strong>一个结果</strong>。</p>
+        </div>
+      </div>
+      <p class="note">最本质的分界线：<strong>交互的重心，从「问」变成了「交」。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>核心区别 · 二</span></div><span>能力半径</span></div>
+    <div class="head"><h2>一段话，还是<em>一个结果</em></h2></div>
+    <div class="body">
+      <div class="grid g2">
+        <div class="cell">
+          <div class="big">半径到「生成内容」为止</div>
+          <p>查资料要你复制粘贴，写文件要你自己保存，跑程序要你自己动手——<strong>它是参谋，不是执行者</strong>。</p>
+        </div>
+        <div class="cell hot">
+          <div class="big">半径到「改变世界」为止</div>
+          <p>能查资料、写文件、跑代码、调接口、跨软件协作，把中间环节全部自己走完——<strong>它是执行者</strong>。</p>
+        </div>
+      </div>
+      <p class="note">同样的聪明头脑，产出物完全不同：对话机器人交付<strong>「知道」</strong>，智能体交付<strong>「办成」</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>一张表</span></div><span>七个维度</span></div>
+    <div class="head"><h2>七个维度看清全部区别</h2></div>
+    <div class="body">
+      <table>
+        <thead>
+          <tr><th class="dim">维度</th><th>对话机器人</th><th>智能体</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>交互方式</th><td>一问一答</td><td class="hot">目标委派</td></tr>
+          <tr><th>你的角色</th><td>提问者，步步追问</td><td class="hot">交办者，只给目标</td></tr>
+          <tr><th>它的角色</th><td>回答者</td><td class="hot">执行者</td></tr>
+          <tr><th>输出形态</th><td>一段文字</td><td class="hot">一个结果</td></tr>
+          <tr><th>工具使用</th><td>基本不用</td><td class="hot">大量调用</td></tr>
+          <tr><th>记忆延续</th><td>会话之内</td><td class="hot">跨会话、长期</td></tr>
+          <tr><th>适合任务</th><td>即问即答的知识类</td><td class="hot">多步骤、跨软件的执行类</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="hud"><div class="mark"><div class="dot on"></div><span>怎么选</span></div><span>一个口诀</span></div>
+    <div class="head"><h2>问知识找前者，办事情找后者</h2></div>
+    <div class="body">
+      <div class="grid g2">
+        <div class="cell">
+          <div class="big">这些时候它就够了</div>
+          <p>想问题、查资料、写初稿、改措辞——任何<strong>「你拿到回答就能自己完成」</strong>的事，快问快答效率最高。</p>
+        </div>
+        <div class="cell hot">
+          <div class="big">这些时候该换它</div>
+          <p>任务有<strong>多个步骤</strong>、要用<strong>多种工具</strong>、要<strong>交付结果</strong>：整理一批文件、产出一份报告、自动巡检数据、持续跟进流程。</p>
+        </div>
+      </div>
+      <p class="note">判断口诀：<strong>如果你拿到回答之后，还有一堆活要自己干，就该交给智能体。</strong></p>
+    </div>
+  </section>
+
+  <section class="slide end">
+    <h2>从回答问题的嘴，<br>到动手做事的<span class="hot">手</span>。</h2>
+    <div class="after">对话机器人负责<strong>让你知道</strong>，智能体负责<strong>替你办成</strong>——<br>这就是全部区别。</div>
+  </section>
+
+</div>
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let idx=0;
+  const go=i=>{idx=Math.max(0,Math.min(slides.length-1,i));slides[idx].scrollIntoView({behavior:'smooth'});};
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(idx+1);}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}
+    if(e.key==='Home'){e.preventDefault();go(0);}
+    if(e.key==='End'){e.preventDefault();go(slides.length-1);}
+  });
+  document.addEventListener('click',e=>go(e.clientX>innerWidth/2?idx+1:idx-1));
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>交付的不再是理念，而是产品</title>
+<style>
+  @page{ size:13.333in 7.5in; margin:0; }
+  :root{
+    --ground:#FFFFFF; --surface:#F4F7F6; --surface2:#EAEFEE;
+    --ink:#111820; --ink2:#414E59; --muted:#78858F; --line:#D8E1E0;
+    --accent:#0E7C66; --accent-soft:#E4F0EC;
+    --accent2:#9C6B3C; --accent2-soft:#F5EDE4;
+    --mono:"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ width:100%; height:100%; overflow:hidden; background:var(--ground);
+    font-family:"HarmonyOS Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink); -webkit-font-smoothing:antialiased; }
+  .deck{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  .slide{ width:1280px; height:720px; position:absolute; left:50%; top:50%;
+    margin:-360px 0 0 -640px; transform-origin:center center;
+    display:none; flex-direction:column; padding:52px 72px 46px; background:var(--ground); }
+  .slide.active{ display:flex; }
+  @media print{
+    html,body{ width:auto; height:auto; overflow:visible; }
+    .deck{ position:static; display:block; }
+    .slide{ position:relative !important; left:auto !important; top:auto !important;
+      margin:0 !important; transform:none !important; width:1280px; height:720px;
+      display:flex !important; page-break-after:always; break-after:page; }
+    .slide:last-child{ page-break-after:auto; break-after:auto; }
+  }
+
+  /* ── 标题体系 ── */
+  .eyebrow{ font-size:17px; letter-spacing:.42em; color:var(--accent); font-weight:700; margin-bottom:14px; }
+  .eyebrow .sq{ display:inline-block; width:11px; height:11px; background:var(--accent);
+    margin-right:14px; vertical-align:middle; }
+  h1{ font-size:42px; line-height:1.3; font-weight:800; letter-spacing:.005em; }
+  h1 .em{ color:var(--accent); }
+  .rule{ width:66px; height:3px; background:var(--ink); margin:18px 0 26px; }
+  .body{ font-size:19px; line-height:1.9; color:var(--ink2); }
+  .body b{ color:var(--ink); font-weight:700; }
+  .body .em{ color:var(--accent); font-weight:700; }
+  .cap{ font-size:17px; line-height:1.8; color:var(--muted); }
+  .cap b{ color:var(--ink2); }
+  .idx{ font-family:var(--mono); font-size:16px; letter-spacing:.1em; }
+
+  /* ── 阶梯图（P2） ── */
+  .stair{ display:flex; align-items:flex-end; gap:12px; height:326px; }
+  .stair .st{ flex:1; border:1px solid var(--line); border-bottom:4px solid var(--accent2);
+    background:var(--surface); padding:20px 20px 18px; display:flex; flex-direction:column; }
+  .stair .st.s4{ background:var(--accent-soft); border-color:#BFDCD4; border-bottom-color:var(--accent); }
+  .stair .st .no{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .stair .st h3{ font-size:25px; font-weight:800; margin:6px 0 10px; }
+  .stair .st .dl{ font-size:16px; color:var(--muted); letter-spacing:.16em; margin-bottom:6px; }
+  .stair .st p{ font-size:17px; line-height:1.75; color:var(--ink2); }
+  .stair .st.s4 p{ color:var(--ink); font-weight:600; }
+  .stair .st.s4 h3{ color:var(--accent); }
+  .stair .st .take{ margin-top:auto; padding-top:12px; border-top:1px dashed var(--line); font-size:16px; color:var(--muted); }
+  .stair .st.s4 .take{ border-top-color:#BFDCD4; color:var(--accent); font-weight:600; }
+
+  /* ── 表格（P3） ── */
+  .tbl{ display:grid; grid-template-columns:190px 1fr 1fr 1.1fr; border:1px solid var(--line); }
+  .tbl > div{ padding:15px 18px; font-size:17px; line-height:1.7; color:var(--ink2);
+    border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+  .tbl > div:nth-child(4n){ border-right:none; }
+  .tbl .hd{ background:var(--surface2); color:var(--ink); font-weight:800; font-size:16px; letter-spacing:.16em; }
+  .tbl .stname{ font-weight:800; color:var(--ink); font-size:18px; }
+  .tbl .r4{ background:var(--accent-soft); }
+  .tbl .r4 > div{ border-bottom-color:#BFDCD4; }
+  .tbl .r4 .stname{ color:var(--accent); }
+  .tbl .yes{ color:var(--accent); font-weight:700; }
+
+  /* ── 封装图（P4） ── */
+  .wrap{ display:flex; align-items:center; gap:26px; }
+  .loose{ flex:1; height:300px; border:1px dashed var(--line); background:var(--surface);
+    padding:22px; display:flex; flex-direction:column; gap:12px; justify-content:center; }
+  .loose .f{ border:1px solid var(--line); background:#fff; padding:12px 16px;
+    font-size:18px; color:var(--ink2); }
+  .loose .lb{ font-size:16px; color:var(--muted); letter-spacing:.16em; margin-bottom:4px; }
+  .arrow{ flex:none; width:120px; text-align:center; }
+  .arrow .lab{ font-size:16px; color:var(--accent); font-weight:700; letter-spacing:.16em; }
+  .arrow svg{ display:block; margin:6px auto 0; }
+  .sealed{ flex:1; height:300px; border:2px solid var(--accent); background:var(--accent-soft); padding:18px; }
+  .sealed .cap{ color:var(--accent); font-weight:700; font-size:17px; margin-bottom:14px; letter-spacing:.1em; }
+  .sealed .grid{ display:flex; gap:10px; }
+  .sealed .grid .f{ flex:1; border:1px solid #BFDCD4; background:#fff; padding:14px 12px;
+    font-size:17px; color:var(--ink); text-align:center; font-weight:600; }
+  .sealed .foot{ margin-top:16px; font-size:17px; line-height:1.75; color:var(--ink2); }
+
+  /* ── 嵌套图（P5） ── */
+  .nest{ border:2px solid var(--accent); background:var(--accent-soft); padding:20px 22px 22px; }
+  .nest .top{ display:flex; align-items:baseline; gap:14px; margin-bottom:16px; }
+  .nest .top .t{ font-size:22px; font-weight:800; color:var(--accent); }
+  .nest .top .s{ font-size:16px; color:var(--ink2); }
+  .nest .layers{ display:flex; flex-direction:column; gap:10px; }
+  .nest .lay{ display:flex; gap:16px; align-items:center; background:#fff; border:1px solid #BFDCD4; padding:13px 18px; }
+  .nest .lay .n{ font-family:var(--mono); font-size:16px; color:var(--accent); flex:none; }
+  .nest .lay .t{ font-size:19px; font-weight:800; color:var(--ink); width:96px; flex:none; }
+  .nest .lay .d{ font-size:17px; color:var(--ink2); }
+  .nest .lay .d b{ color:var(--accent); }
+
+  /* ── 三形态（P6） ── */
+  .forms{ display:flex; flex-direction:column; gap:18px; }
+  .forms .row{ display:flex; gap:16px; }
+  .forms .f{ flex:1; border:1px solid var(--line); border-top:4px solid var(--accent);
+    padding:20px 22px; background:#fff; }
+  .forms .f .k{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .forms .f h3{ font-size:23px; font-weight:800; margin:6px 0 10px; }
+  .forms .f p{ font-size:17px; line-height:1.8; color:var(--ink2); }
+  .base{ border:1px solid var(--line); background:var(--surface2); padding:16px 22px; }
+  .base .lb{ font-size:16px; color:var(--muted); letter-spacing:.16em; margin-bottom:4px; }
+  .base .t{ font-size:19px; font-weight:700; color:var(--ink); }
+
+  /* ── 范式环（P7） ── */
+  .hubwrap{ position:relative; height:400px; }
+  .hub{ position:absolute; left:0; top:50%; transform:translateY(-50%);
+    width:330px; border:2px solid var(--accent); background:var(--accent-soft); padding:22px 24px; }
+  .hub .k{ font-family:var(--mono); font-size:16px; color:var(--accent); }
+  .hub .t{ font-size:26px; font-weight:800; margin:6px 0 10px; line-height:1.35; }
+  .hub .d{ font-size:16px; color:var(--ink2); line-height:1.75; }
+  .sat{ position:absolute; left:420px; width:400px; border:1px solid var(--line);
+    background:#fff; padding:14px 18px; height:108px; }
+  .sat.s1{ top:0; } .sat.s2{ top:126px; } .sat.s3{ top:252px; }
+  .sat .t{ font-size:20px; font-weight:800; }
+  .sat .d{ font-size:16px; color:var(--ink2); line-height:1.7; margin-top:5px; }
+  .loopbox{ position:absolute; left:860px; top:0; width:276px; height:360px;
+    border:1px solid var(--accent); background:#fff; padding:22px 24px; }
+  .loopbox .k{ font-family:var(--mono); font-size:16px; color:var(--accent); }
+  .loopbox .t{ font-size:22px; font-weight:800; margin:6px 0 12px; }
+  .loopbox p{ font-size:16px; line-height:1.8; color:var(--ink2); margin-bottom:12px; }
+  .loopbox .rule2{ width:44px; height:2px; background:var(--accent); margin:14px 0; }
+
+  /* ── 流水线（P8） ── */
+  .pipe{ display:flex; align-items:stretch; }
+  .pipe .u{ flex:1; border:1px solid var(--line); padding:18px 16px; position:relative; background:#fff; }
+  .pipe .u .k{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .pipe .u h3{ font-size:21px; font-weight:800; margin:6px 0 10px; }
+  .pipe .u p{ font-size:16px; line-height:1.75; color:var(--ink2); }
+  .pipe .u.last{ background:var(--accent-soft); border-color:#BFDCD4; }
+  .pipe .u.last h3{ color:var(--accent); }
+  .pipe .u::after{ content:""; position:absolute; right:-9px; top:50%; margin-top:-8px;
+    width:16px; height:16px; background:#fff; border-top:2px solid var(--accent);
+    border-right:2px solid var(--accent); transform:rotate(45deg); z-index:2; }
+  .pipe .u.last::after{ display:none; }
+
+  /* ── 分层图（P9） ── */
+  .layers{ display:flex; flex-direction:column; gap:9px; }
+  .layer{ display:flex; align-items:center; gap:20px; border:1px solid var(--line);
+    background:#fff; padding:13px 20px; }
+  .layer .no{ font-family:var(--mono); font-size:16px; color:var(--muted); width:30px; flex:none; }
+  .layer .t{ font-size:21px; font-weight:800; width:150px; flex:none; }
+  .layer .d{ font-size:17px; color:var(--ink2); line-height:1.65; }
+  .layer .d b{ color:var(--ink); }
+  .layer.top{ background:var(--accent-soft); border-color:#BFDCD4; }
+  .layer.top .no,.layer.top .t{ color:var(--accent); }
+  .layer.top .d{ color:var(--ink); }
+
+  /* ── 闭环图（P10） ── */
+  .cycle{ position:relative; height:344px; }
+  .cyc{ position:absolute; width:290px; height:112px; border:1px solid var(--line); background:#fff; padding:16px 20px; }
+  .cyc .k{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .cyc .t{ font-size:21px; font-weight:800; margin:4px 0 7px; }
+  .cyc .d{ font-size:16px; color:var(--ink2); line-height:1.7; }
+  .cyc.c1{ left:0; top:0; }
+  .cyc.c2{ right:0; top:0; }
+  .cyc.c3{ right:0; bottom:0; }
+  .cyc.c4{ left:0; bottom:0; }
+  .cyc.hub2{ left:50%; top:50%; transform:translate(-50%,-50%); width:250px; height:132px;
+    background:var(--accent-soft); border:2px solid var(--accent); text-align:center; padding:18px 16px; }
+  .cyc.hub2 .t{ color:var(--accent); }
+
+  /* ── 课程网格（P11） ── */
+  .grid6{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .mod{ border:1px solid var(--line); border-top:3px solid var(--accent2); padding:16px 18px; background:#fff; }
+  .mod .k{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .mod h3{ font-size:20px; font-weight:800; margin:4px 0 8px; }
+  .mod .q{ font-size:16px; color:var(--ink2); line-height:1.7; min-height:56px; }
+  .mod .o{ margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
+    font-size:16px; color:var(--accent); font-weight:600; }
+
+  /* ── 边界三卡（P12） ── */
+  .three{ display:flex; gap:20px; }
+  .three .b{ flex:1; border:1px solid var(--line); border-top:4px solid var(--accent); padding:20px 22px; }
+  .three .b .k{ font-family:var(--mono); font-size:16px; color:var(--muted); }
+  .three .b h3{ font-size:22px; font-weight:800; margin:6px 0 12px; }
+  .three .b ul{ list-style:none; }
+  .three .b li{ font-size:17px; line-height:1.75; color:var(--ink2); padding:7px 0 7px 18px; position:relative; }
+  .three .b li::before{ content:""; position:absolute; left:0; top:15px; width:8px; height:2px; background:var(--accent); }
+
+  /* ── 封面 / 结尾 ── */
+  .cover{ justify-content:center; }
+  .cover h1{ font-size:62px; line-height:1.28; }
+  .cover .lede{ font-size:22px; line-height:1.85; color:var(--ink2); max-width:900px; margin-top:8px; }
+  .cover .lede b{ color:var(--accent); }
+  .end{ justify-content:center; }
+  .end h1{ font-size:50px; line-height:1.4; }
+  .end .lede{ font-size:22px; line-height:1.9; color:var(--ink2); max-width:920px; margin-top:10px; }
+  .end .lede b{ color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1 封面 -->
+<section class="slide cover active">
+  <div class="eyebrow"><span class="sq"></span>培 训 交 付 的 演 进</div>
+  <h1>交付的不再是理念，<br><span class="em">而是产品</span></h1>
+  <div class="rule"></div>
+  <div class="lede">理念、方法、实践——三段递进之后，还有第四种可能：<b>一次培训，直接交付一个可以继续迭代的系统。</b></div>
+</section>
+
+<!-- 2 阶梯图 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>四 个 阶 段</div>
+  <h1>交付物的四级台阶</h1>
+  <div class="rule"></div>
+  <div class="stair">
+    <div class="st" style="height:196px">
+      <div class="no">01</div><h3>理念阶段</h3>
+      <div class="dl">交 付 物</div><p>认知框架与价值共识</p>
+      <div class="take">学员带走：认同与判断标准</div>
+    </div>
+    <div class="st" style="height:238px">
+      <div class="no">02</div><h3>方法阶段</h3>
+      <div class="dl">交 付 物</div><p>工具用法与操作套路</p>
+      <div class="take">学员带走：会用的一套方法</div>
+    </div>
+    <div class="st" style="height:280px">
+      <div class="no">03</div><h3>实践阶段</h3>
+      <div class="dl">交 付 物</div><p>现场经验与解题能力</p>
+      <div class="take">学员带走：做过一次</div>
+    </div>
+    <div class="st s4" style="height:322px">
+      <div class="no">04</div><h3>产品阶段</h3>
+      <div class="dl">交 付 物</div><p>可直接运行的系统</p>
+      <div class="take">学员带走：能接着用的东西</div>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:20px">前三级交付的都是<b>被理解的内容</b>，第四级交付的是<b>被封装、可执行的系统</b>。跨越，不是否定。</div>
+</section>
+
+<!-- 3 对照表 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>四 阶 段 对 照</div>
+  <h1>每一级交付了什么，又在哪里失效</h1>
+  <div class="rule"></div>
+  <div class="tbl">
+    <div class="hd">阶段</div><div class="hd">交付物形态</div><div class="hd">能否离开讲师</div><div class="hd">典型失效</div>
+    <div class="stname">理念阶段</div><div>共识、框架、价值判断</div><div>不能</div><div>记住了，却不会用</div>
+    <div class="stname">方法阶段</div><div>工具、操作套路、模板</div><div>部分能</div><div>换个场景就失灵</div>
+    <div class="stname">实践阶段</div><div>亲手做出来的结果</div><div>不能</div><div>做完就散，下回重来</div>
+    <div class="r4 stname">产品阶段</div><div class="r4">可运行的系统与可复用的资产</div><div class="r4 yes">能</div><div class="r4">新风险：把交付当成教学的终点</div>
+  </div>
+  <div class="cap" style="margin-top:18px">只有最后一行能真正<b>离开讲师独立运转</b>——而这一行带来一个全新的风险，前三行没有。</div>
+</section>
+
+<!-- 4 封装图 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>性 质 的 变 化</div>
+  <h1>散落的内容，装进一个可执行的外壳</h1>
+  <div class="rule"></div>
+  <div class="wrap">
+    <div class="loose">
+      <div class="lb">封 装 之 前</div>
+      <div class="f">理念</div>
+      <div class="f">方法</div>
+      <div class="f">实践</div>
+      <div class="cap" style="margin-top:4px">三块内容靠人记住才能生效，人一走就停摆</div>
+    </div>
+    <div class="arrow">
+      <div class="lab">封 装</div>
+      <svg width="112" height="34" viewBox="0 0 112 34"><path d="M4 17 H92" stroke="#0E7C66" stroke-width="2.5"/><path d="M92 9 L106 17 L92 25" fill="none" stroke="#0E7C66" stroke-width="2.5"/></svg>
+    </div>
+    <div class="sealed">
+      <div class="cap">封 装 之 后 · 产 品</div>
+      <div class="grid"><div class="f">理念</div><div class="f">方法</div><div class="f">实践</div></div>
+      <div class="foot">外层是这个阶段新增的东西：一个<b>能被直接启动</b>的界面与配置。里面的三块内容没变，只是从「记在心里」变成「长在系统里」。</div>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:18px">封装之后，学员<b>不必先掌握全部内容就能直接用起来</b>——这是产品阶段与前三个阶段最根本的差别。</div>
+</section>
+
+<!-- 5 嵌套图 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>跨 过 而 非 废 除</div>
+  <h1>前面三个阶段，被装进了产品里面</h1>
+  <div class="rule"></div>
+  <div class="nest">
+    <div class="top"><span class="t">产品 · 可直接运行的系统</span><span class="s">学员可以直接用，也可以拆开改</span></div>
+    <div class="layers">
+      <div class="lay"><span class="n">01</span><span class="t">理念层</span><span class="d">它变成了系统里的<b>默认设定</b>——决定什么值得做、什么不做</span></div>
+      <div class="lay"><span class="n">02</span><span class="t">方法层</span><span class="d">它变成了系统里的<b>规则</b>——什么算成功、做到什么程度</span></div>
+      <div class="lay"><span class="n">03</span><span class="t">实践层</span><span class="d">它变成了系统里的<b>验收标准</b>——做完没有，怎么判定</span></div>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:18px">所以「跨过」不是把前三个阶段作废，是让它们<b>在系统里继续发挥作用</b>，只是不再依赖谁把它们讲完。</div>
+</section>
+
+<!-- 6 三形态 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>产 品 的 形 态</div>
+  <h1>交付的产品，可以是三种东西</h1>
+  <div class="rule"></div>
+  <div class="forms">
+    <div class="row">
+      <div class="f"><div class="k">形 态 一</div><h3>技能</h3><p>把一件已经做好的事，封装成可复用的操作单元：说清输入、步骤、工具与验收标准。</p></div>
+      <div class="f"><div class="k">形 态 二</div><h3>智能体即服务平台</h3><p>把能力做成服务，谁都能直接调用，不需要自己搭环境、不需要懂底层。</p></div>
+      <div class="f"><div class="k">形 态 三</div><h3>网页编码平台</h3><p>零门槛产出可用的小工具，让原本做不出来的成果变成人人可得的小成品。</p></div>
+    </div>
+    <div class="base">
+      <div class="lb">三 者 的 共 同 点</div>
+      <div class="t">学员不必先学会方法，就能直接用起来——门槛从「学会再动手」降到「打开就能用」。</div>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:16px">三种形态的技术路线完全不同，但它们解决的是<b>同一个问题</b>：把「学会才能用」变成「用起来再学」。</div>
+</section>
+
+<!-- 7 范式环 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>交 付 的 是 什 么</div>
+  <h1>交付的其实是一套范式</h1>
+  <div class="rule"></div>
+  <div class="hubwrap">
+    <svg width="1136" height="400" style="position:absolute;left:0;top:0" viewBox="0 0 1136 400" fill="none">
+      <path d="M332 200 C 372 200 372 54 416 54" stroke="#9C6B3C" stroke-width="2" stroke-dasharray="6 5"/>
+      <path d="M332 200 C 372 200 372 180 416 180" stroke="#9C6B3C" stroke-width="2" stroke-dasharray="6 5"/>
+      <path d="M332 200 C 372 200 372 306 416 306" stroke="#9C6B3C" stroke-width="2" stroke-dasharray="6 5"/>
+      <path d="M416 48 L416 60 M410 54 L416 60 L422 54" stroke="#9C6B3C" stroke-width="2"/>
+      <path d="M416 174 L416 186 M410 180 L416 186 L422 180" stroke="#9C6B3C" stroke-width="2"/>
+      <path d="M416 300 L416 312 M410 306 L416 312 L422 306" stroke="#9C6B3C" stroke-width="2"/>
+      <path d="M998 360 C 998 386 900 388 820 388 L 200 388 C 150 388 130 372 130 340 L 130 296" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M124 296 L130 284 L136 296" stroke="#0E7C66" stroke-width="2.5"/>
+    </svg>
+    <div class="hub"><div class="k">范 式</div><div class="t">新型智能体的<br>应用模式</div><div class="d">不是某一个工具，是一套可复用的构造方式</div></div>
+    <div class="sat s1"><div class="t">技能封装</div><div class="d">把方法沉淀成资产，一次沉淀长期复用</div></div>
+    <div class="sat s2"><div class="t">智能体即服务平台</div><div class="d">把能力做成服务，人人可直接调用</div></div>
+    <div class="sat s3"><div class="t">网页编码平台</div><div class="d">把表达变成可交付的小成品</div></div>
+    <div class="loopbox">
+      <div class="k">回 流</div>
+      <div class="t">使用中的问题<br>回到范式</div>
+      <div class="rule2"></div>
+      <p>学员在真实场景里用出问题，暴露的是范式本身的缺口，不是某个人的失误。</p>
+      <p>所以交付范式，才意味着<b style="color:var(--accent)">学员能基于它继续造自己的东西</b>，而不是拿到一个只能照着用的小成品。</p>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:6px">最终交付的不是一件成品，是<b>让学员能基于它继续迭代的构造方式</b>。</div>
+</section>
+
+<!-- 8 流水线 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>课 程 主 线</div>
+  <h1>这门课，讲的是怎么把框架搭成系统</h1>
+  <div class="rule"></div>
+  <div class="pipe">
+    <div class="u"><div class="k">01</div><h3>输入</h3><p>已有的理念、方法与真实做法</p></div>
+    <div class="u"><div class="k">02</div><h3>建模</h3><p>分层：理念、方法、实践各归其位</p></div>
+    <div class="u"><div class="k">03</div><h3>封装</h3><p>落成技能、流程与标准作业程序</p></div>
+    <div class="u"><div class="k">04</div><h3>装配</h3><p>引擎与容器把资产接起来，可配置、可替换</p></div>
+    <div class="u last"><div class="k">05</div><h3>交付</h3><p>一个能跑的系统，外加一条迭代回路</p></div>
+  </div>
+  <div class="quote" style="border-left:4px solid var(--accent); background:var(--surface); padding:18px 24px; font-size:19px; line-height:1.85; color:var(--ink2); margin-top:26px">
+    本课程交付的是<b style="color:var(--accent)">方法和骨架</b>，不是某一个成品。学员拿它去搭自己的系统——这才叫范式。
+  </div>
+</section>
+
+<!-- 9 分层图 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>系 统 结 构</div>
+  <h1>一个可交付的系统，分五层</h1>
+  <div class="rule"></div>
+  <div class="layers">
+    <div class="layer top"><span class="no">05</span><span class="t">交付层</span><span class="d">学员拿到的系统：能跑、能交接、能接着改</span></div>
+    <div class="layer"><span class="no">04</span><span class="t">资产层</span><span class="d">技能 / 工作流程 / 标准作业程序——可复用的沉淀</span></div>
+    <div class="layer"><span class="no">03</span><span class="t">装配层</span><span class="d">引擎、容器与配置——把资产接起来，也把资产换掉</span></div>
+    <div class="layer"><span class="no">02</span><span class="t">方法层</span><span class="d">判断标准与操作套路——什么算成功，做到什么程度</span></div>
+    <div class="layer"><span class="no">01</span><span class="t">理念层</span><span class="d">认知与价值——为什么做这件事，为什么值得做</span></div>
+  </div>
+  <div class="cap" style="margin-top:16px">每一层都可以<b>单独替换</b>；最下面两层与最上面一层不可省——理念决定方向，交付决定价值是否兑现。</div>
+</section>
+
+<!-- 10 闭环 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>迭 代 回 路</div>
+  <h1>系统必须能自己长</h1>
+  <div class="rule"></div>
+  <div class="cycle">
+    <svg width="1136" height="344" style="position:absolute;left:0;top:0" viewBox="0 0 1136 344" fill="none">
+      <path d="M296 56 H828" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M828 48 L844 56 L828 64" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M989 118 V220" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M981 220 L989 236 L997 220" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M840 288 H296" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M296 280 L280 288 L296 296" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M147 226 V118" stroke="#0E7C66" stroke-width="2.5"/>
+      <path d="M139 118 L147 102 L155 118" stroke="#0E7C66" stroke-width="2.5"/>
+    </svg>
+    <div class="cyc c1"><div class="k">01</div><div class="t">交付</div><div class="d">系统交到学员手里，被真正用起来</div></div>
+    <div class="cyc c2"><div class="k">02</div><div class="t">使用</div><div class="d">真实任务跑一遍，暴露卡点</div></div>
+    <div class="cyc c3"><div class="k">03</div><div class="t">记录</div><div class="d">失败样本与边界记录被留下来</div></div>
+    <div class="cyc c4"><div class="k">04</div><div class="t">迭代</div><div class="d">回头改资产层与装配层</div></div>
+    <div class="cyc hub2"><div class="k">回 路</div><div class="t">越用越准</div><div class="d">每一次使用<br>都是下一版的输入</div></div>
+  </div>
+  <div class="cap" style="margin-top:8px">没有回环，系统就只做了一次；有了回环，它才成为<b>可以被继承和迭代的资产</b>——这也正是范式与成品的区别。</div>
+</section>
+
+<!-- 11 课程网格 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>课 程 安 排</div>
+  <h1>六次课，把系统搭出来</h1>
+  <div class="rule"></div>
+  <div class="grid6">
+    <div class="mod"><div class="k">第 一 次</div><h3>目标重校准</h3><div class="q">培训到底该交付什么？为什么现在可以跨到交付产品？</div><div class="o">产出：交付物定义清单</div></div>
+    <div class="mod"><div class="k">第 二 次</div><h3>封装边界</h3><div class="q">哪些做法可以封装成资产，哪些必须留给人现场判断？</div><div class="o">产出：可封装与不可封装清单</div></div>
+    <div class="mod"><div class="k">第 三 次</div><h3>资产层</h3><div class="q">把一套真实做法写成技能、流程与标准作业程序。</div><div class="o">产出：一套可复用资产</div></div>
+    <div class="mod"><div class="k">第 四 次</div><h3>装配层</h3><div class="q">引擎、容器与配置怎么组织，资产如何被替换。</div><div class="o">产出：可运行的装配框架</div></div>
+    <div class="mod"><div class="k">第 五 次</div><h3>交付层</h3><div class="q">把装配好的系统交出去，并接上迭代回路。</div><div class="o">产出：一个可运行的系统</div></div>
+    <div class="mod"><div class="k">第 六 次</div><h3>验收</h3><div class="q">一场合格的培训长什么样？用什么标准判定。</div><div class="o">产出：验收标准与自检表</div></div>
+  </div>
+  <div class="cap" style="margin-top:16px">顺序有意为之：<b>先定目标，再定边界，再动手</b>——跳过前两次直接做系统，会做出一个没人敢用的东西。</div>
+</section>
+
+<!-- 12 边界 -->
+<section class="slide">
+  <div class="eyebrow"><span class="sq"></span>三 条 边 界</div>
+  <h1>系统化的同时，什么不能丢</h1>
+  <div class="rule"></div>
+  <div class="three">
+    <div class="b"><div class="k">边 界 一</div><h3>必须写下来的</h3><ul><li>判断标准与适用条件</li><li>失败时的处理路径</li><li>什么算完成、什么算不合格</li><li>否则无法交给第二个人</li></ul></div>
+    <div class="b"><div class="k">边 界 二</div><h3>必须留给人的</h3><ul><li>临场判断与价值权衡</li><li>责任归属与风险承担</li><li>无法预设规则的例外情形</li><li>这些一旦封装，判断权就没了</li></ul></div>
+    <div class="b"><div class="k">边 界 三</div><h3>必须能被替换的</h3><ul><li>每一层资产都要可拆可换</li><li>工具、模型、界面都可替换</li><li>锁死任何一层，系统就停止迭代</li><li>可替换才叫系统，不叫作品</li></ul></div>
+  </div>
+  <div class="cap" style="margin-top:18px">三条合起来是一句：<b>能封装的封起来，不能封装的明确留给人，封装好的还要能拆开换掉。</b></div>
+</section>
+
+<!-- 13 结尾 -->
+<section class="slide end">
+  <div class="eyebrow"><span class="sq"></span>结 语</div>
+  <h1>交付系统，<br><span class="em">人才有可能接着往前造</span></h1>
+  <div class="rule"></div>
+  <div class="lede">交付理念，理念要靠一代代人传下去；<br>交付系统，学员可以<b>基于它迭代出自己的系统</b>。</div>
+</section>
+
+</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let i=0;
+function fit(){ const s=Math.min(innerWidth/1280, innerHeight/720);
+  slides.forEach(el=>{ el.style.transform='scale('+s+')'; el.style.marginLeft=(-640*s)+'px'; el.style.marginTop=(-360*s)+'px'; });
+  slides.forEach(el=>{ el.style.left='50%'; el.style.top='50%'; }); }
+function show(n){ slides[i].classList.remove('active'); i=(n+slides.length)%slides.length; slides[i].classList.add('active'); }
+document.addEventListener('keydown',e=>{ if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key))show(i+1);
+  if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))show(i-1); });
+document.addEventListener('click',e=>{ e.clientX>innerWidth/2?show(i+1):show(i-1); });
+addEventListener('resize',fit); fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人工智能伦理与安全 · 第一部分 政策依据</title>
+<style>
+/* 设计 token 与通用版式 · 人工智能伦理与安全 · 第一部分 */
+
+
+:root{
+  --paper:#FFFFFF;
+  --ink:#17130E;        /* 骨架色：暖调墨黑 */
+  --ink2:#3D362C;
+  --text:#1C1815;
+  --muted:#6E6559;
+  --line:#D8D0C3;
+  --line2:#EAE4D9;
+  --fill:#F5F1E9;
+  --fill2:#EDE7DB;
+  --red:#A8322A;        /* 边界色：只用于文件轴与禁令 */
+  --red-soft:#F8EDEA;
+  --red-line:#DFB4AC;
+  --gold:#8A6D3B;       /* 辅助色：文件文号 */
+  --gold-soft:#F4EEE2;
+  --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STZhongsong",serif;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{ font-family:var(--sans); color:var(--text); -webkit-font-smoothing:antialiased; }
+
+.page{
+  width:1920px; height:1080px;
+  padding:80px 110px 76px;
+  display:flex; flex-direction:column;
+  background:var(--paper);
+  position:relative; overflow:hidden;
+}
+
+h1.title{
+  font-family:var(--sans); font-weight:900;
+  font-size:60px; line-height:1.26; color:var(--ink);
+  letter-spacing:.005em;
+}
+h1.title .hit{ color:var(--red); }
+
+.fig{ flex:1; margin-top:40px; position:relative; display:flex; }
+svg.figsvg{ width:100%; height:100%; display:block; }
+svg.figsvg text{ font-family:var(--sans); }
+
+.cap{ font-size:24px; line-height:1.72; color:var(--ink2); font-family:var(--serif); }
+.cap b{ color:var(--ink); font-weight:700; }
+.cap .hit{ color:var(--red); font-weight:700; }
+
+/* 结构图常用元件 */
+.box{ fill:#fff; stroke:var(--line); stroke-width:2; }
+.box-fill{ fill:var(--fill); stroke:var(--line); stroke-width:2; }
+.box-ink{ fill:var(--ink); stroke:none; }
+.box-red{ fill:var(--red-soft); stroke:var(--red-line); stroke-width:2; }
+.box-red-solid{ fill:var(--red); stroke:none; }
+.box-gold{ fill:var(--gold-soft); stroke:#D9C9A8; stroke-width:2; }
+.dash{ stroke:var(--muted); stroke-width:2; stroke-dasharray:9 8; fill:none; }
+.dash-red{ stroke:var(--red); stroke-width:2.5; stroke-dasharray:11 9; fill:none; }
+.ln{ stroke:var(--line); stroke-width:2; fill:none; }
+.ln-ink{ stroke:var(--ink); stroke-width:2.5; fill:none; }
+.ln-red{ stroke:var(--red); stroke-width:3; fill:none; }
+.ln-gold{ stroke:var(--gold); stroke-width:2; fill:none; }
+
+.t-lab{ font-size:24px; fill:var(--ink2); }
+.t-lab-b{ font-size:26px; fill:var(--text); font-weight:700; }
+.t-ink{ font-size:28px; fill:var(--ink); font-weight:700; }
+.t-red{ font-size:28px; fill:var(--red); font-weight:700; }
+.t-head{ font-size:34px; fill:var(--ink); font-weight:700; }
+.t-sm{ font-size:20px; fill:var(--muted); }
+.t-gold{ font-size:22px; fill:var(--gold); font-weight:700; }
+.t-serif{ font-family:var(--serif); }
+
+/* 条文引文块 */
+.quote{
+  font-family:var(--serif); font-size:26px; line-height:1.85; color:var(--ink);
+}
+.qbar{ fill:var(--red); }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+body{font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{position:absolute;width:1920px;height:1080px;transform-origin:center center;display:none;background:#fff;overflow:hidden}
+.slide.on{display:block}
+#bar{position:fixed;right:26px;bottom:22px;display:flex;gap:14px;align-items:center;
+  font-family:var(--sans);font-size:16px;color:#8A8378;user-select:none}
+#bar button{font:inherit;border:1px solid #D8D0C3;background:#fff;color:#3D362C;padding:6px 14px;cursor:pointer}
+@media print{
+  html,body{overflow:visible}
+  #stage{position:static;display:block}
+  .slide{position:relative;display:block!important;page-break-after:always;break-after:page;transform:none!important}
+  #bar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide" id="s1"><style>#s1 .page{ padding:96px 110px 88px; flex-direction:row; align-items:center; gap:80px; }#s1 .cov-left{ flex:0 0 820px; }#s1 .eyebrow{
+    font-family:var(--sans); font-size:30px; font-weight:700;
+    color:var(--muted); letter-spacing:.06em;
+  }#s1 .eyebrow .em{ color:var(--red); }#s1 .cov-title{
+    font-family:var(--sans); font-weight:900; font-size:150px; line-height:1.05;
+    color:var(--ink); margin-top:34px; letter-spacing:.02em;
+  }#s1 .cov-rule{ width:150px; height:8px; background:var(--red); margin-top:44px; }#s1 .cov-right{ flex:1; }
+</style>
+<section class="page">
+  <div class="cov-left">
+    <div class="eyebrow">第一部分　<span class="em">人工智能伦理与安全</span></div>
+    <h1 class="cov-title">政策依据</h1>
+    <div class="cov-rule"></div>
+  </div>
+  <div class="cov-right">
+    <svg class="figsvg" viewBox="0 0 770 700" preserveAspectRatio="xMidYMid meet">
+      <!-- 四层文件逐级收窄的漏斗 -->
+      <g>
+        <rect x="0" y="36" width="700" height="132" fill="#17130E"/>
+        <text x="40" y="84" font-size="22" fill="#C9BFAE" font-weight="700">国家战略层</text>
+        <text x="40" y="128" font-size="27" fill="#FFFFFF" font-weight="700">《教育强国建设规划纲要》</text>
+      </g>
+      <g>
+        <rect x="50" y="200" width="600" height="132" fill="#F5F1E9" stroke="#D8D0C3" stroke-width="2"/>
+        <text x="90" y="248" font-size="22" fill="#8A6D3B" font-weight="700">行动计划层</text>
+        <text x="90" y="292" font-size="27" fill="#1C1815" font-weight="700">《“人工智能+教育”行动计划》</text>
+      </g>
+      <g>
+        <rect x="100" y="364" width="500" height="132" fill="#F5F1E9" stroke="#D8D0C3" stroke-width="2"/>
+        <text x="140" y="412" font-size="22" fill="#8A6D3B" font-weight="700">教师行为层</text>
+        <text x="140" y="456" font-size="27" fill="#1C1815" font-weight="700">《教师生成式人工智能应用指引》</text>
+      </g>
+      <g>
+        <rect x="150" y="528" width="400" height="132" fill="#F8EDEA" stroke="#A8322A" stroke-width="3"/>
+        <text x="190" y="576" font-size="22" fill="#A8322A" font-weight="700">地方落地层</text>
+        <text x="190" y="620" font-size="27" fill="#A8322A" font-weight="700">省级文件，两条禁令</text>
+      </g>
+      <!-- 收窄方向标记：右侧基准线 + 逐层内缩刻度 + 向下箭头 -->
+      <path d="M722,36 L722,660" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="8 8"/>
+      <path d="M700,102 L722,102" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="6 6"/>
+      <path d="M650,266 L722,266" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="6 6"/>
+      <path d="M600,430 L722,430" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="6 6"/>
+      <path d="M550,594 L722,594" stroke="#A8322A" stroke-width="2" stroke-dasharray="6 6"/>
+      <path d="M708,632 L722,660 L736,632" stroke="#A8322A" stroke-width="3" fill="none"/>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s2"><style>#s2 h1.title{ font-size:58px; }
+</style>
+<section class="page">
+  <h1 class="title">两条线、四个层级：<span class="hit">政策依据的全景</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 800" preserveAspectRatio="xMidYMid meet">
+
+      <!-- ============ 教育业务线：四级收窄漏斗 ============ -->
+      <text x="0" y="20" class="t-gold" font-weight="700">教育业务线，自上而下逐级收窄</text>
+
+      <!-- 第一层 -->
+      <g>
+        <rect x="0" y="40" width="1060" height="145" class="box-ink"/>
+        <text x="34" y="86" font-size="22" fill="#C9BFAE" font-weight="700">国家战略层</text>
+        <text x="34" y="130" font-size="31" fill="#FFFFFF" font-weight="700">《教育强国建设规划纲要（2024—2035 年）》</text>
+        <text x="1022" y="130" font-size="22" fill="#C9BFAE" text-anchor="end">中共中央、国务院</text>
+      </g>
+      <!-- 第二层 -->
+      <g>
+        <rect x="0" y="211" width="940" height="145" class="box-fill"/>
+        <text x="34" y="257" class="t-gold">行动计划层</text>
+        <text x="34" y="301" font-size="31" fill="#1C1815" font-weight="700">《“人工智能+教育”行动计划》</text>
+        <text x="902" y="301" font-size="22" fill="#6E6559" text-anchor="end">教科信〔2026〕1 号，五部门</text>
+      </g>
+      <!-- 第三层 -->
+      <g>
+        <rect x="0" y="382" width="820" height="145" class="box-fill"/>
+        <text x="34" y="428" class="t-gold">教师行为层</text>
+        <text x="34" y="472" font-size="31" fill="#1C1815" font-weight="700">《教师生成式人工智能应用指引（第一版）》</text>
+        <text x="782" y="472" font-size="22" fill="#6E6559" text-anchor="end">2025 年 11 月</text>
+      </g>
+      <!-- 第四层 -->
+      <g>
+        <rect x="0" y="553" width="700" height="145" class="box-red"/>
+        <text x="34" y="599" class="t-red">地方落地层</text>
+        <text x="34" y="643" font-size="31" fill="#A8322A" font-weight="700">《山东省中小学人工智能通识教育教学指导纲要》</text>
+        <text x="662" y="643" font-size="22" fill="#A8322A" text-anchor="end">鲁教基函〔2026〕34 号</text>
+      </g>
+
+      <!-- 收窄提示：第三、四层是责任边界 -->
+      <path d="M1010,540 L1010,556" stroke="#A8322A" stroke-width="3"/>
+      <path d="M1078,540 L1078,556" stroke="#A8322A" stroke-width="3"/>
+      <path d="M1010,556 L1078,556" stroke="#A8322A" stroke-width="3"/>
+      <text x="996" y="563" font-size="22" fill="#A8322A" font-weight="700" text-anchor="end">教师的责任边界</text>
+
+      <!-- ============ 技术治理线：横向支撑 ============ -->
+      <path d="M1120,40 L1120,698" stroke="#6E6559" stroke-width="2" stroke-dasharray="9 8"/>
+      <path d="M1060,112 L1120,112" stroke="#6E6559" stroke-width="2" stroke-dasharray="9 8"/>
+      <path d="M940,283 L1120,283" stroke="#6E6559" stroke-width="2" stroke-dasharray="9 8"/>
+      <path d="M820,454 L1120,454" stroke="#6E6559" stroke-width="2" stroke-dasharray="9 8"/>
+      <path d="M700,625 L1120,625" stroke="#6E6559" stroke-width="2" stroke-dasharray="9 8"/>
+
+      <rect x="1146" y="40" width="554" height="658" fill="#FFFFFF" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="10 8"/>
+      <text x="1176" y="86" font-size="24" fill="#6E6559" font-weight="700">技术治理线，横向支撑</text>
+      <text x="1176" y="118" font-size="20" fill="#6E6559">提供风险来源与制度背景</text>
+
+      <g>
+        <rect x="1176" y="146" width="494" height="118" class="box-fill"/>
+        <text x="1200" y="184" font-size="23" fill="#1C1815" font-weight="700">《人工智能安全治理框架》2.0 版</text>
+        <text x="1200" y="216" font-size="20" fill="#6E6559">2025 年 9 月 15 日，网络安全宣传周</text>
+        <text x="1200" y="246" font-size="20" fill="#6E6559">风险分三类，新增熔断机制</text>
+      </g>
+      <g>
+        <rect x="1176" y="284" width="494" height="118" class="box-fill"/>
+        <text x="1200" y="322" font-size="23" fill="#1C1815" font-weight="700">《人工智能应用伦理安全指引》1.0</text>
+        <text x="1200" y="354" font-size="20" fill="#6E6559">全国网络安全标准化技术委员会</text>
+        <text x="1200" y="384" font-size="20" fill="#6E6559">原则性、参考性技术文件</text>
+      </g>
+      <g>
+        <rect x="1176" y="422" width="494" height="118" class="box-fill"/>
+        <text x="1200" y="460" font-size="23" fill="#1C1815" font-weight="700">《人工智能科技伦理审查与服务办法》</text>
+        <text x="1200" y="492" font-size="20" fill="#6E6559">工信部联科〔2026〕75 号，试行</text>
+        <text x="1200" y="522" font-size="20" fill="#6E6559">一般、简易、复核、应急四程序</text>
+      </g>
+      <g>
+        <rect x="1176" y="560" width="494" height="118" class="box-fill"/>
+        <text x="1200" y="598" font-size="23" fill="#1C1815" font-weight="700">《生成式人工智能服务管理暂行办法》</text>
+        <text x="1200" y="630" font-size="20" fill="#6E6559">七部门，2023 年 7 月公布施行</text>
+        <text x="1200" y="660" font-size="20" fill="#6E6559">发展与安全并重，分类分级监管</text>
+      </g>
+
+      <!-- 底部结论条 -->
+      <rect x="0" y="716" width="1700" height="72" fill="#17130E"/>
+      <text x="36" y="762" font-size="26" fill="#FFFFFF" font-weight="700">越往下越具体，教师的责任边界落在第三层与第四层</text>
+      <text x="1664" y="762" font-size="22" fill="#C9BFAE" text-anchor="end">伦理安全已进入制度化、程序化阶段</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s3"><style>#s3 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">国家战略层：伦理安全<span class="hit">写进了教育纲要</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第一层</text>
+
+      <!-- ============ 左：文件信息 ============ -->
+      <rect x="0" y="26" width="500" height="448" class="box-fill"/>
+      <text x="24" y="74" class="t-gold">发文主体</text>
+      <text x="24" y="110" font-size="23" fill="#1C1815" font-weight="700">中共中央、国务院</text>
+
+      <text x="24" y="160" class="t-gold">发布时间</text>
+      <text x="24" y="196" font-size="23" fill="#1C1815" font-weight="700">2025 年 1 月 19 日</text>
+      <text x="24" y="228" font-size="21" fill="#6E6559">新华社受权发布</text>
+
+      <text x="24" y="272" class="t-gold">适用对象</text>
+      <text x="24" y="308" font-size="21" fill="#1C1815">各级各类教育，含高等教育、</text>
+      <text x="24" y="338" font-size="21" fill="#1C1815">职业教育、基础教育</text>
+
+      <text x="24" y="384" class="t-gold">原文位置</text>
+      <text x="24" y="420" font-size="21" fill="#1C1815" font-weight="700">第（二十六）条</text>
+      <text x="24" y="452" font-size="20" fill="#6E6559">促进人工智能助力教育变革</text>
+
+      <!-- 左下：边界说明 -->
+      <rect x="0" y="486" width="500" height="270" class="box-ink"/>
+      <text x="24" y="536" font-size="21" fill="#C9BFAE" font-weight="700">边界说明</text>
+      <path d="M24,556 L476,556" stroke="#3D362C" stroke-width="2"/>
+      <text x="24" y="606" font-size="23" fill="#FFFFFF">本条不直接规定教师怎么做，</text>
+      <text x="24" y="646" font-size="23" fill="#FFFFFF">它给的是上位依据，</text>
+      <text x="24" y="690" font-size="23" fill="#E8A79F" font-weight="700">教师的具体义务</text>
+      <text x="24" y="728" font-size="23" fill="#E8A79F" font-weight="700">写在第三层文件里</text>
+
+      <!-- ============ 右：条文原文 ============ -->
+      <rect x="540" y="26" width="1160" height="374" fill="#FFFFFF" stroke="#D8D0C3" stroke-width="2"/>
+      <rect x="540" y="26" width="10" height="374" fill="#A8322A"/>
+
+      <rect x="572" y="56" width="204" height="48" class="box-ink"/>
+      <text x="590" y="89" font-size="22" fill="#FFFFFF" font-weight="700">第（二十六）条</text>
+      <text x="800" y="89" font-size="24" fill="#1C1815" font-weight="700">促进人工智能助力教育变革</text>
+
+      <text x="572" y="176" font-family="Noto Serif SC, serif" font-size="32" fill="#17130E">「加强网络安全保障，强化数据安全、</text>
+      <text x="572" y="228" font-family="Noto Serif SC, serif" font-size="32" fill="#17130E">人工智能算法和<tspan fill="#A8322A" font-weight="700">伦理安全</tspan>。」</text>
+
+      <path d="M572,264 L1668,264" stroke="#D8D0C3" stroke-width="2"/>
+
+      <text x="572" y="312" font-size="22" fill="#3D362C">这一条的分量：伦理安全与数据安全、算法安全并列，写进国家教育战略，</text>
+      <text x="572" y="352" font-size="22" fill="#3D362C">不是某个部门的附加要求。</text>
+      <text x="572" y="386" font-size="21" fill="#6E6559">这一层只负责确立「必须管」，不负责规定「怎么管」。</text>
+
+      <!-- 拆分线 -->
+      <path d="M1120,400 L1120,438" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M755,438 L1505,438" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M755,438 L755,456" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M1120,438 L1120,456" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M1505,438 L1505,456" stroke="#A8322A" stroke-width="3"/>
+
+      <rect x="590" y="458" width="330" height="108" class="box-fill"/>
+      <text x="755" y="522" font-size="26" fill="#3D362C" font-weight="700" text-anchor="middle">数据安全</text>
+
+      <rect x="955" y="458" width="330" height="108" class="box-fill"/>
+      <text x="1120" y="522" font-size="26" fill="#3D362C" font-weight="700" text-anchor="middle">人工智能算法</text>
+
+      <rect x="1310" y="458" width="390" height="108" class="box-red"/>
+      <text x="1505" y="522" font-size="28" fill="#A8322A" font-weight="700" text-anchor="middle">伦理安全</text>
+
+      <!-- 右下：过渡 -->
+      <rect x="540" y="596" width="1160" height="160" fill="#F5F1E9" stroke="#D8D0C3" stroke-width="2"/>
+      <text x="572" y="650" font-size="24" fill="#1C1815" font-weight="700">前两层文件只用来建立一件事：这不是可选项。</text>
+      <text x="572" y="696" font-size="22" fill="#6E6559">国家战略给出依据，行动计划给出体系，教师怎么做，要看第三层。</text>
+      <text x="572" y="734" font-size="22" fill="#6E6559">所以学员的注意力应该落在后面两层，前两层只作背景。</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s4"><style>#s4 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">行动计划层：安全屏障是<span class="hit">十六条里的最后一条</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第二层</text>
+
+      <!-- ============ 文件信息横条 ============ -->
+      <rect x="0" y="26" width="1700" height="130" class="box-fill"/>
+      <path d="M520,42 L520,140" stroke="#D8D0C3" stroke-width="2"/>
+      <path d="M900,42 L900,140" stroke="#D8D0C3" stroke-width="2"/>
+      <path d="M1300,42 L1300,140" stroke="#D8D0C3" stroke-width="2"/>
+
+      <text x="24" y="66" class="t-gold">发文主体</text>
+      <text x="24" y="104" font-size="22" fill="#1C1815">教育部、国家发展改革委、工业和信息化部、</text>
+      <text x="24" y="138" font-size="22" fill="#1C1815">科技部、国家数据局　五部门联合印发</text>
+
+      <text x="544" y="66" class="t-gold">文号与时间</text>
+      <text x="544" y="104" font-size="23" fill="#1C1815" font-weight="700">教科信〔2026〕1 号</text>
+      <text x="544" y="138" font-size="22" fill="#6E6559">2026 年 4 月 2 日</text>
+
+      <text x="924" y="66" class="t-gold">适用对象</text>
+      <text x="924" y="104" font-size="22" fill="#1C1815">各级各类学校及教育行政部门</text>
+      <text x="924" y="138" font-size="22" fill="#6E6559">中小学、职业院校、高校</text>
+
+      <text x="1324" y="66" class="t-gold">文件结构</text>
+      <text x="1324" y="104" font-size="23" fill="#1C1815" font-weight="700">共六部分十六条</text>
+      <text x="1324" y="138" font-size="22" fill="#6E6559">安全条款为第十六条</text>
+
+      <!-- ============ 十六条条款序列 ============ -->
+      <text x="0" y="200" font-size="22" fill="#3D362C" font-weight="700">全文条款序列　第十六条位于全文末尾，属保障性条款</text>
+      <g>
+        <rect x="22" y="220" width="96" height="112" class="box-fill"/>
+        <text x="70" y="286" font-size="26" fill="#3D362C" text-anchor="middle">一</text>
+        <rect x="126" y="220" width="96" height="112" class="box-fill"/>
+        <text x="174" y="286" font-size="26" fill="#3D362C" text-anchor="middle">二</text>
+        <rect x="230" y="220" width="96" height="112" class="box-fill"/>
+        <text x="278" y="286" font-size="26" fill="#3D362C" text-anchor="middle">三</text>
+        <rect x="334" y="220" width="96" height="112" class="box-fill"/>
+        <text x="382" y="286" font-size="26" fill="#3D362C" text-anchor="middle">四</text>
+        <rect x="438" y="220" width="96" height="112" class="box-fill"/>
+        <text x="486" y="286" font-size="26" fill="#3D362C" text-anchor="middle">五</text>
+        <rect x="542" y="220" width="96" height="112" class="box-fill"/>
+        <text x="590" y="286" font-size="26" fill="#3D362C" text-anchor="middle">六</text>
+        <rect x="646" y="220" width="96" height="112" class="box-fill"/>
+        <text x="694" y="286" font-size="26" fill="#3D362C" text-anchor="middle">七</text>
+        <rect x="750" y="220" width="96" height="112" class="box-fill"/>
+        <text x="798" y="286" font-size="26" fill="#3D362C" text-anchor="middle">八</text>
+        <rect x="854" y="220" width="96" height="112" class="box-fill"/>
+        <text x="902" y="286" font-size="26" fill="#3D362C" text-anchor="middle">九</text>
+        <rect x="958" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1006" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十</text>
+        <rect x="1062" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1110" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十一</text>
+        <rect x="1166" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1214" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十二</text>
+        <rect x="1270" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1318" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十三</text>
+        <rect x="1374" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1422" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十四</text>
+        <rect x="1478" y="220" width="96" height="112" class="box-fill"/>
+        <text x="1526" y="286" font-size="26" fill="#3D362C" text-anchor="middle">十五</text>
+        <rect x="1582" y="220" width="96" height="112" class="box-red-solid"/>
+        <text x="1630" y="286" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">十六</text>
+      </g>
+      <text x="1630" y="364" font-size="21" fill="#A8322A" font-weight="700" text-anchor="middle">安全条款</text>
+
+      <!-- 引出线到四类风险 -->
+      <path d="M1630,332 L1630,414" stroke="#A8322A" stroke-width="3"/>
+      <path d="M205,414 L1630,414" stroke="#A8322A" stroke-width="3"/>
+      <path d="M205,414 L205,440" stroke="#A8322A" stroke-width="3"/>
+      <path d="M637,414 L637,440" stroke="#A8322A" stroke-width="3"/>
+      <path d="M1069,414 L1069,440" stroke="#A8322A" stroke-width="3"/>
+      <path d="M1500,414 L1500,440" stroke="#A8322A" stroke-width="3"/>
+
+      <text x="1700" y="396" font-size="21" fill="#A8322A" font-weight="700" text-anchor="end">第十六条明确防范的四类风险，可直接对应本课后续模块</text>
+
+      <!-- ============ 四类风险 ============ -->
+      <rect x="0" y="442" width="410" height="122" class="box-red"/>
+      <text x="205" y="496" font-size="29" fill="#A8322A" font-weight="700" text-anchor="middle">伪造诈骗</text>
+      <text x="205" y="536" font-size="21" fill="#6E6559" text-anchor="middle">利用人工智能伪造，骗取信任与财物</text>
+
+      <rect x="432" y="442" width="410" height="122" class="box-red"/>
+      <text x="637" y="496" font-size="29" fill="#A8322A" font-weight="700" text-anchor="middle">学术造假</text>
+      <text x="637" y="536" font-size="21" fill="#6E6559" text-anchor="middle">代写、代做、虚构成果与数据</text>
+
+      <rect x="864" y="442" width="410" height="122" class="box-red"/>
+      <text x="1069" y="496" font-size="29" fill="#A8322A" font-weight="700" text-anchor="middle">应试内卷</text>
+      <text x="1069" y="536" font-size="21" fill="#6E6559" text-anchor="middle">用工具替代学习过程与思考</text>
+
+      <rect x="1296" y="442" width="404" height="122" class="box-red"/>
+      <text x="1498" y="496" font-size="29" fill="#A8322A" font-weight="700" text-anchor="middle">泄露隐私</text>
+      <text x="1498" y="536" font-size="21" fill="#6E6559" text-anchor="middle">个人信息与敏感数据外流</text>
+
+      <!-- ============ 对教师意味着什么 ============ -->
+      <rect x="0" y="596" width="1700" height="160" class="box-ink"/>
+      <text x="36" y="642" font-size="21" fill="#C9BFAE" font-weight="700">对教师意味着什么</text>
+      <text x="36" y="696" font-size="24" fill="#FFFFFF">体系建设不由教师承担，但<tspan fill="#E8A79F" font-weight="700">「强化人工智能进校园管理」与「明确智能产品、终端的应用规范」</tspan>两条，直接限定教师能用什么工具、怎么用。</text>
+      <text x="36" y="736" font-size="21" fill="#C9BFAE">体系是学校和部门的活，工具的选择和使用，是教师的活。</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s5"><style>#s5 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">教师行为层：<span class="hit">唯一直接规定教师行为的文件</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第三层</text>
+
+      <!-- ============ 左：文件属性 ============ -->
+      <rect x="0" y="26" width="380" height="300" class="box-fill"/>
+      <text x="24" y="72" class="t-gold">发文主体</text>
+      <text x="24" y="106" font-size="22" fill="#1C1815">教育部教师队伍建设</text>
+      <text x="24" y="136" font-size="22" fill="#1C1815">专家指导委员会</text>
+
+      <text x="24" y="184" class="t-gold">发布时间</text>
+      <text x="24" y="218" font-size="23" fill="#1C1815" font-weight="700">2025 年 11 月</text>
+
+      <text x="24" y="262" class="t-gold">适用对象</text>
+      <text x="24" y="296" font-size="22" fill="#1C1815" font-weight="700">全体教师</text>
+
+      <!-- 左下：定位 -->
+      <rect x="0" y="352" width="380" height="404" class="box-ink"/>
+      <text x="24" y="400" font-size="21" fill="#C9BFAE" font-weight="700">一句话定位</text>
+      <path d="M24,420 L356,420" stroke="#3D362C" stroke-width="2"/>
+      <text x="24" y="468" font-size="22" fill="#FFFFFF">教师层面唯一直接</text>
+      <text x="24" y="500" font-size="22" fill="#FFFFFF">设定行为边界的文件，</text>
+      <text x="24" y="546" font-size="24" fill="#E8A79F" font-weight="700">六条规范就是</text>
+      <text x="24" y="580" font-size="24" fill="#E8A79F" font-weight="700">教师责任的正面清单</text>
+      <text x="24" y="614" font-size="24" fill="#E8A79F" font-weight="700">与负面清单</text>
+
+      <!-- ============ 中：文件四部分结构 ============ -->
+      <text x="420" y="60" font-size="22" fill="#3D362C" font-weight="700">文件结构，四部分</text>
+      <rect x="420" y="80" width="360" height="76" class="box-fill"/>
+      <text x="600" y="126" font-size="24" fill="#1C1815" font-weight="700" text-anchor="middle">指导思想</text>
+
+      <path d="M600,156 L600,184" stroke="#17130E" stroke-width="2.5"/>
+      <rect x="420" y="186" width="360" height="106" class="box-fill"/>
+      <text x="600" y="218" font-size="24" fill="#1C1815" font-weight="700" text-anchor="middle">基本原则</text>
+      <text x="600" y="252" font-size="19" fill="#6E6559" text-anchor="middle">价值引领、教育规律</text>
+      <text x="600" y="278" font-size="19" fill="#6E6559" text-anchor="middle">伦理规范、协同共治</text>
+
+      <!-- 分叉到场景指引 / 规范指引 -->
+      <path d="M600,292 L600,314" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M600,314 L1128,314" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M600,314 L600,336" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M1128,314 L1128,336" stroke="#17130E" stroke-width="2.5"/>
+
+      <rect x="420" y="338" width="360" height="68" class="box-ink"/>
+      <text x="600" y="381" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">场景指引</text>
+      <rect x="948" y="338" width="360" height="68" class="box-red-solid"/>
+      <text x="1128" y="381" font-size="24" fill="#FFFFFF" font-weight="700" text-anchor="middle">规范指引</text>
+
+      <!-- ============ 场景指引网格：六大方向 × 5 = 30 ============ -->
+      <text x="420" y="450" font-size="21" fill="#1C1815" font-weight="700">六大助力方向</text>
+      <text x="780" y="450" font-size="20" fill="#6E6559" text-anchor="end">共 30 个场景示例</text>
+
+      <rect x="420" y="468" width="360" height="288" fill="none" stroke="#D8D0C3" stroke-width="2"/>
+      <g font-size="20" fill="#3D362C">
+        <text x="442" y="506">学习变革</text>
+        <text x="442" y="554">教学提质</text>
+        <text x="442" y="602">育人进阶</text>
+        <text x="442" y="650">评价增效</text>
+        <text x="442" y="698">管理升级</text>
+        <text x="442" y="746">研究创新</text>
+      </g>
+      <g fill="#D8D0C3">
+        <rect x="560" y="482" width="28" height="28"/><rect x="596" y="482" width="28" height="28"/><rect x="632" y="482" width="28" height="28"/><rect x="668" y="482" width="28" height="28"/><rect x="704" y="482" width="28" height="28"/>
+        <rect x="560" y="530" width="28" height="28"/><rect x="596" y="530" width="28" height="28"/><rect x="632" y="530" width="28" height="28"/><rect x="668" y="530" width="28" height="28"/><rect x="704" y="530" width="28" height="28"/>
+        <rect x="560" y="578" width="28" height="28"/><rect x="596" y="578" width="28" height="28"/><rect x="632" y="578" width="28" height="28"/><rect x="668" y="578" width="28" height="28"/><rect x="704" y="578" width="28" height="28"/>
+        <rect x="560" y="626" width="28" height="28"/><rect x="596" y="626" width="28" height="28"/><rect x="632" y="626" width="28" height="28"/><rect x="668" y="626" width="28" height="28"/><rect x="704" y="626" width="28" height="28"/>
+        <rect x="560" y="674" width="28" height="28"/><rect x="596" y="674" width="28" height="28"/><rect x="632" y="674" width="28" height="28"/><rect x="668" y="674" width="28" height="28"/><rect x="704" y="674" width="28" height="28"/>
+        <rect x="560" y="722" width="28" height="28"/><rect x="596" y="722" width="28" height="28"/><rect x="632" y="722" width="28" height="28"/><rect x="668" y="722" width="28" height="28"/><rect x="704" y="722" width="28" height="28"/>
+      </g>
+
+      <!-- ============ 规范指引网格：六条 × 3 = 18 ============ -->
+      <text x="948" y="450" font-size="21" fill="#1C1815" font-weight="700">六条规范</text>
+      <text x="1308" y="450" font-size="20" fill="#A8322A" font-weight="700" text-anchor="end">共 18 个行为示例</text>
+
+      <rect x="948" y="468" width="360" height="288" fill="none" stroke="#DFB4AC" stroke-width="2"/>
+      <g font-size="20" fill="#3D362C">
+        <text x="970" y="506">育人主体</text>
+        <text x="970" y="554">内容审查</text>
+        <text x="970" y="602">学术伦理</text>
+        <text x="970" y="650">规范使用</text>
+        <text x="970" y="698">数据合规</text>
+        <text x="970" y="746">技术向善</text>
+      </g>
+      <g fill="#DFB4AC">
+        <rect x="1088" y="482" width="30" height="28"/><rect x="1128" y="482" width="30" height="28"/><rect x="1168" y="482" width="30" height="28"/>
+        <rect x="1088" y="530" width="30" height="28"/><rect x="1128" y="530" width="30" height="28"/><rect x="1168" y="530" width="30" height="28"/>
+        <rect x="1088" y="578" width="30" height="28"/><rect x="1128" y="578" width="30" height="28"/><rect x="1168" y="578" width="30" height="28"/>
+        <rect x="1088" y="626" width="30" height="28"/><rect x="1128" y="626" width="30" height="28"/><rect x="1168" y="626" width="30" height="28"/>
+        <rect x="1088" y="674" width="30" height="28"/><rect x="1128" y="674" width="30" height="28"/><rect x="1168" y="674" width="30" height="28"/>
+        <rect x="1088" y="722" width="30" height="28"/><rect x="1128" y="722" width="30" height="28"/><rect x="1168" y="722" width="30" height="28"/>
+      </g>
+
+      <!-- ============ 右：基本原则 + 为什么该细讲 ============ -->
+      <rect x="1350" y="26" width="350" height="300" class="box-fill"/>
+      <text x="1374" y="72" class="t-gold">基本原则四条</text>
+      <text x="1374" y="112" font-size="21" fill="#1C1815" font-weight="700">强化价值引领　把牢育人方向</text>
+      <text x="1374" y="150" font-size="21" fill="#1C1815" font-weight="700">遵循教育规律　促进学生发展</text>
+      <text x="1374" y="188" font-size="21" fill="#1C1815" font-weight="700">恪守伦理规范　倡导技术向善</text>
+      <text x="1374" y="226" font-size="21" fill="#1C1815" font-weight="700">加强协同共治　推动均衡发展</text>
+      <path d="M1374,254 L1676,254" stroke="#D8D0C3" stroke-width="2"/>
+      <text x="1374" y="286" font-size="19" fill="#6E6559">不分学段、不分学科</text>
+      <text x="1374" y="312" font-size="19" fill="#6E6559">全体教师同等适用</text>
+
+      <rect x="1350" y="352" width="350" height="404" class="box-red"/>
+      <text x="1374" y="400" font-size="21" fill="#A8322A" font-weight="700">这一层为什么最该细讲</text>
+      <path d="M1374,420 L1676,420" stroke="#DFB4AC" stroke-width="2"/>
+      <text x="1374" y="470" font-size="22" fill="#1C1815" font-weight="700">前两层只回答</text>
+      <text x="1374" y="502" font-size="22" fill="#1C1815" font-weight="700">「要不要管」</text>
+      <text x="1374" y="554" font-size="22" fill="#A8322A" font-weight="700">这一层回答</text>
+      <text x="1374" y="586" font-size="22" fill="#A8322A" font-weight="700">「我具体怎么做」</text>
+      <text x="1374" y="638" font-size="20" fill="#6E6559">能不能用、用到什么程度、</text>
+      <text x="1374" y="668" font-size="20" fill="#6E6559">哪些事不能做，答案全在这一层。</text>
+      <text x="1374" y="722" font-size="20" fill="#6E6559">下一条先讲正面清单：六条规范。</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s6"><style>#s6 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">六条规范：<span class="hit">教师责任的正面清单</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第三层，正面清单</text>
+
+      <!-- 左侧竖轴 -->
+      <path d="M56,40 L56,712" stroke="#17130E" stroke-width="2.5"/>
+      <text x="30" y="30" font-size="21" fill="#3D362C" font-weight="700">教师</text>
+      <text x="30" y="748" font-size="21" fill="#3D362C" font-weight="700">责任</text>
+
+      <!-- 一 -->
+      <g>
+        <path d="M56,72 L86,72" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="40" width="54" height="54" class="box-ink"/>
+        <text x="113" y="78" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">一</text>
+        <text x="164" y="78" font-size="30" fill="#17130E" font-weight="700">坚持育人主体地位</text>
+        <text x="470" y="62" font-size="22" fill="#3D362C">价值观引导、道德教育、情感培养、心理支持等关键环节由教师主导，</text>
+        <text x="470" y="96" font-size="22" fill="#A8322A" font-weight="700">不得交由技术替代</text>
+      </g>
+      <path d="M86,122 L1640,122" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 二 -->
+      <g>
+        <path d="M56,164 L86,164" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="132" width="54" height="54" class="box-ink"/>
+        <text x="113" y="170" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">二</text>
+        <text x="164" y="170" font-size="30" fill="#17130E" font-weight="700">加强内容审查把关</text>
+        <text x="470" y="154" font-size="22" fill="#3D362C">生成内容须作事实核查、价值审查、适切评估，</text>
+        <text x="470" y="188" font-size="22" fill="#A8322A" font-weight="700">严禁未经审查直接使用</text>
+        <text x="810" y="188" font-size="21" fill="#6E6559">高敏感内容提交学校管理部门审查</text>
+      </g>
+      <path d="M86,214 L1640,214" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 三 -->
+      <g>
+        <path d="M56,256 L86,256" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="224" width="54" height="54" class="box-ink"/>
+        <text x="113" y="262" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">三</text>
+        <text x="164" y="262" font-size="30" fill="#17130E" font-weight="700">恪守学术创作伦理</text>
+        <text x="470" y="246" font-size="22" fill="#3D362C">研究选题、核心设计、数据解读、论点撰写等原创性环节由教师主导，</text>
+        <text x="470" y="280" font-size="22" fill="#A8322A" font-weight="700">按规范标注引用</text>
+      </g>
+      <path d="M86,306 L1640,306" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 四 -->
+      <g>
+        <path d="M56,348 L86,348" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="316" width="54" height="54" class="box-ink"/>
+        <text x="113" y="354" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">四</text>
+        <text x="164" y="354" font-size="30" fill="#17130E" font-weight="700">引导学生规范使用</text>
+        <text x="470" y="338" font-size="22" fill="#3D362C">按年龄明确使用边界、目的与规范，建立监督机制，</text>
+        <text x="470" y="372" font-size="22" fill="#A8322A" font-weight="700">培养学生标注生成内容的意识</text>
+      </g>
+      <path d="M86,398 L1640,398" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 五 -->
+      <g>
+        <path d="M56,440 L86,440" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="408" width="54" height="54" class="box-ink"/>
+        <text x="113" y="446" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">五</text>
+        <text x="164" y="446" font-size="30" fill="#17130E" font-weight="700">合规合法处理数据</text>
+        <text x="470" y="430" font-size="22" fill="#3D362C">遵守数据安全与个人信息保护法律法规，使用前评估工具与平台合规性，</text>
+        <text x="470" y="464" font-size="22" fill="#A8322A" font-weight="700">严禁上传敏感信息与涉密内容</text>
+      </g>
+      <path d="M86,490 L1640,490" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 六 -->
+      <g>
+        <path d="M56,532 L86,532" stroke="#17130E" stroke-width="2.5"/>
+        <rect x="86" y="500" width="54" height="54" class="box-ink"/>
+        <text x="113" y="538" font-size="26" fill="#FFFFFF" font-weight="700" text-anchor="middle">六</text>
+        <text x="164" y="538" font-size="30" fill="#17130E" font-weight="700">践行技术智能向善</text>
+        <text x="470" y="522" font-size="22" fill="#3D362C">技术应用的价值方向：</text>
+        <text x="470" y="556" font-size="22" fill="#A8322A" font-weight="700">严禁生成或传播危害国家安全、损害社会公共利益、违背公序良俗的内容</text>
+      </g>
+      <path d="M86,582 L1640,582" stroke="#EAE4D9" stroke-width="2"/>
+
+      <!-- 讲法提示 -->
+      <rect x="86" y="600" width="1554" height="144" class="box-fill"/>
+      <text x="116" y="646" font-size="21" fill="#8A6D3B" font-weight="700">讲法</text>
+      <text x="116" y="690" font-size="24" fill="#1C1815">每条只念规范名与一句核心要求，行为示例留给学员自己翻</text>
+      <text x="116" y="724" font-size="20" fill="#6E6559">真正要记的是这六个动词：主导、审查、引导、合规、标注、禁止。</text>
+      <text x="1610" y="646" font-size="24" fill="#8A6D3B" font-weight="700" text-anchor="end">正面清单</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s7"><style>#s7 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">六个关键禁区：<span class="hit">六条规范里最硬的六句</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第三层，负面清单</text>
+
+      <!-- 禁区闸门：六道 -->
+      <g>
+        <!-- 闸门 1 -->
+        <rect x="0" y="30" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="30" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="82" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,61 L91,103" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="72" font-size="22" fill="#6E6559">解决学生思想困惑、情感问题或复杂伦理抉择时</text>
+        <text x="126" y="114" font-size="30" fill="#A8322A" font-weight="700">不得将生成内容作为最终答案或解决方案</text>
+      </g>
+      <g>
+        <rect x="0" y="146" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="146" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="198" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,177 L91,219" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="188" font-size="22" fill="#6E6559">作业批改与学生评价环节</text>
+        <text x="126" y="230" font-size="30" fill="#A8322A" font-weight="700">不得将自动批改结果作为学生最终评价直接使用</text>
+      </g>
+      <g>
+        <rect x="0" y="262" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="262" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="314" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,293 L91,335" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="304" font-size="22" fill="#6E6559">个人成果的提交与发表</text>
+        <text x="126" y="346" font-size="30" fill="#A8322A" font-weight="700">不得直接使用或仅简单修改后使用生成成果</text>
+      </g>
+      <g>
+        <rect x="0" y="378" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="378" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="430" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,409 L91,451" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="420" font-size="22" fill="#6E6559">小学生独立使用人工智能</text>
+        <text x="126" y="462" font-size="30" fill="#A8322A" font-weight="700">原则上禁止，确需使用须在教师或监护人指导下进行</text>
+      </g>
+      <g>
+        <rect x="0" y="494" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="494" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="546" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,525 L91,567" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="536" font-size="22" fill="#6E6559">课堂录制与个人信息采集</text>
+        <text x="126" y="578" font-size="30" fill="#A8322A" font-weight="700">未经同意不得私自录制课堂音视频，不得采集非教学必需的个人信息</text>
+      </g>
+      <g>
+        <rect x="0" y="610" width="1700" height="104" fill="#F8EDEA"/>
+        <rect x="0" y="610" width="10" height="104" fill="#A8322A"/>
+        <circle cx="70" cy="662" r="30" fill="none" stroke="#A8322A" stroke-width="4"/>
+        <path d="M49,641 L91,683" stroke="#A8322A" stroke-width="4"/>
+        <text x="126" y="652" font-size="22" fill="#6E6559">历史、领土主权、法律法规类内容</text>
+        <text x="126" y="694" font-size="30" fill="#A8322A" font-weight="700">严禁生成或使用存在错误或歪曲的内容</text>
+      </g>
+
+      <!-- 底部结论 -->
+      <rect x="0" y="732" width="1700" height="44" class="box-ink"/>
+      <text x="30" y="762" font-size="22" fill="#FFFFFF">这六条的共同点：每一条都对应一个真实场景，都能落到某一天某件具体的事上</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s8"><style>#s8 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">地方落地层：省级文件把边界<span class="hit">写到了禁令这一级</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">教育业务线，第四层</text>
+
+      <!-- 左：文件信息 + 定位 -->
+      <rect x="0" y="26" width="470" height="330" class="box-fill"/>
+      <text x="24" y="72" class="t-gold">发文主体</text>
+      <text x="24" y="106" font-size="23" fill="#1C1815" font-weight="700">山东省教育厅</text>
+      <text x="24" y="142" class="t-gold">文号与时间</text>
+      <text x="24" y="176" font-size="23" fill="#1C1815" font-weight="700">鲁教基函〔2026〕34 号</text>
+      <text x="24" y="210" font-size="21" fill="#6E6559">2026 年 7 月 30 日</text>
+      <text x="24" y="246" class="t-gold">适用对象</text>
+      <text x="24" y="280" font-size="22" fill="#1C1815">全省中小学，含义务教育阶段</text>
+      <text x="24" y="312" font-size="22" fill="#1C1815">与高中阶段</text>
+      <text x="24" y="344" font-size="21" fill="#6E6559">全篇最具体、边界最清晰的一层</text>
+
+      <!-- 左下：核心定位 -->
+      <rect x="0" y="382" width="470" height="374" class="box-ink"/>
+      <text x="24" y="430" font-size="21" fill="#C9BFAE" font-weight="700">核心定位</text>
+      <path d="M24,450 L446,450" stroke="#3D362C" stroke-width="2"/>
+      <text x="24" y="498" font-size="23" fill="#FFFFFF" font-weight="700">教师是教学设计的责任主体</text>
+      <text x="24" y="532" font-size="23" fill="#FFFFFF" font-weight="700">学生是学习活动的主体</text>
+      <text x="24" y="578" font-size="21" fill="#C9BFAE" font-weight="700">工具定位</text>
+      <path d="M24,598 L446,598" stroke="#3D362C" stroke-width="2"/>
+      <text x="24" y="642" font-size="22" fill="#FFFFFF">人工智能工具在教学中仅用于</text>
+      <text x="24" y="676" font-size="22" fill="#E8A79F" font-weight="700">辅助探究、启发思考、优化反馈</text>
+      <text x="24" y="722" font-size="20" fill="#C9BFAE">是辅助，不是主体，也不是替代。</text>
+
+      <!-- 中：两条禁令 -->
+      <text x="520" y="60" font-size="24" fill="#A8322A" font-weight="700">两条禁令</text>
+      <rect x="520" y="80" width="580" height="196" class="box-red-solid"/>
+      <text x="556" y="136" font-size="21" fill="#F3C9C3" font-weight="700">禁令一　对教师</text>
+      <text x="556" y="184" font-size="30" fill="#FFFFFF" font-weight="700">严禁教师以人工智能工具</text>
+      <text x="556" y="224" font-size="30" fill="#FFFFFF" font-weight="700">直接替代备课授课</text>
+
+      <rect x="520" y="300" width="580" height="196" class="box-red-solid"/>
+      <text x="556" y="356" font-size="21" fill="#F3C9C3" font-weight="700">禁令二　对学生</text>
+      <text x="556" y="404" font-size="30" fill="#FFFFFF" font-weight="700">严禁学生以人工智能工具</text>
+      <text x="556" y="444" font-size="30" fill="#FFFFFF" font-weight="700">直接代写作业或代做项目</text>
+
+      <!-- 右：课时要求阶梯 -->
+      <text x="1140" y="60" font-size="24" fill="#3D362C" font-weight="700">课时要求</text>
+
+      <!-- 轴 -->
+      <path d="M1140,600 L1700,600" stroke="#17130E" stroke-width="2.5"/>
+      <path d="M1700,600 L1676,588 L1676,612" stroke="#17130E" stroke-width="2.5" fill="none"/>
+
+      <!-- 1-2 年级 6 课时 -->
+      <text x="1170" y="392" font-size="22" fill="#1C1815" font-weight="700">1—2 年级</text>
+      <text x="1410" y="392" font-size="20" fill="#6E6559" text-anchor="end">每学年不少于</text>
+      <rect x="1170" y="410" width="240" height="190" class="box-fill"/>
+      <text x="1290" y="478" font-size="40" fill="#A8322A" font-weight="700" text-anchor="middle">6</text>
+      <text x="1290" y="524" font-size="22" fill="#6E6559" text-anchor="middle">课时 / 学年</text>
+      <text x="1290" y="572" font-size="20" fill="#8A6D3B" text-anchor="middle">基础段起步</text>
+
+      <!-- 3-9 年级 8 课时 -->
+      <text x="1440" y="332" font-size="22" fill="#1C1815" font-weight="700">3—9 年级</text>
+      <text x="1680" y="332" font-size="20" fill="#6E6559" text-anchor="end">每学年不少于</text>
+      <rect x="1440" y="350" width="240" height="250" class="box-fill"/>
+      <text x="1560" y="452" font-size="44" fill="#A8322A" font-weight="700" text-anchor="middle">8</text>
+      <text x="1560" y="502" font-size="22" fill="#6E6559" text-anchor="middle">课时 / 学年</text>
+      <text x="1560" y="572" font-size="20" fill="#8A6D3B" text-anchor="middle">课时量随学段递增</text>
+
+      <!-- 高中阶段 -->
+      <rect x="1140" y="626" width="560" height="92" class="box-gold"/>
+      <text x="1166" y="664" font-size="21" fill="#6E6559">高中阶段</text>
+      <text x="1166" y="700" font-size="22" fill="#1C1815" font-weight="700">自主修习选择性必修模块《人工智能初步》</text>
+      <text x="1140" y="748" font-size="20" fill="#6E6559">课时要求意味着：人工智能进课表，不是课外兴趣班。</text>
+
+      <!-- 底部：上位文件 -->
+      <rect x="520" y="526" width="580" height="230" class="box-fill"/>
+      <text x="544" y="572" font-size="21" fill="#8A6D3B" font-weight="700">上位文件</text>
+      <path d="M544,590 L1076,590" stroke="#D8D0C3" stroke-width="2"/>
+      <text x="544" y="634" font-size="22" fill="#1C1815">《山东省“人工智能+教育”实施方案》</text>
+      <text x="544" y="686" font-size="21" fill="#1C1815">《山东省教育厅等 6 部门关于中小学</text>
+      <text x="544" y="714" font-size="21" fill="#1C1815">人工智能教育“十大行动”的实施意见》</text>
+      <text x="544" y="746" font-size="19" fill="#6E6559">这一页最该细讲：学员最容易对照自己的日常</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s9"><style>#s9 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">技术治理线：风险从哪里来，<span class="hit">制度怎么演进来的</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+      <text x="1700" y="14" class="t-gold" text-anchor="end">技术治理线，背景交代</text>
+
+      <!-- 时间轴 -->
+      <path d="M60,120 L1640,120" stroke="#D8D0C3" stroke-width="3"/>
+      <path d="M1640,120 L1612,108 L1612,132" stroke="#17130E" stroke-width="3" fill="none"/>
+      <circle cx="60" cy="120" r="7" fill="#A8322A"/>
+
+      <!-- 2023 -->
+      <g>
+        <circle cx="270" cy="120" r="9" fill="#A8322A"/>
+        <text x="270" y="82" font-size="22" fill="#A8322A" font-weight="700" text-anchor="middle">2023 年 7 月</text>
+        <rect x="60" y="160" width="420" height="150" class="box-fill"/>
+        <text x="84" y="202" font-size="22" fill="#1C1815" font-weight="700">《生成式人工智能服务管理</text>
+        <text x="84" y="234" font-size="22" fill="#1C1815" font-weight="700">暂行办法》</text>
+        <text x="84" y="268" font-size="20" fill="#6E6559">七部门，7 月 13 日公布、8 月 15 日施行</text>
+        <text x="84" y="296" font-size="20" fill="#6E6559">发展和安全并重，包容审慎、分类分级监管</text>
+      </g>
+
+      <!-- 2025 -->
+      <g>
+        <circle cx="730" cy="120" r="9" fill="#A8322A"/>
+        <text x="730" y="82" font-size="22" fill="#A8322A" font-weight="700" text-anchor="middle">2025 年 9 月 15 日</text>
+        <rect x="520" y="160" width="420" height="150" class="box-fill"/>
+        <text x="544" y="202" font-size="22" fill="#1C1815" font-weight="700">《人工智能安全治理框架》</text>
+        <text x="544" y="234" font-size="22" fill="#1C1815" font-weight="700">2.0 版</text>
+        <text x="544" y="268" font-size="20" fill="#6E6559">国家网络安全宣传周主论坛发布</text>
+        <text x="544" y="296" font-size="20" fill="#6E6559">风险分类由两类扩为三类</text>
+      </g>
+
+      <!-- 2026 审查办法 -->
+      <g>
+        <circle cx="1190" cy="120" r="9" fill="#A8322A"/>
+        <text x="1190" y="82" font-size="22" fill="#A8322A" font-weight="700" text-anchor="middle">2026 年 3 月</text>
+        <rect x="980" y="160" width="420" height="150" class="box-fill"/>
+        <text x="1004" y="202" font-size="22" fill="#1C1815" font-weight="700">《人工智能科技伦理审查与</text>
+        <text x="1004" y="234" font-size="22" fill="#1C1815" font-weight="700">服务办法（试行）》</text>
+        <text x="1004" y="268" font-size="20" fill="#6E6559">工信部联科〔2026〕75 号</text>
+        <text x="1004" y="296" font-size="20" fill="#6E6559">四类审查程序</text>
+      </g>
+
+      <!-- 2026 指引 -->
+      <g>
+        <circle cx="1520" cy="120" r="9" fill="#A8322A"/>
+        <text x="1520" y="82" font-size="22" fill="#A8322A" font-weight="700" text-anchor="middle">2026 年 5 月 19 日</text>
+        <rect x="1420" y="160" width="280" height="150" class="box-fill"/>
+        <text x="1444" y="202" font-size="21" fill="#1C1815" font-weight="700">《人工智能应用伦理</text>
+        <text x="1444" y="232" font-size="21" fill="#1C1815" font-weight="700">安全指引》1.0</text>
+        <text x="1444" y="266" font-size="19" fill="#6E6559">全国网络安全标准化</text>
+        <text x="1444" y="292" font-size="19" fill="#6E6559">技术委员会</text>
+      </g>
+
+      <!-- 下半：三类风险 + 四程序 + 三处变化 -->
+      <text x="60" y="378" font-size="24" fill="#1C1815" font-weight="700">2.0 版把风险分为三类</text>
+      <rect x="60" y="400" width="280" height="112" class="box-red"/>
+      <text x="200" y="448" font-size="23" fill="#A8322A" font-weight="700" text-anchor="middle">技术内生安全风险</text>
+      <text x="200" y="482" font-size="20" fill="#6E6559" text-anchor="middle">模型自身的能力缺陷</text>
+
+      <rect x="360" y="400" width="280" height="112" class="box-red"/>
+      <text x="500" y="448" font-size="23" fill="#A8322A" font-weight="700" text-anchor="middle">技术应用安全风险</text>
+      <text x="500" y="482" font-size="20" fill="#6E6559" text-anchor="middle">使用过程中的误用与滥用</text>
+
+      <rect x="660" y="400" width="280" height="112" class="box-red"/>
+      <text x="800" y="448" font-size="23" fill="#A8322A" font-weight="700" text-anchor="middle">应用衍生安全风险</text>
+      <text x="800" y="482" font-size="20" fill="#6E6559" text-anchor="middle">新用法带来的新型风险</text>
+
+      <text x="980" y="378" font-size="24" fill="#1C1815" font-weight="700">审查办法的四类程序</text>
+      <rect x="980" y="400" width="160" height="112" class="box-fill"/>
+      <text x="1060" y="456" font-size="22" fill="#1C1815" font-weight="700" text-anchor="middle">一般程序</text>
+      <rect x="1156" y="400" width="160" height="112" class="box-fill"/>
+      <text x="1236" y="456" font-size="22" fill="#1C1815" font-weight="700" text-anchor="middle">简易程序</text>
+      <rect x="1332" y="400" width="160" height="112" class="box-fill"/>
+      <text x="1412" y="456" font-size="22" fill="#1C1815" font-weight="700" text-anchor="middle">专家复核</text>
+      <rect x="1508" y="400" width="192" height="112" class="box-fill"/>
+      <text x="1604" y="456" font-size="22" fill="#1C1815" font-weight="700" text-anchor="middle">应急程序</text>
+
+      <!-- 三处变化 -->
+      <text x="60" y="586" font-size="24" fill="#1C1815" font-weight="700">2.0 版相较 1.0 版的三处变化</text>
+      <rect x="60" y="608" width="520" height="140" class="box-fill"/>
+      <text x="88" y="650" font-size="22" fill="#1C1815" font-weight="700">一、风险分类由两类扩为三类</text>
+      <text x="88" y="690" font-size="20" fill="#6E6559">新增应用衍生安全风险</text>
+      <text x="88" y="726" font-size="20" fill="#6E6559">来源：应用方式变化带来的新型风险</text>
+
+      <rect x="600" y="608" width="520" height="140" class="box-fill"/>
+      <text x="628" y="650" font-size="22" fill="#1C1815" font-weight="700">二、治理原则新增两条</text>
+      <text x="628" y="690" font-size="20" fill="#6E6559">可信应用、防范失控</text>
+      <text x="628" y="726" font-size="20" fill="#6E6559">提出熔断机制与一键管控</text>
+
+      <rect x="1140" y="608" width="560" height="140" class="box-fill"/>
+      <text x="1168" y="650" font-size="22" fill="#1C1815" font-weight="700">三、应对措施大幅扩充</text>
+      <text x="1168" y="690" font-size="20" fill="#6E6559">技术应对措施扩充至 30 项</text>
+      <text x="1168" y="726" font-size="20" fill="#6E6559">综合治理措施 14 项</text>
+    </svg>
+  </div>
+</section>
+</section>
+
+<section class="slide" id="s10"><style>#s10 h1.title{ font-size:56px; }
+</style>
+<section class="page">
+  <h1 class="title">结论：教师的责任边界<span class="hit">由文件划定</span></h1>
+  <div class="fig">
+    <svg class="figsvg" viewBox="0 0 1700 780" preserveAspectRatio="xMidYMid meet">
+
+      <!-- 左：四层收窄漏斗重现 -->
+      <text x="0" y="30" font-size="22" fill="#6E6559" font-weight="700">四层文件，逐级收窄</text>
+
+      <rect x="0" y="56" width="520" height="120" class="box-ink"/>
+      <text x="24" y="100" font-size="22" fill="#C9BFAE" font-weight="700">战略要求</text>
+      <text x="24" y="144" font-size="26" fill="#FFFFFF" font-weight="700">伦理安全写进国家教育战略</text>
+
+      <rect x="40" y="196" width="480" height="120" class="box-fill"/>
+      <text x="64" y="240" font-size="22" fill="#8A6D3B" font-weight="700">行动计划</text>
+      <text x="64" y="284" font-size="26" fill="#1C1815" font-weight="700">安全屏障成为体系条款</text>
+
+      <rect x="80" y="336" width="440" height="120" class="box-fill"/>
+      <text x="104" y="380" font-size="22" fill="#8A6D3B" font-weight="700">教师规范</text>
+      <text x="104" y="424" font-size="26" fill="#1C1815" font-weight="700">六条规范划出行为边界</text>
+
+      <rect x="120" y="476" width="400" height="120" class="box-red"/>
+      <text x="144" y="520" font-size="22" fill="#A8322A" font-weight="700">省级禁令</text>
+      <text x="144" y="564" font-size="26" fill="#A8322A" font-weight="700">两条禁令落到日常</text>
+
+      <!-- 收窄箭头 -->
+      <path d="M540,76 L540,576" stroke="#D8D0C3" stroke-width="2" stroke-dasharray="9 8"/>
+      <path d="M524,116 L540,76 L556,116" stroke="#A8322A" stroke-width="3" fill="none"/>
+      <path d="M524,536 L540,576 L556,536" stroke="#A8322A" stroke-width="3" fill="none"/>
+
+      <!-- 右：三条结论 -->
+      <text x="640" y="30" font-size="22" fill="#6E6559" font-weight="700">这一讲留下的三句话</text>
+
+      <rect x="640" y="56" width="1060" height="160" class="box-fill"/>
+      <text x="672" y="104" font-size="21" fill="#8A6D3B" font-weight="700">一</text>
+      <text x="716" y="106" font-size="28" fill="#1C1815" font-weight="700">伦理安全已经走完从倡导到制度的路径</text>
+      <text x="716" y="152" font-size="22" fill="#3D362C">战略要求、行动计划、教师规范、省级禁令，四层逐级收窄，每一层都比上一层更具体。</text>
+      <text x="716" y="190" font-size="21" fill="#6E6559">证据不是观点，是文件的演进顺序本身。</text>
+
+      <rect x="640" y="236" width="1060" height="160" class="box-fill"/>
+      <text x="672" y="284" font-size="21" fill="#8A6D3B" font-weight="700">二</text>
+      <text x="716" y="286" font-size="28" fill="#1C1815" font-weight="700">教师的责任边界不依赖个人理解，文件已经写明</text>
+      <text x="716" y="332" font-size="22" fill="#3D362C">不用再犹豫「这样合不合适」，去查第三条、第十六条、第二十条、第（二十六）条。</text>
+      <text x="716" y="370" font-size="21" fill="#6E6559">把判断的负担交给文件，把执行的力气留给课堂。</text>
+
+      <rect x="640" y="416" width="1060" height="160" class="box-red"/>
+      <text x="672" y="464" font-size="21" fill="#A8322A" font-weight="700">三</text>
+      <text x="716" y="466" font-size="28" fill="#A8322A" font-weight="700">四类风险与六条规范，构成后续三部分的共同底稿</text>
+      <text x="716" y="512" font-size="22" fill="#3D362C">伪造诈骗、学术造假、应试内卷、泄露隐私——接下来几部分的风险划分，源头都在这里。</text>
+      <text x="716" y="550" font-size="21" fill="#6E6559">这一讲是坐标，不是终点。</text>
+
+      <!-- 收口 -->
+      <rect x="0" y="628" width="1700" height="120" class="box-ink"/>
+      <text x="36" y="676" font-size="21" fill="#C9BFAE" font-weight="700">收口</text>
+      <text x="36" y="722" font-size="28" fill="#FFFFFF" font-weight="700">伦理安全不是附加要求，是写进国家教育战略、进入审查程序、</text>
+      <text x="1090" y="722" font-size="28" fill="#E8A79F" font-weight="700">并在省级文件里划出具体禁区的制度安排。</text>
+    </svg>
+  </div>
+</section>
+</section>
+</div>
+<div id="bar"><button id="prev">上一页</button><button id="next">下一页</button></div>
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var cur = 0;
+  function fit(){
+    var s = Math.min(innerWidth/1920, innerHeight/1080);
+    slides.forEach(function(el){ el.style.transform = 'scale('+s+')'; });
+  }
+  function go(i){
+    cur = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach(function(el,k){ el.classList.toggle('on', k===cur); });
+    try{ localStorage.setItem('ethics-deck', String(cur)); }catch(e){}
+  }
+  document.getElementById('next').addEventListener('click', function(){ go(cur+1); });
+  document.getElementById('prev').addEventListener('click', function(){ go(cur-1); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(cur+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(cur-1); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(slides.length-1); }
+    else if(e.key==='p'||e.key==='P'){ window.print(); }
+  });
+  window.addEventListener('resize', fit);
+  fit();
+  var saved = 0;
+  try{ saved = parseInt(localStorage.getItem('ethics-deck'),10) || 0; }catch(e){}
+  go(saved);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交互界面：翻译成本在人与机器之间转移的历史</title>
+<style>
+  :root{
+    --ink:#1f2328;
+    --ink-soft:#4a5058;
+    --accent:#b5432a;
+    --hairline:#e4e2de;
+    --bg:#ffffff;
+    --title-serif:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+    --body-sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body-sans);}
+  .deck{scroll-snap-type:y mandatory;overflow-y:scroll;height:100vh;}
+  .slide{
+    width:1280px;height:720px;
+    margin:0 auto;
+    scroll-snap-align:start;
+    background:var(--bg);
+    position:relative;
+    padding:72px 96px 64px;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  /* 标题区 */
+  .head{display:flex;align-items:baseline;gap:20px;border-bottom:1px solid var(--hairline);padding-bottom:26px;}
+  .head .bar{width:10px;height:44px;background:var(--accent);flex:none;align-self:center;}
+  .head h2{
+    font-family:var(--title-serif);
+    font-weight:700;
+    font-size:42px;
+    line-height:1.2;
+    letter-spacing:2px;
+  }
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding-top:34px;}
+  /* 正文 */
+  p.lead{font-size:24px;line-height:1.9;color:var(--ink-soft);}
+  p.lead strong{color:var(--ink);font-weight:600;}
+  .cols{display:grid;gap:32px;}
+  .cols.c2{grid-template-columns:1fr 1fr;}
+  .cols.c3{grid-template-columns:1fr 1fr 1fr;}
+  .card{
+    border-top:3px solid var(--accent);
+    background:#fafaf8;
+    padding:26px 28px;
+  }
+  .card h3{
+    font-family:var(--title-serif);
+    font-size:24px;font-weight:700;letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .card p{font-size:18px;line-height:1.8;color:var(--ink-soft);}
+  .card p strong{color:var(--ink);}
+  .note{
+    border-left:4px solid var(--accent);
+    padding:6px 0 6px 24px;
+    font-size:20px;line-height:1.85;color:var(--ink-soft);
+  }
+  .note strong{color:var(--ink);font-weight:600;}
+  /* 成本结构表 */
+  table{width:100%;border-collapse:collapse;font-size:19px;}
+  th,td{padding:16px 18px;text-align:left;vertical-align:top;line-height:1.6;}
+  thead th{
+    font-family:var(--title-serif);font-size:21px;font-weight:700;letter-spacing:1px;
+    border-bottom:2px solid var(--ink);
+  }
+  thead th:first-child{color:var(--ink-soft);font-family:var(--body-sans);font-size:17px;font-weight:400;}
+  tbody th{
+    font-weight:600;color:var(--ink);
+    border-bottom:1px solid var(--hairline);white-space:nowrap;
+  }
+  tbody td{color:var(--ink-soft);border-bottom:1px solid var(--hairline);}
+  /* 四代时间线 */
+  .gens{display:flex;flex-direction:column;gap:0;}
+  .gen{
+    display:grid;grid-template-columns:170px 150px 1fr;gap:28px;
+    padding:20px 0;border-bottom:1px solid var(--hairline);align-items:baseline;
+  }
+  .gen:last-child{border-bottom:none;}
+  .gen .no{
+    font-family:var(--title-serif);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:2px;
+  }
+  .gen .name{font-family:var(--title-serif);font-size:22px;font-weight:700;letter-spacing:1px;}
+  .gen .desc{font-size:17.5px;line-height:1.75;color:var(--ink-soft);}
+  .gen .desc strong{color:var(--ink);}
+  /* 封面 */
+  .cover{justify-content:center;}
+  .cover .kicker{
+    width:88px;height:8px;background:var(--accent);margin-bottom:56px;
+  }
+  .cover h1{
+    font-family:var(--title-serif);font-weight:700;
+    font-size:88px;line-height:1.25;letter-spacing:6px;
+  }
+  .cover h1 .line2{display:block;font-size:52px;letter-spacing:3px;margin-top:26px;color:var(--ink-soft);font-weight:600;}
+  .cover .foot{margin-top:72px;display:flex;align-items:center;gap:18px;}
+  .cover .foot .dot{width:12px;height:12px;background:var(--accent);transform:rotate(45deg);}
+  .cover .foot span{font-size:18px;letter-spacing:6px;color:var(--ink-soft);}
+  /* 结尾页 */
+  .end{justify-content:center;align-items:flex-start;}
+  .end h2{font-family:var(--title-serif);font-size:64px;letter-spacing:4px;line-height:1.4;font-weight:700;}
+  .end p{margin-top:44px;font-size:24px;line-height:1.9;color:var(--ink-soft);max-width:900px;}
+  .end p strong{color:var(--accent);font-weight:600;}
+  /* 打印 */
+  @page{size:13.333in 7.5in;margin:0;}
+  @media print{
+    html,body{height:auto;}
+    .deck{height:auto;overflow:visible;scroll-snap-type:none;}
+    .slide{page-break-after:always;break-after:page;}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="slide cover">
+    <div class="kicker"></div>
+    <h1>交互界面<span class="line2">翻译成本在人与机器之间转移的历史</span></h1>
+    <div class="foot"><div class="dot"></div><span>界面史 · 翻译成本 · 委派接口</span></div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>界面是什么</h2></div>
+    <div class="body">
+      <p class="lead">界面是两个系统之间的<strong>翻译层</strong>。一侧是人——感知通道有限、带宽有限、依赖意义理解；另一侧是机器——状态精确、无歧义、不会猜测。</p>
+      <div class="cols c2">
+        <div class="card">
+          <h3>界面的职责</h3>
+          <p>把人的意图<strong>编码</strong>成机器可执行的指令，再把机器的状态<strong>解码</strong>成人的感官可接收的信息。</p>
+        </div>
+        <div class="card">
+          <h3>翻译成本</h3>
+          <p>凡跨越这一层的交互都要付出成本：或者是<strong>人学习机器的语言</strong>，或者是<strong>机器学习人的语言</strong>。</p>
+        </div>
+      </div>
+      <p class="note">界面不是屏幕，不是按钮，也不是某个具体的输入通道。判断某一层是否构成真正的界面，要看的只有一件事——<strong>翻译成本落在谁身上</strong>。界面史的主线，就是这笔成本在两侧之间来回转移的过程。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>人类自身的四种交互介质</h2></div>
+    <div class="body">
+      <div class="cols c2" style="gap:24px;">
+        <div class="card">
+          <h3>身体界面</h3>
+          <p>手势、表情、眼神、姿态。带宽高，即时性强，但<strong>无法留存</strong>，只能面对面发生，歧义极大。</p>
+        </div>
+        <div class="card">
+          <h3>口语界面</h3>
+          <p>声音解放了双手，可以远距离传递，但<strong>依赖在场</strong>，说完即散。</p>
+        </div>
+        <div class="card">
+          <h3>文字界面</h3>
+          <p>第一次把交互从在场中解放出来，<strong>跨时空、可复制、可反复核对</strong>；代价是必须经过长期训练才能读写。</p>
+        </div>
+        <div class="card">
+          <h3>器物界面</h3>
+          <p>工具、仪表、按钮、旋钮。不传递意义，只传递操作，人通过它<strong>改变物理世界</strong>。</p>
+        </div>
+      </div>
+      <p class="note">竹简、纸张、印刷术之上的书籍，关键不在材质，而在于把交互变成了<strong>异步行为</strong>：作者写作时读者不在场，读者阅读时作者不在场——人类第一次实现与不在场者的交互。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>人机界面的四代：谁迁就谁的轮换</h2></div>
+    <div class="body" style="justify-content:center;gap:0;">
+      <div class="gens">
+        <div class="gen">
+          <div class="no">第一代</div>
+          <div class="name">批处理与命令行</div>
+          <div class="desc"><strong>人迁就机器。</strong>必须掌握机器的词汇与语法，把意图翻译成精确指令。精确、可脚本化、可组合，效率极高，至今仍是专业用户的首选；学习曲线陡峭。</div>
+        </div>
+        <div class="gen">
+          <div class="no">第二代</div>
+          <div class="name">图形用户界面</div>
+          <div class="desc"><strong>机器迁就人。</strong>施乐帕洛阿尔托研究中心发明，一九八四年的麦金塔电脑推动普及。桌面、文件夹、垃圾桶等物理隐喻把抽象数字状态变成可见可点的对象。门槛骤降、所见即所得；代价是能力被菜单穷举，用户只能在预设中选择。</div>
+        </div>
+        <div class="gen">
+          <div class="no">第三代</div>
+          <div class="name">触摸与自然交互</div>
+          <div class="desc">手势、语音、体感被纳入交互通道，操作<strong>从指向变为动作与言语</strong>。</div>
+        </div>
+        <div class="gen">
+          <div class="no">第四代</div>
+          <div class="name">语言界面</div>
+          <div class="desc">机器开始理解人的自然语言。变化不在多了一种输入方式，而在<strong>意图与操作的分离</strong>：人只表达目标，中间的路径由系统自行规划。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>介质与界面必须分开看</h2></div>
+    <div class="body" style="gap:30px;">
+      <p class="lead">语音是介质，图形也是介质；<strong>界面是约定</strong>。豆包用语音，界面是自然语言约定；微信同样传输语音，界面仍是图形约定，语音只是内容载体。判断标准不在通道，而在<strong>谁承担翻译成本</strong>。</p>
+      <table>
+        <thead>
+          <tr><th>成本结构</th><th>命令行界面</th><th>图形界面</th><th>自然语言界面</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>人付出的成本</th><td>学习语法的成本</td><td>学习路径的成本</td><td>说清意图的成本</td></tr>
+          <tr><th>机器付出的成本</th><td>极低</td><td>预先穷举功能</td><td>理解与规划的高成本</td></tr>
+          <tr><th>表达上限</th><td>高，可以组合</td><td>受菜单限制</td><td>受模型能力约束</td></tr>
+        </tbody>
+      </table>
+      <p class="note">图形界面之下，使用者必须知道功能藏在哪一层菜单；语言界面之下，翻译成本转移到模型——<strong>它必须推测使用者的真实意图</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>智能时代的三重变化</h2></div>
+    <div class="body">
+      <div class="cols c3">
+        <div class="card">
+          <h3>对象之变</h3>
+          <p>交互对象<strong>从工具变为行动者</strong>：界面连接的不再是人与功能，而是人与一个会规划、会试错、会追问的执行者。界面从操作面板转向<strong>委派接口</strong>。</p>
+        </div>
+        <div class="card">
+          <h3>边界之变</h3>
+          <p><strong>界面边界在溶解</strong>：应用是把能力切成格子，语言界面天然跨应用——表达目标，系统自行调用服务。图形界面智能体直接读取屏幕、模拟点击，绕过超级应用的围墙。当界面不再由人操作，界面设计这门手艺将走向何处。</p>
+        </div>
+        <div class="card">
+          <h3>感受之变</h3>
+          <p><strong>界面感被主动消除</strong>：技术的目的是消除技术感。语言界面让人以为在与人交谈，但界面感越弱，人越难察觉系统正在替自己作出判断。</p>
+        </div>
+      </div>
+      <p class="note">图形界面时代至少看得见按钮，知道存在哪些选项；语言界面时代<strong>只看见结果，看不见它排除了什么</strong>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="head"><div class="bar"></div><h2>三个可以继续深入的方向</h2></div>
+    <div class="body">
+      <div class="cols" style="gap:26px;">
+        <div class="card">
+          <h3>界面即权力</h3>
+          <p>谁定义界面，谁就定义了<strong>可做之事的边界</strong>。图形界面的菜单承载产品经理的意志，语言界面的意图理解承载模型的价值对齐。这条线索可以接到可计算性边界的判断上。</p>
+        </div>
+        <div class="card">
+          <h3>教学场景中的界面选择</h3>
+          <p>图形界面迫使使用者<strong>理解结构</strong>，语言界面允许<strong>跳过结构</strong>——使用者在两种界面下习得的能力并不相同，这是一个值得实证的课题。</p>
+        </div>
+        <div class="card">
+          <h3>最小学习闭环与界面的关系</h3>
+          <p>如果广义微课指向一个学习事件，那么它的界面是什么——是<strong>文字、对话，还是任务本身</strong>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide end">
+    <h2>翻译成本的去向，<br>决定了人与机器的关系。</h2>
+    <p>从人学习机器的语言，到机器学习人的语言，再到机器推测人的意图——<strong>每一次转移，都是一次权力的重新安排。</strong></p>
+  </section>
+
+</div>
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let idx=0;
+  function go(i){
+    idx=Math.max(0,Math.min(slides.length-1,i));
+    slides[idx].scrollIntoView({behavior:'smooth'});
+  }
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(idx+1);}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}
+    if(e.key==='Home'){e.preventDefault();go(0);}
+    if(e.key==='End'){e.preventDefault();go(slides.length-1);}
+  });
+  document.addEventListener('click',e=>{
+    go(e.clientX>innerWidth/2?idx+1:idx-1);
+  });
+</script>
+</body>
+</html>
