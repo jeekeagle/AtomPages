@@ -192,11 +192,12 @@ def project_stem(proj_name: str) -> str:
 
 
 def topic_key(title: str, proj_name: str) -> str:
-    """去掉版本噪音词后的标题指纹，用于同一项目内多份 deck 的判重。
+    """去掉版本噪音词后的标题指纹，用于同一主题的判重。
 
-    同一主题的新旧两版标题常被改写（"交付的不再是理念，而是产品" vs
-    "一次培训，直接交付一个产品"），标题对不上时退回项目名指纹，
-    保证跨项目的同主题仍然只留一版。
+    指纹只由标题决定，不掺项目名：标题相同就是同一个主题，不管它躺在哪个
+    项目目录里。早先这里掺了项目名（"项目名::标题"），结果同一份课件在
+    interface-collapse-slides 与 interface-failure-huashu 两个目录里被判成
+    两个主题，站点上出现两张同名卡片，配套 PDF 还可能来自另一个版本。
     """
     t = VERSION_NOISE.sub("", title)
     t = re.sub(r"[：:，,。·\-\s]+", "", t)
@@ -204,12 +205,16 @@ def topic_key(title: str, proj_name: str) -> str:
     t = t.strip().lower()
     if not t:
         return project_stem(proj_name)
-    # 标题与项目名没有共同词，说明不是同一主题的改写版，各自独立
-    stem = project_stem(proj_name)
-    head = stem.split("-")[0]
-    if head and head not in t:
-        return f"{stem}::{t}"
     return t
+
+
+def has_direction_record(proj_dir: Path) -> bool:
+    """项目里有没有「方向落档」。
+
+    有 direction-approved.md 说明这一版是走过完整设计流程、用户认可过的正式
+    版本（huashu 流程的产物都带这个）。跨项目同主题仲裁时，正式版优先。
+    """
+    return (proj_dir / "direction-approved.md").exists()
 
 
 # ── 采集 ────────────────────────────────────────────────────────────────
@@ -387,14 +392,8 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
     modules = {}
     items = {}
     changes = []
-    # 两级判重：
-    #   seen_projects —— 跨项目同主题（training-product-slides vs training-product-huashu），
-    #                    以「项目名去版本后缀」为指纹，同一主题只留最新一版；
-    #   seen_sections —— 同一项目内不同小节并存的多份文档（Atom 的 docs/ 下四份），
-    #                    以「子目录 + 主题」为指纹，各自独立收录。
-    seen_projects = {}
-    seen_sections = {}
-
+    # ── 第一步：筛出候选 ───────────────────────────────────────────────
+    cands = []
     for proj, html in find_candidates(source_dirs):
         # 只收「产出型」HTML：排除概览墙 / 目录页（index.html）
         if html.name.lower() == "index.html":
@@ -415,30 +414,65 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
         rel_sub = html.parent.relative_to(proj).as_posix()
         sub_key = "" if rel_sub == "." else rel_sub
         module_slug = guess_module(proj.name, html.name, sub_key)
-        mtime = html.stat().st_mtime
+        cands.append({
+            "proj": proj,
+            "html": html,
+            "title": title,
+            "sub_key": sub_key,
+            "module": module_slug,
+            "mtime": html.stat().st_mtime,
+            "size": size,
+            "stem": project_stem(proj.name),
+            "topic": topic_key(title, proj.name),
+            "approved": has_direction_record(proj),
+        })
 
-        proj_stem = project_stem(proj.name)
+    # ── 第二步：判重 ──────────────────────────────────────────────────
+    # 三组指纹各选一个胜者。同一份作品可能同时落在多组里，
+    # 必须每组都赢才算收录，否则会出现「同主题两份」或「旧版盖新版」。
+    #
+    #   A（项目内）：同一项目族 + 同一小节 + 同一主题 → 取最新
+    #   B1（项目族）：跨目录的同一项目族（training-product-slides 与
+    #       training-product-huashu）→ 取最新
+    #   B2（同标题）：跨项目同标题（interface-collapse-slides 与
+    #       interface-failure-huashu）→ 有方向落档的正式版优先，否则取最新
+    #
+    # B2 是补上的那一条：早先只按项目名去版本后缀判重，两个目录名差得远的
+    # 同名作品（collapse / failure）不在同一项目族里，于是双双上架，
+    # 站点上出现两张同名卡片，且配套 PDF 可能来自另一个版本。
+    def pick(group):
+        """组内选胜者：有方向落档的正式版优先，其次取修改时间最新的。"""
+        return max(group, key=lambda c: (c["approved"], c["mtime"]))
 
-        # 同一项目 + 同一小节内：不同主题各自独立收录（docs/ 下四份文档同属此列）
-        sk = f"{module_slug}::{proj_stem}::{sub_key}::{topic_key(title, proj.name)}"
-        prev_sec = seen_sections.get(sk)
-        if prev_sec and prev_sec[0] >= mtime:
+    groups_a = {}
+    groups_b1 = {}
+    groups_b2 = {}
+    for c in cands:
+        ka = (c["module"], c["stem"], c["sub_key"], c["topic"])
+        groups_a.setdefault(ka, []).append(c)
+        # 项目内有子目录结构（Atom 系统）：每份文档各自独立，
+        # 不参与跨项目判重，B1 用带小节的指纹
+        kb = ka if c["sub_key"] else (c["module"], c["stem"])
+        groups_b1.setdefault(kb, []).append(c)
+        groups_b2.setdefault((c["module"], c["topic"]), []).append(c)
+
+    winners_a = {k: pick(v) for k, v in groups_a.items()}
+    winners_b1 = {k: pick(v) for k, v in groups_b1.items()}
+    winners_b2 = {k: pick(v) for k, v in groups_b2.items()}
+
+    for c in cands:
+        ka = (c["module"], c["stem"], c["sub_key"], c["topic"])
+        kb = ka if c["sub_key"] else (c["module"], c["stem"])
+        if (winners_a[ka] is not c or winners_b1[kb] is not c
+                or winners_b2[(c["module"], c["topic"])] is not c):
             continue
-        seen_sections[sk] = (mtime, html)
 
-        # 跨项目同主题：只留最新一版（老版本目录不再重复上架）。
-        # 同一主题的新旧两版几乎都在同名项目目录里（training-product-slides 与
-        # training-product-huashu），所以跨项目一律按项目指纹判重，取 mtime 新的。
-        # 注意这与上面的「同小节」规则不是一回事：见下。
-        if sub_key:
-            # 项目内有子目录结构（Atom 系统）：每份文档各自独立，不参与跨项目判重
-            pk = f"{module_slug}::{proj_stem}::{sub_key}::{topic_key(title, proj.name)}"
-        else:
-            pk = f"{module_slug}::{proj_stem}"
-        prev_proj = seen_projects.get(pk)
-        if prev_proj and prev_proj[0] >= mtime:
-            continue
-        seen_projects[pk] = (mtime, html)
+        proj = c["proj"]
+        html = c["html"]
+        title = c["title"]
+        sub_key = c["sub_key"]
+        module_slug = c["module"]
+        size = c["size"]
 
         sslug = slugify(title, html.stem)
         key = f"{module_slug}/{sslug}"
@@ -450,6 +484,7 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
         # 稳定性：优先取自包含版本
         self_contained = is_self_contained(html)
         digest = file_sha(html)
+        pdf_digest = file_sha(pdf) if has_pdf else None
         slides = count_slides(html)
         # 幻灯片还是文档：文档没有 .slide 结构，用它决定前端显示「页」还是「文档」
         kind = "deck" if slides > 1 or has_slide_class(html) else "doc"
@@ -460,6 +495,12 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
 
         old = prev_items.get(key)
         changed = (not old) or old.get("hash") != digest
+        # PDF 与 HTML 是两回事：HTML 没变但配套 PDF 换了（换了源项目）时，
+        # 也必须把 PDF 同步过去，否则站点上会出现「新版 HTML 配旧版 PDF」。
+        pdf_changed = has_pdf and (
+            (not old) or old.get("pdfHash") != pdf_digest
+            or not (ROOT / rel_pdf).exists()
+        )
 
         entry = {
             "key": key,
@@ -476,19 +517,22 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
             "kind": kind,
             "bytes": size,
             "hash": digest,
+            "pdfHash": pdf_digest,
             "selfContained": self_contained,
             "updatedAt": datetime.fromtimestamp(html.stat().st_mtime, CN_TZ).isoformat(),
             "addedAt": (old or {}).get("addedAt") or datetime.now(CN_TZ).isoformat(),
         }
-        if changed and not dry_run:
+        if not dry_run:
             dest_html = ROOT / rel_html
             dest_html.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(html, dest_html)
-            if has_pdf:
+            if changed:
+                shutil.copy2(html, dest_html)
+                changes.append(("新增" if not old else "更新", title, key))
+            if pdf_changed:
                 dest_pdf = ROOT / rel_pdf
                 dest_pdf.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(pdf, dest_pdf)
-            changes.append(("新增" if not old else "更新", title, key))
+                changes.append(("新增PDF" if not old else "更新PDF", title, key))
 
         items[key] = entry
         modules.setdefault(module_slug, []).append(key)
