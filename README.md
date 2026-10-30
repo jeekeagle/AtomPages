@@ -98,6 +98,12 @@ tools/run_collection.sh 采集推送脚本
 
 档案库（Archive Vault）：近黑底 + 琥珀信号色 + 等宽索引。方向理由与拆解规则见 `direction-approved.md`。
 
+## 加入新作品
+
+1. 产出的 HTML 放进 `C:/Users/wyg/WorkBuddy/Claw/<项目目录>/`，定时任务才能扫到。
+2. 想让它落进正确的模块，就让项目目录名带上对应关键词（如 `*-huashu`、`*-slides`）。规则见上方模块判定表；命中不了会暂存「未归档」，补一行 `MODULE_RULES` 即可归位。
+3. 同一主题的旧版本不用手动清理——采集器按项目名指纹跨目录取最新版，旧版不再上架。
+
 ## License
 
 MIT
