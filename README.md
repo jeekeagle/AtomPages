@@ -4,7 +4,7 @@
 
 - **线上**：<https://jeekeagle.github.io/AtomPages/>
 - **仓库**：<https://github.com/jeekeagle/AtomPages>
-- **现状**：11 个模块 / 19 个条目 / 16 份配套 PDF / 142 页幻灯片
+- **现状**：12 个模块 / 22 个条目 / 19 份配套 PDF / 211 页幻灯片
 
 ## 它怎么工作
 
