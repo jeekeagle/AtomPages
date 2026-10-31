@@ -82,13 +82,13 @@
   table.bt td.m{color:var(--ink2);font-family:var(--sans);font-size:17.5px}
 
   /* ---------- 卡片/块 ---------- */
-  .blk{background:var(--tint);padding:20px 24px}
+  .blk{background:var(--tint);padding:18px 24px}
   .blk-h{font-family:var(--sans);font-size:16px;letter-spacing:2px;color:var(--navy);margin-bottom:9px}
   .blk p{font-size:19px;line-height:1.78}
 
   .quote{padding:2px 0 2px 22px;border-left:2px solid var(--navy)}
   .quote .src{font-family:var(--sans);font-size:16px;letter-spacing:1.2px;color:var(--ink3);margin-bottom:7px}
-  .quote .txt{font-size:21px;line-height:1.72;color:var(--ink)}
+  .quote .txt{font-size:20.5px;line-height:1.72;color:var(--ink)}
 
   .numlist{display:flex;flex-direction:column;gap:15px}
   .numlist .it{display:flex;gap:16px;align-items:flex-start}
@@ -121,7 +121,8 @@
 
   /* ---------- 尺度图 ---------- */
   .scale{margin-top:6px}
-  .scale-row{display:flex;align-items:center;gap:20px;margin-bottom:14px}
+  .scale-axis{margin-left:140px;text-align:right;font-family:var(--sans);font-size:15px;letter-spacing:2px;color:var(--ink4);padding-bottom:9px;border-bottom:1px solid var(--rule);margin-bottom:13px}
+  .scale-row{display:flex;align-items:center;gap:20px;margin-bottom:13px}
   .scale-row .lb{font-family:var(--sans);font-size:16.5px;color:var(--ink3);width:120px;flex:0 0 120px;text-align:right}
   .scale-row .track{flex:1;height:26px;background:var(--tint);position:relative}
   .scale-row .fill{height:26px;background:#c6ced5}
@@ -133,7 +134,7 @@
   .coord .ylab{display:flex;flex-direction:column;font-family:var(--sans);font-size:16px;color:var(--ink3)}
   .coord .ylab .cell{height:44px;display:flex;align-items:center;justify-content:flex-end;padding-right:16px;letter-spacing:.6px}
   .coord .grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,44px);border-left:1px solid var(--ink);border-bottom:1px solid var(--ink);flex:1}
-  .coord .cell{border-top:1px solid var(--rule-l);border-right:1px solid var(--rule-l);display:flex;align-items:center;justify-content:center}
+  .coord .cell{border-top:1px solid #d5dce1;border-right:1px solid #d5dce1;display:flex;align-items:center;justify-content:center}
   .coord .cell.dot{}
   .coord .cell .d{width:9px;height:9px;background:var(--navy);border-radius:50%}
   .coord .xlab{display:grid;grid-template-columns:repeat(4,1fr);font-family:var(--sans);font-size:16px;color:var(--ink3);margin-top:10px;letter-spacing:.6px}
@@ -148,6 +149,10 @@
   .pair .h{font-family:var(--sans);font-size:16px;letter-spacing:2px;color:var(--ink3);margin-bottom:10px}
   .pair .h.warn{color:var(--navy)}
   .pair p{font-size:19px;line-height:1.82}
+
+  .facts{display:flex;flex-direction:column;gap:11px}
+  .facts .fact{display:flex;gap:15px;align-items:flex-start;font-size:20px;line-height:1.75;color:var(--ink2)}
+  .facts .dash{width:13px;height:2px;background:var(--navy);flex:0 0 13px;margin-top:15px}
 
   .steps{display:flex;gap:26px;margin-top:2px}
   .step{flex:1;border-top:2px solid var(--navy);padding-top:14px}
@@ -277,8 +282,8 @@
         </tr>
       </tbody>
     </table>
-    <p style="margin-top:26px">禁令式理解的成本不在禁止本身，而在于<strong>清单没有覆盖的情形里，人没有判断依据</strong>。边界式理解给出的是一组条件，条件满足即可行动，条件不满足则调整做法，而不是放弃做法。</p>
-    <div class="blk" style="margin-top:24px">
+    <p style="margin-top:20px">禁令式理解的成本不在禁止本身，而在于<strong>清单没有覆盖的情形里，人没有判断依据</strong>。边界式理解给出的是一组条件，条件满足即可行动，条件不满足则调整做法，而不是放弃做法。</p>
+    <div class="blk" style="margin-top:20px">
       <div class="blk-h">对教师而言</div>
       <p>同一个工具，在两种理解下相差的不是胆量，而是可操作的程序：留痕怎么做、评价怎么定、什么环节由人决定。</p>
     </div>
@@ -304,9 +309,9 @@
         <p>把整张成绩表上传，把生成内容原样提交，事后才知道问题在哪。损失发生在事后，且往往无法回退。</p>
       </div>
     </div>
-    <div class="numlist" style="margin-top:32px">
-      <div class="it"><div class="n">·</div><div class="t">两种损失方向相反：一种损失效率，一种损失安全。</div></div>
-      <div class="it"><div class="n">·</div><div class="t">来源相同：都不清楚限制的位置。</div></div>
+    <div class="facts" style="margin-top:30px">
+      <div class="fact"><span class="dash"></span><span>两种损失方向相反：一种损失效率，一种损失安全。</span></div>
+      <div class="fact"><span class="dash"></span><span>来源相同：都不清楚限制的位置。</span></div>
     </div>
     <div class="concl"><span class="lab">判 断</span>回避与越界不是两种态度，而是同一个知识缺口的两个出口。</div>
   </div>
@@ -321,17 +326,16 @@
   <div class="body">
     <p class="lead">限制与自由不是此消彼长的关系。规则模糊时，人只能按最保守的方式行事，实际可用的余地反而更小。</p>
     <div class="scale" style="margin-top:34px">
+      <div class="scale-axis"><span>实际可动作的范围</span></div>
       <div class="scale-row">
         <div class="lb">规则模糊</div>
-        <div class="track"><div class="fill" style="width:26%"></div></div>
-        <div class="lb" style="width:150px;flex:0 0 150px;text-align:left">实际可动作范围小</div>
+        <div class="track"><div class="fill" style="width:27%"></div></div>
       </div>
       <div class="scale-row">
         <div class="lb">规则清楚</div>
-        <div class="track"><div class="fill solid" style="width:86%"></div></div>
-        <div class="lb" style="width:150px;flex:0 0 150px;text-align:left">实际可动作范围大</div>
+        <div class="track"><div class="fill solid" style="width:87%"></div></div>
       </div>
-      <div class="figcap">图 1　规则清晰度与实际可用空间的关系</div>
+      <div class="figcap">图 1　同一尺度下，模糊规则使人只取最保守的一段；规则明确后，可确认的区间更长。</div>
     </div>
     <p style="margin-top:30px">人在不确定的环境里不会冒险试探，只会选择最不容易出错的做法。于是模糊的规则并不产生更多自由，它产生的是普遍的保守。规则写清楚之后，动作的边界可以被确认，人才敢把可用的部分用足。</p>
     <div class="concl"><span class="lab">结 论</span>规范的目的不是禁止，而是把可动作的范围确定下来。</div>
@@ -349,14 +353,14 @@
       <div class="src">《生成式人工智能服务管理暂行办法》· 第一条 · 立法目的</div>
       <div class="txt">促进健康发展，规范应用。</div>
     </div>
-    <div class="quote" style="margin-top:18px">
+    <div class="quote" style="margin-top:14px">
       <div class="src">《生成式人工智能服务管理暂行办法》· 第三条 · 基本原则</div>
       <div class="txt">发展和安全并重，实行包容审慎和分类分级监管。</div>
     </div>
-    <p style="margin-top:20px">发展与安全并重写在总则里，而不是写在罚则里。总则规定的是整部文件的取向：规范服务于发展，监管采取包容审慎、分类分级的方式，而非一律从严。</p>
+    <p style="margin-top:16px">发展与安全并重写在总则里，而不是写在罚则里。总则规定的是整部文件的取向：规范服务于发展，监管采取包容审慎、分类分级的方式，而非一律从严。</p>
     <div class="blk" style="margin-top:16px">
       <div class="blk-h">读法</div>
-      <p>先读第一条与总则，再读义务条款。前者说明文件要解决什么问题，后者说明由谁、在什么环节、做到什么程度。只读义务条款，容易把促进型文件读成禁令。</p>
+      <p>先读第一条与总则，再读义务条款。前者说明文件要解决什么问题，后者说明由谁、在什么环节、做到什么程度；两条合起来，才看得出这份文件的性质。</p>
     </div>
     <div class="concl"><span class="lab">判 断</span>规范的目的不是禁止，这一点由文件自己声明。</div>
   </div>

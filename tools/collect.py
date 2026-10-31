@@ -187,7 +187,15 @@ VERSION_NOISE = re.compile(r"花叔|结构图版|新版|修订版|最终版|重�
 def project_stem(proj_name: str) -> str:
     """项目目录去掉版本后缀，得到主题指纹。"""
     p = VERSION_NOISE.sub("", proj_name)
-    p = re.sub(r"(-huashu|-slides|-deck|-ppt|项目|课件|演示)$", "", p)
+    # 去版本后缀后可能留下悬空分隔符：「ai-ethics-law-slides-v2」去掉「v2」后
+    # 变成「ai-ethics-law-slides-」，尾巴那个横杠让下面的后缀规则匹配不上，
+    # 于是同一个项目的两版被分到不同项目族，各自独立上架。
+    p = re.sub(r"[-_\s]+$", "", p)
+    # 后缀可能叠加（「x-huashu-slides」），循环剥到不再变化为止。
+    prev = None
+    while prev != p:
+        prev = p
+        p = re.sub(r"(-huashu|-slides|-deck|-ppt|项目|课件|演示)$", "", p)
     return p.strip("-_ ").lower()
 
 
@@ -198,8 +206,23 @@ def topic_key(title: str, proj_name: str) -> str:
     项目目录里。早先这里掺了项目名（"项目名::标题"），结果同一份课件在
     interface-collapse-slides 与 interface-failure-huashu 两个目录里被判成
     两个主题，站点上出现两张同名卡片，配套 PDF 还可能来自另一个版本。
+
+    还要剥掉两类「同一讲稿的不同抬头」：
+      - 讲次前缀：「第一讲 XXX」与「XXX」是同一讲；
+      - 装饰抬头：「人工智能伦理与安全 · XXX」与「XXX」是同一讲
+        （抬头是课程名，落在标题里）。
+    早先没剥这两类，于是同一讲的旧版与新版各占一张卡片。
     """
     t = VERSION_NOISE.sub("", title)
+    # 讲次前缀：第一讲 / 第二讲 / 第 12 讲 / 第一部分
+    t = re.sub(r"^第[一二三四五六七八九十百零\d]+\s*(讲|部分|章)", "", t)
+    t = re.sub(r"^(第[一二三四五六七八九十百零\d]+讲)\s*", "", t)
+    # 装饰抬头：「课程名 · 正文」——抬头是正文的一部分才剥掉，
+    # 否则「Atom 标准 · 总规范」这种真有从属关系的标题会被削成「总规范」。
+    if " · " in t:
+        head, rest = t.split(" · ", 1)
+        if head and rest and head in rest:
+            t = rest
     t = re.sub(r"[：:，,。·\-\s]+", "", t)
     t = re.sub(r"(综述|讲座|第一部分|第二部分|部分)$", "", t)
     t = t.strip().lower()
@@ -215,6 +238,27 @@ def has_direction_record(proj_dir: Path) -> bool:
     版本（huashu 流程的产物都带这个）。跨项目同主题仲裁时，正式版优先。
     """
     return (proj_dir / "direction-approved.md").exists()
+
+
+def slide_headings(html_path: Path) -> set:
+    """抽出 HTML 里逐页的小标题，作为「这是不是同一讲稿」的指纹。
+
+    同一讲的旧版与新版，正文逐页标题大多一致（改的只是抬头和措辞），
+    而同主题的两份独立作品只在个别页撞词。拿逐页标题的交集比重，
+    比拿整篇文字的相似度更准：后者会把「播放工作台」和「结构化讲稿」
+    这类共用大量 CSS 文本的介质页误判成同一份。
+    """
+    try:
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return set()
+    text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", text, flags=re.S)
+    out = set()
+    for m in re.findall(r"<h[1-3][^>]*>(.*?)</h[1-3]>", text, re.S):
+        h = clean_text(re.sub(r"<[^>]+>", "", m))
+        if len(h) >= 4:
+            out.add(re.sub(r"\s+", "", h))
+    return out
 
 
 # ── 采集 ────────────────────────────────────────────────────────────────
@@ -428,7 +472,7 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
         })
 
     # ── 第二步：判重 ──────────────────────────────────────────────────
-    # 三组指纹各选一个胜者。同一份作品可能同时落在多组里，
+    # 四组指纹各选一个胜者。同一份作品可能同时落在多组里，
     # 必须每组都赢才算收录，否则会出现「同主题两份」或「旧版盖新版」。
     #
     #   A（项目内）：同一项目族 + 同一小节 + 同一主题 → 取最新
@@ -436,10 +480,20 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
     #       training-product-huashu）→ 取最新
     #   B2（同标题）：跨项目同标题（interface-collapse-slides 与
     #       interface-failure-huashu）→ 有方向落档的正式版优先，否则取最新
+    #   B3（同一讲稿的不同抬头）：标题互为前缀（「从信息时代到智能时代」
+    #       与「从信息时代到智能时代 · 知识贬值与能力升值」），且逐页标题
+    #       大幅重合 → 判为同一讲稿的新旧两版，只留一版
     #
     # B2 是补上的那一条：早先只按项目名去版本后缀判重，两个目录名差得远的
     # 同名作品（collapse / failure）不在同一项目族里，于是双双上架，
     # 站点上出现两张同名卡片，且配套 PDF 可能来自另一个版本。
+    #
+    # B3 处理「同一讲稿换了抬头」：B2 只认完全相同的标题，可这一讲的旧版
+    # 叫「从信息时代到智能时代」、新版叫「从信息时代到智能时代 · 知识贬值
+    # 与能力升值」，两者标题既不相同也不互为前缀的完全匹配，于是双双上架。
+    # 判据不是「标题像」，而是「逐页标题大幅重合」——真同一讲稿的重合度在
+    # 0.7 以上，而只是同主题的两份独立作品（人工智能的风险从何而来 /
+    # 两类风险的治理指向与结论）重合度只有 1/1 但页数悬殊，靠页数门槛区分。
     def pick(group):
         """组内选胜者：有方向落档的正式版优先，其次取修改时间最新的。"""
         return max(group, key=lambda c: (c["approved"], c["mtime"]))
@@ -460,11 +514,35 @@ def collect(source_dirs: list, dry_run: bool = False) -> dict:
     winners_b1 = {k: pick(v) for k, v in groups_b1.items()}
     winners_b2 = {k: pick(v) for k, v in groups_b2.items()}
 
+    # B3：同模块内，标题互为前缀且逐页标题大幅重合的，判为同一讲稿。
+    losers_b3 = set()
+    by_module = {}
+    for c in cands:
+        by_module.setdefault(c["module"], []).append(c)
+    for mod, group in by_module.items():
+        for i, a in enumerate(group):
+            for b in group[i + 1:]:
+                ta, tb = a["topic"], b["topic"]
+                if ta == tb:
+                    continue
+                short, long_ = (ta, tb) if len(ta) < len(tb) else (tb, ta)
+                if len(short) < 8 or not long_.startswith(short):
+                    continue
+                ha, hb = slide_headings(a["html"]), slide_headings(b["html"])
+                if not ha or not hb:
+                    continue
+                shared = len(ha & hb)
+                # 页数相当且逐页标题重合过半 —— 同一讲稿的新旧两版
+                if shared >= 5 and shared / min(len(ha), len(hb)) >= 0.5:
+                    win = pick([a, b])
+                    losers_b3.add(id(b if win is a else a))
+
     for c in cands:
         ka = (c["module"], c["stem"], c["sub_key"], c["topic"])
         kb = ka if c["sub_key"] else (c["module"], c["stem"])
         if (winners_a[ka] is not c or winners_b1[kb] is not c
-                or winners_b2[(c["module"], c["topic"])] is not c):
+                or winners_b2[(c["module"], c["topic"])] is not c
+                or id(c) in losers_b3):
             continue
 
         proj = c["proj"]

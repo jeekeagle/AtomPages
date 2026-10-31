@@ -1,17 +1,17 @@
 {
   "site": "AtomPages",
   "owner": "jeekeagle",
-  "updatedAt": "2026-10-31T09:05:06.781987+08:00",
+  "updatedAt": "2026-10-31T09:43:08.204173+08:00",
   "generatedBy": "tools/collect.py",
   "moduleCount": 12,
-  "itemCount": 28,
+  "itemCount": 27,
   "modules": [
     {
       "no": "M01",
       "slug": "ai-ethics-policy",
       "name": "伦理与安全",
       "desc": "人工智能伦理与安全的政策依据",
-      "count": 7,
+      "count": 5,
       "items": [
         {
           "key": "ai-ethics-policy/人工智能伦理与安全-第一部分-政策依据",
@@ -77,27 +77,6 @@
           "index": 3
         },
         {
-          "key": "ai-ethics-policy/第一讲-人工智能伦理与安全的政策与法律-从文件清单到体系结构",
-          "module": "ai-ethics-policy",
-          "title": "第一讲 人工智能伦理与安全的政策与法律：从文件清单到体系结构",
-          "slug": "第一讲-人工智能伦理与安全的政策与法律-从文件清单到体系结构",
-          "sourceProject": "ai-ethics-law-slides",
-          "sourceSection": "",
-          "html": "pages/ai-ethics-policy/第一讲-人工智能伦理与安全的政策与法律-从文件清单到体系结构.html",
-          "pdf": "pdfs/ai-ethics-policy/第一讲-人工智能伦理与安全的政策与法律-从文件清单到体系结构.pdf",
-          "thumb": "thumbs/ai-ethics-policy/第一讲-人工智能伦理与安全的政策与法律-从文件清单到体系结构.jpg",
-          "slides": 15,
-          "kind": "deck",
-          "bytes": 24276,
-          "hash": "ba7544f3fd3cf53b",
-          "pdfHash": "851843f927d8cdce",
-          "selfContained": true,
-          "updatedAt": "2026-10-31T08:12:03.030626+08:00",
-          "addedAt": "2026-10-31T09:05:06.487172+08:00",
-          "no": "01-04",
-          "index": 4
-        },
-        {
           "key": "ai-ethics-policy/人工智能伦理与安全的政策与法律-从文件清单到体系结构",
           "module": "ai-ethics-policy",
           "title": "人工智能伦理与安全的政策与法律：从文件清单到体系结构",
@@ -115,29 +94,8 @@
           "selfContained": true,
           "updatedAt": "2026-10-31T08:40:58.779372+08:00",
           "addedAt": "2026-10-31T09:05:06.493785+08:00",
-          "no": "01-05",
-          "index": 5
-        },
-        {
-          "key": "ai-ethics-policy/人工智能伦理与安全-为什么学人工智能伦理与安全要先看政策法规",
-          "module": "ai-ethics-policy",
-          "title": "人工智能伦理与安全 · 为什么学人工智能伦理与安全要先看政策法规",
-          "slug": "人工智能伦理与安全-为什么学人工智能伦理与安全要先看政策法规",
-          "sourceProject": "ai-ethics-why-policy-slides",
-          "sourceSection": "",
-          "html": "pages/ai-ethics-policy/人工智能伦理与安全-为什么学人工智能伦理与安全要先看政策法规.html",
-          "pdf": "pdfs/ai-ethics-policy/人工智能伦理与安全-为什么学人工智能伦理与安全要先看政策法规.pdf",
-          "thumb": "thumbs/ai-ethics-policy/人工智能伦理与安全-为什么学人工智能伦理与安全要先看政策法规.jpg",
-          "slides": 12,
-          "kind": "deck",
-          "bytes": 26497,
-          "hash": "8e69aaf76e0efa7a",
-          "pdfHash": "614912e83babd4a6",
-          "selfContained": true,
-          "updatedAt": "2026-10-31T08:48:08.925220+08:00",
-          "addedAt": "2026-10-31T09:05:06.514647+08:00",
-          "no": "01-06",
-          "index": 6
+          "no": "01-04",
+          "index": 4
         },
         {
           "key": "ai-ethics-policy/为什么学人工智能伦理与安全要先看政策法规",
@@ -147,18 +105,18 @@
           "sourceProject": "why-policy-lecture-deck",
           "sourceSection": "",
           "html": "pages/ai-ethics-policy/为什么学人工智能伦理与安全要先看政策法规.html",
-          "pdf": null,
+          "pdf": "pdfs/ai-ethics-policy/为什么学人工智能伦理与安全要先看政策法规.pdf",
           "thumb": "thumbs/ai-ethics-policy/为什么学人工智能伦理与安全要先看政策法规.jpg",
           "slides": 18,
           "kind": "deck",
-          "bytes": 37129,
-          "hash": "ea901dbbb707688f",
-          "pdfHash": null,
+          "bytes": 37491,
+          "hash": "6fe350c1f38649bd",
+          "pdfHash": "406aecb21f821c0b",
           "selfContained": true,
-          "updatedAt": "2026-10-31T09:04:48.025127+08:00",
+          "updatedAt": "2026-10-31T09:08:52.275782+08:00",
           "addedAt": "2026-10-31T09:05:06.569884+08:00",
-          "no": "01-07",
-          "index": 7
+          "no": "01-05",
+          "index": 5
         }
       ]
     },
@@ -656,7 +614,7 @@
       "slug": "misc",
       "name": "未归档",
       "desc": "自动归集的条目",
-      "count": 2,
+      "count": 3,
       "items": [
         {
           "key": "misc/人工智能的风险从何而来",
@@ -699,6 +657,27 @@
           "addedAt": "2026-10-30T23:54:17.628943+08:00",
           "no": "12-02",
           "index": 2
+        },
+        {
+          "key": "misc/从信息时代到智能时代",
+          "module": "misc",
+          "title": "从信息时代到智能时代",
+          "slug": "从信息时代到智能时代",
+          "sourceProject": "era-shift-deck-huashu",
+          "sourceSection": "",
+          "html": "pages/misc/从信息时代到智能时代.html",
+          "pdf": null,
+          "thumb": "thumbs/misc/从信息时代到智能时代.jpg",
+          "slides": 16,
+          "kind": "deck",
+          "bytes": 34658,
+          "hash": "c812e10f498bbfbd",
+          "pdfHash": null,
+          "selfContained": true,
+          "updatedAt": "2026-10-31T09:42:47.117265+08:00",
+          "addedAt": "2026-10-31T09:43:07.973018+08:00",
+          "no": "12-03",
+          "index": 3
         }
       ]
     }

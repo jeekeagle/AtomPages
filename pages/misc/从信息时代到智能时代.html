@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>从信息时代到智能时代</title>
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#12161a;
+    --ink2:#3a434b;
+    --ink3:#6d767e;
+    --ink4:#98a1a8;
+    --rule:#d7dde2;
+    --rule2:#eaeef1;
+    --accent:#1d4a72;
+    --accent-l:#eef3f7;
+    --tint:#f5f7f9;
+    --serif:"Times New Roman","Noto Serif SC","Songti SC",serif;
+    --sans:"Noto Sans SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:var(--paper);color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased}
+  @page{size:1920px 1080px;margin:0}
+
+  .page{
+    position:relative;width:1920px;height:1080px;background:var(--paper);
+    margin:0 auto;padding:92px 140px 96px;display:flex;flex-direction:column;
+    overflow:hidden;page-break-after:always;break-after:page;
+  }
+  .page:last-child{page-break-after:auto}
+
+  /* 书眉 */
+  .rh{display:flex;justify-content:space-between;align-items:baseline;
+      font-family:var(--sans);font-size:20px;letter-spacing:3px;color:var(--ink4);
+      border-bottom:1px solid var(--rule);padding-bottom:18px}
+  .rh .r{color:var(--ink3)}
+
+  /* 标题 */
+  h1.ttl{font-size:76px;line-height:1.26;font-weight:700;letter-spacing:.5px;margin-top:44px}
+  h1.ttl .sub{font-weight:400;color:var(--ink2)}
+  .lead{font-size:34px;line-height:1.88;color:var(--ink2);margin-top:24px;max-width:1480px}
+  .lead b{color:var(--ink)}
+
+  .body{flex:1 1 auto;min-height:0;margin-top:36px;display:flex;flex-direction:column}
+  .body > *{flex-shrink:0}
+
+  p{font-size:30px;line-height:1.95;color:var(--ink2)}
+  b,strong{font-weight:700;color:var(--ink)}
+
+  /* 书版表格 */
+  table.bt{width:100%;border-collapse:collapse;font-size:29px}
+  table.bt caption{caption-side:top;text-align:left;font-family:var(--sans);font-size:22px;
+                   letter-spacing:2px;color:var(--ink3);padding-bottom:14px}
+  table.bt th,table.bt td{text-align:left;vertical-align:top;padding:18px 30px 18px 0;line-height:1.7}
+  table.bt thead th{font-family:var(--sans);font-size:22px;letter-spacing:2px;color:var(--ink3);font-weight:400;
+                    border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);padding-bottom:16px}
+  table.bt tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+  table.bt td.k{font-weight:700;color:var(--ink)}
+  table.bt td.m{color:var(--ink2)}
+  table.bt.nt thead th{border-top:none}
+
+  /* 图注 */
+  .fig{font-family:var(--sans);font-size:22px;letter-spacing:2px;color:var(--ink3);margin-top:22px}
+
+  /* 引文 */
+  .pull{margin-top:auto;padding-left:40px;border-left:2px solid var(--accent);
+        font-size:29px;line-height:1.75;color:var(--ink);max-width:1440px}
+
+  /* ---------- 封面 ---------- */
+  .cover{padding:0}
+  .cover-in{position:absolute;left:140px;right:140px;top:104px;bottom:96px;display:flex;flex-direction:column}
+  .cover .co-top{font-family:var(--sans);font-size:22px;letter-spacing:4px;color:var(--ink3)}
+  .cover .co-rule{height:1px;background:var(--ink);opacity:.6;margin:26px 0 0}
+  .cover h1{font-size:126px;line-height:1.22;font-weight:700;letter-spacing:1px;margin-top:88px}
+  .cover .co-sub{font-size:40px;line-height:1.7;color:var(--ink2);margin-top:34px;font-weight:400}
+  .cover .co-meta{margin-top:auto;padding-top:24px;border-top:1px solid var(--rule);
+                  font-family:var(--sans);font-size:22px;letter-spacing:2px;color:var(--ink3)}
+  .cover .co-meta span + span{margin-left:56px;padding-left:56px;border-left:1px solid var(--rule)}
+
+  /* 封面右侧结构图 */
+  .cover .co-main{display:flex;gap:96px;flex:1 1 auto;margin-top:84px;min-height:0}
+  .cover .co-left{flex:1;min-width:0}
+  .cover .co-right{flex:0 0 460px;padding-top:58px}
+  .cover .co-right .lab{font-family:var(--sans);font-size:20px;letter-spacing:3px;color:var(--ink4);margin-bottom:22px}
+  .cover .co-right .era{border-top:2px solid var(--ink);padding-top:18px;margin-top:30px}
+  .cover .co-right .era.now{border-top-color:var(--accent)}
+  .cover .co-right .en{font-size:38px;font-weight:700;line-height:1.3}
+  .cover .co-right .ed{font-family:var(--sans);font-size:20px;color:var(--ink3);line-height:1.75;margin-top:12px}
+
+  /* ---------- 目录 ---------- */
+  .tocwrap{display:flex;gap:96px;height:100%}
+  .toc-left{flex:0 0 320px;border-right:1px solid var(--rule);padding-right:56px;display:flex;flex-direction:column;justify-content:center}
+  .toc-left .cap{font-family:var(--sans);font-size:22px;letter-spacing:3px;color:var(--ink3)}
+  .toc-left .num{font-size:96px;font-weight:700;line-height:1;margin-top:24px;color:var(--ink)}
+  .toc-left .num small{font-size:30px;font-family:var(--sans);color:var(--ink4);letter-spacing:2px;display:block;margin-top:16px}
+  .toc-right{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .toc-item{display:flex;align-items:baseline;gap:44px;padding:34px 0;border-bottom:1px solid var(--rule2)}
+  .toc-item:first-child{border-top:1px solid var(--rule)}
+  .toc-no{font-size:30px;color:var(--accent);font-weight:700;width:64px;flex:0 0 64px}
+  .toc-t{font-size:40px;font-weight:700;width:400px;flex:0 0 400px;line-height:1.4}
+  .toc-d{font-family:var(--sans);font-size:25px;color:var(--ink3);line-height:1.65}
+
+  /* ---------- 等式图 ---------- */
+  .eq{display:flex;align-items:stretch;gap:34px}
+  .eq .box{flex:1;border-top:2px solid var(--ink);padding-top:22px}
+  .eq .box .k{font-size:48px;font-weight:700;line-height:1.2}
+  .eq .box .s{font-family:var(--sans);font-size:23px;color:var(--ink3);line-height:1.7;margin-top:14px}
+  .eq .box.res{border-top-color:var(--accent);background:var(--accent-l);padding:22px 30px 26px;flex:1.15}
+  .eq .box.res .k{color:var(--accent)}
+  .eq .op{align-self:center;font-size:44px;color:var(--ink4);padding-top:0}
+
+  /* ---------- 竖向链条 ---------- */
+  .chain{position:relative;padding-left:76px;margin-top:8px}
+  .chain::before{content:"";position:absolute;left:9px;top:18px;bottom:26px;width:1px;background:var(--rule)}
+  .chain .node{position:relative;padding-bottom:12px}
+  .chain .node:last-child{padding-bottom:0}
+  .chain .node::before{content:"";position:absolute;left:-72px;top:14px;width:19px;height:19px;
+                       background:var(--paper);border:2px solid var(--accent);border-radius:50%}
+  .chain .h{font-size:33px;font-weight:700;line-height:1.3}
+  .chain .d{font-family:var(--sans);font-size:23px;color:var(--ink3);line-height:1.68;margin-top:11px;max-width:1480px}
+
+  /* ---------- 横向链条 ---------- */
+  .hchain{display:grid;grid-template-columns:repeat(4,1fr);gap:44px;margin-top:16px}
+  .hchain .col{border-top:2px solid var(--act,var(--ink));padding-top:22px;--act:var(--ink)}
+  .hchain .col.on{--act:var(--accent)}
+  .hchain .cn{font-family:var(--sans);font-size:21px;letter-spacing:2px;color:var(--ink4);margin-bottom:12px}
+  .hchain .ct{font-size:40px;font-weight:700;line-height:1.3;margin-bottom:12px}
+  .hchain .cd{font-family:var(--sans);font-size:23px;color:var(--ink3);line-height:1.72}
+
+  /* ---------- 双栏对照 ---------- */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:2px solid var(--ink);margin-top:6px}
+  .two .side{padding:28px 60px 0 0}
+  .two .side + .side{border-left:1px solid var(--rule);padding-left:60px}
+  .two .h{font-family:var(--sans);font-size:22px;letter-spacing:3px;color:var(--ink3);margin-bottom:18px}
+  .two .h.on{color:var(--accent)}
+  .two p{font-size:29px;line-height:1.9}
+  .two p + p{margin-top:16px}
+
+  /* ---------- 陈述 ---------- */
+  .stmt{display:flex;flex-direction:column;justify-content:center;flex:1}
+  .stmt .line{font-size:64px;line-height:1.6;font-weight:700;max-width:1500px}
+  .stmt .line .ac{color:var(--accent)}
+  .stmt .lnote{font-size:30px;line-height:1.95;color:var(--ink2);margin-top:44px;max-width:1320px}
+
+  /* ---------- 编号要点 ---------- */
+  .pts{margin-top:10px}
+  .pt{display:flex;gap:40px;padding:11px 0;border-bottom:1px solid var(--rule2)}
+  .pt:first-child{border-top:1px solid var(--rule)}
+  .pt .pn{font-size:36px;color:var(--accent);font-weight:700;width:80px;flex:0 0 80px;line-height:1.2}
+  .pt .pt-t{font-size:32px;line-height:1.75;color:var(--ink)}
+
+  /* ---------- 结语 ---------- */
+  .closing{justify-content:center;padding-bottom:150px}
+  .closing .rule{width:120px;height:4px;background:var(--accent);margin-bottom:56px}
+  .closing .big{font-size:104px;line-height:1.42;font-weight:700;letter-spacing:1px}
+  .closing .big .ac{color:var(--accent)}
+  .closing .note{font-size:32px;line-height:1.95;color:var(--ink2);margin-top:56px;max-width:1400px}
+
+  svg text{font-family:"Noto Serif SC","Songti SC",serif}
+  svg text.s{font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+</style>
+</head>
+<body>
+
+<!-- 01 封面 -->
+<section class="page cover">
+  <div class="cover-in">
+    <div class="co-top">人工智能伦理与安全　·　时代背景</div>
+    <div class="co-rule"></div>
+    <div class="co-main">
+      <div class="co-left">
+        <h1>从信息时代<br>到智能时代</h1>
+        <div class="co-sub">知识贬值与能力升值：生产力范式变革中的教育转向</div>
+      </div>
+      <div class="co-right">
+        <div class="lab">生产力的构成</div>
+        <div class="era">
+          <div class="en">人 力</div>
+          <div class="ed">提出目标、作出判断、承担后果</div>
+        </div>
+        <div class="era now">
+          <div class="en">人力 ＋ 算力</div>
+          <div class="ed">模型与智能体进入工作过程，构成新的生产主体</div>
+        </div>
+      </div>
+    </div>
+    <div class="co-meta">
+      <span>课程　人工智能伦理与安全</span><span>主题　时代背景与教学转向</span><span>核心　从知识传授到能力培养</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 内容提要 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">内容提要</span></div>
+  <div class="body" style="margin-top:40px">
+    <div class="tocwrap">
+      <div class="toc-left">
+        <div class="cap">本 讲 提 要</div>
+        <div class="num">五<small>个部分</small></div>
+      </div>
+      <div class="toc-right">
+        <div class="toc-item"><div class="toc-no">01</div><div class="toc-t">时代的位置</div><div class="toc-d">信息时代与智能时代的分界不在设备，在生产力</div></div>
+        <div class="toc-item"><div class="toc-no">02</div><div class="toc-t">生产力的构成</div><div class="toc-d">算力进入生产力，人与智能体共同构成生产主体</div></div>
+        <div class="toc-item"><div class="toc-no">03</div><div class="toc-t">教育的变化</div><div class="toc-d">知识在贬值，能力与素养在升值</div></div>
+        <div class="toc-item"><div class="toc-no">04</div><div class="toc-t">教学的转换</div><div class="toc-d">从知识传授到能力培养，知识仍是路径</div></div>
+        <div class="toc-item"><div class="toc-no">05</div><div class="toc-t">命题与可能</div><div class="toc-d">难题开放给每一位教师，方案不会只有一种</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 两个时代 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">一　时代的位置</span></div>
+  <h1 class="ttl">两个时代的分界不在设备，在生产力</h1>
+  <div class="lead">信息时代解决的是信息的传递与处理；智能时代改变的是生产力本身。</div>
+  <div class="body">
+    <table class="bt" style="margin-top:10px">
+      <caption>表 1　两个时代的生产条件对照</caption>
+      <thead><tr><th style="width:240px">维度</th><th style="width:600px">信息时代</th><th>智能时代</th></tr></thead>
+      <tbody>
+        <tr><td class="k">核心资源</td><td class="m">信息与数据</td><td class="m">数据、算力与模型</td></tr>
+        <tr><td class="k">生产工具</td><td class="m">软件与网络</td><td class="m">大模型与智能体</td></tr>
+        <tr><td class="k">人的位置</td><td class="m">操作工具的人</td><td class="m">与智能体协作的人</td></tr>
+        <tr><td class="k">组织形态</td><td class="m">流程化分工</td><td class="m">围绕人机协同重组流程</td></tr>
+      </tbody>
+    </table>
+    <div class="pull">更替发生在生产要素层面，不在应用层面。</div>
+  </div>
+</section>
+
+<!-- 04 算力 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">二　生产力的构成</span></div>
+  <h1 class="ttl">算力成为生产力的组成部分</h1>
+  <div class="lead">这一轮变化最实质的一点：算力不再是外部条件，它成了生产力的构成部分。</div>
+  <div class="body">
+    <div class="eq" style="margin-top:26px">
+      <div class="box">
+        <div class="k">人力</div>
+        <div class="s">提出目标、作出判断、承担后果</div>
+      </div>
+      <div class="op">＋</div>
+      <div class="box">
+        <div class="k">算力</div>
+        <div class="s">以模型与智能体的形式进入具体工作</div>
+      </div>
+      <div class="op">＝</div>
+      <div class="box res">
+        <div class="k">生产力主体</div>
+        <div class="s">不再是单个人，而是人与智能体的组合</div>
+      </div>
+    </div>
+    <div class="fig">图 1　生产力主体的构成</div>
+    <p style="margin-top:46px">过去，工具是被动的：人给指令，工具执行。现在，智能体承担了过程中的一部分执行与判断，人可以只给目标。生产的最小单位，因此从一个岗位，变成一个人加上一组可调用的算力。</p>
+    <div class="pull">劳动的主体没有消失，但不再是单数。</div>
+  </div>
+</section>
+
+<!-- 05 人的位置 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">二　生产力的构成</span></div>
+  <h1 class="ttl">人的位置：从操作工具到与智能体协作</h1>
+  <div class="lead">要求没有降低，方向变了：从熟练执行，转向准确表达与可靠判断。</div>
+  <div class="body">
+    <div class="fig" style="margin-top:6px;margin-bottom:14px">图 2　两种工作方式的分工</div>
+
+    <svg viewBox="0 0 1620 380" width="100%">
+      <!-- 工具时代 -->
+      <text x="0" y="26" font-size="26" class="s" fill="#6d767e" letter-spacing="2">工具时代</text>
+      <rect x="0" y="48" width="300" height="86" fill="#ffffff" stroke="#12161a" stroke-width="2"/>
+      <text x="150" y="102" font-size="32" text-anchor="middle" fill="#12161a" font-weight="700">人</text>
+      <line x1="300" y1="91" x2="466" y2="91" stroke="#12161a" stroke-width="1.5"/>
+      <polygon points="466,91 454,86 454,96" fill="#12161a"/>
+      <text x="383" y="74" font-size="20" class="s" text-anchor="middle" fill="#6d767e">指令</text>
+      <rect x="470" y="48" width="300" height="86" fill="#ffffff" stroke="#12161a" stroke-width="2"/>
+      <text x="620" y="102" font-size="32" text-anchor="middle" fill="#12161a" font-weight="700">工具</text>
+      <line x1="770" y1="91" x2="936" y2="91" stroke="#12161a" stroke-width="1.5"/>
+      <polygon points="936,91 924,86 924,96" fill="#12161a"/>
+      <text x="853" y="74" font-size="20" class="s" text-anchor="middle" fill="#6d767e">执行</text>
+      <rect x="940" y="48" width="240" height="86" fill="#f5f7f9" stroke="#d7dde2" stroke-width="1.5"/>
+      <text x="1060" y="102" font-size="32" text-anchor="middle" fill="#3a434b">产出</text>
+      <text x="1220" y="102" font-size="22" class="s" fill="#6d767e">边界由人设定，出错也由人发现</text>
+
+      <!-- 智能体时代 -->
+      <text x="0" y="196" font-size="26" class="s" fill="#1d4a72" letter-spacing="2">智能体时代</text>
+      <rect x="0" y="218" width="300" height="86" fill="#ffffff" stroke="#1d4a72" stroke-width="2"/>
+      <text x="150" y="272" font-size="32" text-anchor="middle" fill="#12161a" font-weight="700">人</text>
+      <line x1="300" y1="261" x2="466" y2="261" stroke="#1d4a72" stroke-width="1.5"/>
+      <polygon points="466,261 454,256 454,266" fill="#1d4a72"/>
+      <text x="383" y="244" font-size="20" class="s" text-anchor="middle" fill="#1d4a72">目标与约束</text>
+      <rect x="470" y="218" width="300" height="86" fill="#eef3f7" stroke="#1d4a72" stroke-width="2"/>
+      <text x="620" y="272" font-size="32" text-anchor="middle" fill="#1d4a72" font-weight="700">智能体</text>
+      <line x1="770" y1="261" x2="936" y2="261" stroke="#1d4a72" stroke-width="1.5"/>
+      <polygon points="936,261 924,256 924,266" fill="#1d4a72"/>
+      <text x="855" y="244" font-size="20" class="s" text-anchor="middle" fill="#1d4a72">执行与初判</text>
+      <rect x="940" y="218" width="240" height="86" fill="#f5f7f9" stroke="#d7dde2" stroke-width="1.5"/>
+      <text x="1060" y="272" font-size="32" text-anchor="middle" fill="#3a434b">产出</text>
+      <text x="1220" y="272" font-size="22" class="s" fill="#6d767e">人负责定义问题、审核结果、承担后果</text>
+
+      <!-- 回环：产出回到人 -->
+      <path d="M1060 304 L1060 340 L150 340 L150 306" fill="none" stroke="#1d4a72" stroke-width="1.5" stroke-dasharray="8 7"/>
+      <polygon points="150,304 144,316 156,316" fill="#1d4a72"/>
+      <text x="605" y="332" font-size="20" class="s" fill="#1d4a72" text-anchor="middle">审核与取舍</text>
+    </svg>
+
+    <p style="margin-top:26px">能拆解、能提问、能验收，成为新的基本能力。课堂若只训练逐步操作，练成的正好是智能体已经更强的部分；若训练界定问题与判断结果，练成的恰好是替代不了的部分。</p>
+  </div>
+</section>
+
+<!-- 06 组织变革 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">二　生产力的构成</span></div>
+  <h1 class="ttl">技术变革与组织变革同步进行</h1>
+  <div class="lead">生产力改变之后，组织不会保持原样。分工、流程、岗位随之重排，两件事同时发生，而不是先后发生。</div>
+  <div class="body">
+    <div class="fig" style="margin-top:4px;margin-bottom:10px">图 3　一次工具变化在组织中的传导</div>
+    <div class="chain">
+      <div class="node"><div class="h">工具改变</div><div class="d">算力进入工作过程，一部分环节被自动完成，人的动作从执行转向发起与验收。</div></div>
+      <div class="node"><div class="h">分工改变</div><div class="d">原本由几个人串联的步骤，被重新划分到人与智能体之间，岗位边界开始移动。</div></div>
+      <div class="node"><div class="h">流程改变</div><div class="d">流程不再按人的岗位顺序设计，而按人机分工设计，交接点随之减少。</div></div>
+      <div class="node"><div class="h">岗位改变</div><div class="d">职责从「做多少」转向「定什么、判什么」，评价标准随之改写。</div></div>
+    </div>
+    <div class="pull">教育面对的不是一次工具升级，而是一次生产方式的重组。</div>
+  </div>
+</section>
+
+<!-- 07 知识贬值 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">三　教育的变化</span></div>
+  <h1 class="ttl">知识在贬值</h1>
+  <div class="lead">我们背过的很多知识，大模型的参数里都有。获取成本急剧下降，记忆型知识的稀缺性随之下降。</div>
+  <div class="body">
+    <table class="bt" style="margin-top:8px">
+      <caption>表 2　知识的三个环节，前后对比</caption>
+      <thead><tr><th style="width:220px">环节</th><th style="width:620px">过去</th><th>现在</th></tr></thead>
+      <tbody>
+        <tr><td class="k">获取</td><td class="m">查书、听课、请教，需要时间与人</td><td class="m">一次提问即可得到，且随时可得</td></tr>
+        <tr><td class="k">存储</td><td class="m">记忆是运用能力的前提</td><td class="m">记忆的前提作用明显减弱</td></tr>
+        <tr><td class="k">复述</td><td class="m">复述能够证明掌握</td><td class="m">复述不再能证明掌握</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:44px">贬值的不是知识本身，而是知识作为稀缺物的地位。知识仍然必要，但它不再是区分人的标志，也不再是课程价值的来源。</p>
+    <div class="pull">以讲到了多少知识点衡量一门课的价值，这个尺度正在失效。</div>
+  </div>
+</section>
+
+<!-- 08 能力升值 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">三　教育的变化</span></div>
+  <h1 class="ttl">能力与素养在升值</h1>
+  <div class="lead">与知识相对，能力与素养的价值在上升。模型能给出答案，但不能替人承担判断。</div>
+  <div class="body">
+    <table class="bt" style="margin-top:8px">
+      <caption>表 3　知识与能力的性质对照</caption>
+      <thead><tr><th style="width:220px">维度</th><th style="width:620px">知识</th><th>能力与素养</th></tr></thead>
+      <tbody>
+        <tr><td class="k">形成方式</td><td class="m">记忆、检索、复述</td><td class="m">在情境中反复练习，靠反馈校正</td></tr>
+        <tr><td class="k">可替代性</td><td class="m">高，模型可直接给出</td><td class="m">低，必须在具体问题中形成</td></tr>
+        <tr><td class="k">稀缺程度</td><td class="m">下降</td><td class="m">上升</td></tr>
+        <tr><td class="k">检验方式</td><td class="m">能否复现</td><td class="m">换一个情境能否迁移</td></tr>
+      </tbody>
+    </table>
+    <div class="pull">知识可以被调用，判断不能。升值的是不能被调用的那一部分。</div>
+  </div>
+</section>
+
+<!-- 09 模式转换 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">四　教学的转换</span></div>
+  <h1 class="ttl">从知识传授到能力培养</h1>
+  <div class="lead">不是新增一门课，也不是把课时重新分配，而是课程的目标、内容组织与评价方式同时改变。</div>
+  <div class="body">
+    <table class="bt" style="margin-top:8px">
+      <caption>表 4　两种课程取向的差别</caption>
+      <thead><tr><th style="width:220px">方面</th><th style="width:620px">知识传授型</th><th>能力培养型</th></tr></thead>
+      <tbody>
+        <tr><td class="k">目标</td><td class="m">讲完、记住、会复述</td><td class="m">会用、能判断、可迁移</td></tr>
+        <tr><td class="k">内容组织</td><td class="m">按知识体系排列</td><td class="m">按问题与任务排列，知识按需嵌入</td></tr>
+        <tr><td class="k">课堂形态</td><td class="m">讲授为主</td><td class="m">讲授与训练交替，学生持续产出</td></tr>
+        <tr><td class="k">评价</td><td class="m">考记忆与理解</td><td class="m">考迁移与判断，看过程证据</td></tr>
+      </tbody>
+    </table>
+    <div class="pull">目标一变，另外三项都必须跟着变；单独改一项，不会生效。</div>
+  </div>
+</section>
+
+<!-- 10 纯知识课程 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">四　教学的转换</span></div>
+  <h1 class="ttl">只传递知识的课程，正在失去位置</h1>
+  <div class="lead">这一点在教育领域已经说了很多年，现在说得更明确。</div>
+  <div class="body">
+    <div class="pts">
+      <div class="pt"><div class="pn">一</div><div class="pt-t">讲授的内容，学生随时可以从模型那里得到，而且更完整、更新。</div></div>
+      <div class="pt"><div class="pn">二</div><div class="pt-t">课程的价值不再由讲了多少决定，而由学生能做什么决定。</div></div>
+      <div class="pt"><div class="pn">三</div><div class="pt-t">知识并未退出，它从目的变成材料：没有材料形不成能力，只有材料也形不成能力。</div></div>
+    </div>
+    <p style="margin-top:26px">课程重构因此不是删减内容那么简单。同样一份知识，放在不同的任务结构里，训练出的能力完全不同；决定效果的，是知识被如何使用，而不是知识被讲得多细。</p>
+    <div class="pull">难点不在内容取舍，而在把知识重新组织成可训练的任务。</div>
+  </div>
+</section>
+
+<!-- 11 路径 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">四　教学的转换</span></div>
+  <h1 class="ttl">以知识传授达成能力培养</h1>
+  <div class="lead">不是取消知识传授，而是把它安排成能力形成过程中的一环。四个环节依次推进，每一环都留出学生的产出。</div>
+  <div class="body">
+    <div class="fig" style="margin-top:2px;margin-bottom:12px">图 4　从知识到能力的四个环节</div>
+    <div class="hchain">
+      <div class="col on"><div class="cn">环 节 一</div><div class="ct">知识</div><div class="cd">给出概念的结构与边界，讲清适用条件与失效条件。</div></div>
+      <div class="col on"><div class="cn">环 节 二</div><div class="ct">情境</div><div class="cd">放进真实问题，让条件不完整、答案不唯一。</div></div>
+      <div class="col on"><div class="cn">环 节 三</div><div class="ct">训练</div><div class="cd">在问题中反复使用，给出可核对的反馈。</div></div>
+      <div class="col on"><div class="cn">环 节 四</div><div class="ct">迁移</div><div class="cd">换一个情境仍能调用，才算形成能力。</div></div>
+    </div>
+    <p style="margin-top:42px">这条路径对教师的要求更高：既要讲得准，又要设计得出能让知识被使用的任务，还要能判断学生的产出是否真的完成了迁移。知识传授没有被取消，它被重新安排为目的之下的手段。</p>
+    <div class="pull">知识是路径，能力是目的地。路径不能省，但也不能当成终点。</div>
+  </div>
+</section>
+
+<!-- 12 命题 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">五　命题与可能</span></div>
+  <h1 class="ttl">一道共同的命题</h1>
+  <div class="body" style="margin-top:24px">
+    <div class="stmt">
+      <div class="line">如何从知识传授，<br>转向能力的培养。</div>
+      <div class="lnote">知识传授曾经是教育的核心工作，因为知识稀缺、获取成本高。这个前提已经改变，教育的重心也必须随之移动。这道题不落在某一门课、某一位教师身上，它落在每一个学科、每一类课程、每一个学段：凡是还在讲课的人，都要给出自己的答案。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 三个转变 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">五　命题与可能</span></div>
+  <h1 class="ttl">观念的转变、方法的转变、思路的转变</h1>
+  <div class="lead">三者有先后：观念不定，方法只会变成形式上的活动；方法不落地，思路停在纸面。</div>
+  <div class="body">
+    <table class="bt" style="margin-top:8px">
+      <caption>表 5　三个转变的指向</caption>
+      <thead><tr><th style="width:200px">转变</th><th style="width:600px">从</th><th>到</th></tr></thead>
+      <tbody>
+        <tr><td class="k">观念</td><td class="m">课程的任务是传递知识</td><td class="m">课程的任务是改变学生能做什么</td></tr>
+        <tr><td class="k">方法</td><td class="m">以讲授覆盖内容</td><td class="m">以任务组织内容，讲授服务于任务</td></tr>
+        <tr><td class="k">思路</td><td class="m">先想讲什么，再想怎么讲</td><td class="m">先想学生要形成什么能力，再决定讲什么</td></tr>
+      </tbody>
+    </table>
+    <div class="pull">真正困难的是第一步：承认课程的价值不由讲授量决定。</div>
+  </div>
+</section>
+
+<!-- 14 难但不封闭 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">五　命题与可能</span></div>
+  <h1 class="ttl">难，但不封闭</h1>
+  <div class="lead">命题足够难，正因如此，它不可能是少数人的专利。</div>
+  <div class="body">
+    <div class="two" style="margin-top:14px">
+      <div class="side">
+        <div class="h">难 在 哪 里</div>
+        <p>没有现成答案。学科不同、学段不同、学生不同，同一套方法无法直接搬运。</p>
+        <p>评价方式的改变还牵动制度，单靠一位教师无法完成。</p>
+      </div>
+      <div class="side">
+        <div class="h on">为 什 么 现 在 可 以 试</div>
+        <p>智能体把尝试的成本降了下来。备课、设计任务、生成情境、批改反馈，都可以先出初稿。</p>
+        <p>教师把精力放在判断上，试一次的门槛因此降到可以承受的程度。</p>
+      </div>
+    </div>
+    <p style="margin-top:48px">工具把门槛降下来之后，每一位教师都可以在自己的课上试一次，提出一个属于自己的方案。答案不在文件里，在课堂上。</p>
+  </div>
+</section>
+
+<!-- 15 生态 -->
+<section class="page">
+  <div class="rh"><span>人工智能伦理与安全</span><span class="r">五　命题与可能</span></div>
+  <h1 class="ttl">未来不会只有一种方案</h1>
+  <div class="lead">没有唯一正确的模式。学科差异、学生差异、资源差异都会留在方案里，结果是多种解法同时存在。</div>
+  <div class="body">
+    <div class="fig" style="margin-top:2px">图 5　同一命题下的方案分化</div>
+    <svg viewBox="0 0 1620 350" width="100%">
+      <rect x="560" y="0" width="500" height="64" fill="#1d4a72"/>
+      <text x="810" y="41" font-size="29" fill="#ffffff" font-weight="700" text-anchor="middle">从知识传授到能力培养</text>
+
+      <line x1="810" y1="64" x2="810" y2="84" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="300" y1="84" x2="1320" y2="84" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="300" y1="84" x2="300" y2="100" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="810" y1="84" x2="810" y2="100" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="1320" y1="84" x2="1320" y2="100" stroke="#1d4a72" stroke-width="1.5"/>
+
+      <rect x="160" y="100" width="280" height="62" fill="#ffffff" stroke="#d7dde2" stroke-width="1.5"/>
+      <text x="300" y="138" font-size="25" class="s" fill="#3a434b" text-anchor="middle">学科结构的差异</text>
+      <rect x="670" y="100" width="280" height="62" fill="#ffffff" stroke="#d7dde2" stroke-width="1.5"/>
+      <text x="810" y="138" font-size="25" class="s" fill="#3a434b" text-anchor="middle">学段与学生的差异</text>
+      <rect x="1180" y="100" width="280" height="62" fill="#ffffff" stroke="#d7dde2" stroke-width="1.5"/>
+      <text x="1320" y="138" font-size="25" class="s" fill="#3a434b" text-anchor="middle">资源与条件的差异</text>
+
+      <line x1="300" y1="162" x2="300" y2="206" stroke="#d7dde2" stroke-width="1.5"/>
+      <line x1="810" y1="162" x2="810" y2="206" stroke="#d7dde2" stroke-width="1.5"/>
+      <line x1="1320" y1="162" x2="1320" y2="206" stroke="#d7dde2" stroke-width="1.5"/>
+
+      <rect x="60" y="206" width="480" height="70" fill="#eef3f7" stroke="#1d4a72" stroke-width="2"/>
+      <text x="300" y="238" font-size="26" fill="#1d4a72" font-weight="700" text-anchor="middle">方案一：以项目组织课程</text>
+      <text x="300" y="266" font-size="21" class="s" fill="#4a5158" text-anchor="middle">适用于任务边界清晰的学科</text>
+
+      <rect x="570" y="206" width="480" height="70" fill="#eef3f7" stroke="#1d4a72" stroke-width="2"/>
+      <text x="810" y="238" font-size="26" fill="#1d4a72" font-weight="700" text-anchor="middle">方案二：以案例推进</text>
+      <text x="810" y="266" font-size="21" class="s" fill="#4a5158" text-anchor="middle">适用于判断密集的学科</text>
+
+      <rect x="1080" y="206" width="480" height="70" fill="#eef3f7" stroke="#1d4a72" stroke-width="2"/>
+      <text x="1320" y="238" font-size="26" fill="#1d4a72" font-weight="700" text-anchor="middle">方案三：以实训任务贯穿</text>
+      <text x="1320" y="266" font-size="21" class="s" fill="#4a5158" text-anchor="middle">适用于技能与场景结合的课程</text>
+
+      <line x1="300" y1="276" x2="300" y2="292" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="810" y1="276" x2="810" y2="292" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="1320" y1="276" x2="1320" y2="292" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="300" y1="292" x2="1320" y2="292" stroke="#1d4a72" stroke-width="1.5"/>
+      <line x1="810" y1="292" x2="810" y2="300" stroke="#1d4a72" stroke-width="1.5"/>
+
+      <rect x="410" y="300" width="800" height="44" fill="#ffffff" stroke="#12161a" stroke-width="1.5"/>
+      <text x="810" y="329" font-size="24" class="s" fill="#12161a" text-anchor="middle" font-weight="700">多种方案并存，互相参照，各自迭代</text>
+    </svg>
+    <p style="margin-top:8px">这构成一种生态：多个方案并行，各自解决自己的问题，彼此提供参照。生态是否健康，不取决于是否统一，而取决于是否有足够多的、经过检验的方案。</p>
+  </div>
+</section>
+
+<!-- 16 结语 -->
+<section class="page closing">
+  <div class="rule"></div>
+  <div class="big">知识不再稀缺，<br>稀缺的是<span class="ac">运用知识的能力</span>。</div>
+  <div class="note">算力进入生产力，人与智能体共同构成生产主体；知识贬值，能力升值。教育要回答的问题因此改变：不是讲完了没有，而是学生能做什么。这道题开放给每一位教师，答案不会只有一种。</div>
+</section>
+
+</body>
+</html>
