@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工智能伦理与安全的政策与法律：从文件清单到体系结构</title>
+<style>
+  /* ============================================================
+     新中式学术讲义 · 视觉基座
+     纯白底 / 墨黑正文 / 朱红强调 / 浅米灰块 / 华文中宋标题
+     ============================================================ */
+  :root {
+    --paper:   #ffffff;          /* 纯白背景 */
+    --ink:     #1b1b19;          /* 墨黑正文 */
+    --ink2:    #45443f;          /* 次级墨色 */
+    --ink3:    #6e6c64;          /* 辅助说明 */
+    --ink4:    #9a978d;          /* 极弱注记 */
+    --vermil:  #b0342a;          /* 朱红强调 */
+    --verm-d:  #8a241d;          /* 深朱红 */
+    --verm-l:  #f6ece9;          /* 朱红淡染 */
+    --rice:    #f5f2ea;          /* 浅米灰块 */
+    --rice2:   #ece7db;          /* 次米灰 */
+    --rice3:   #e2dccd;          /* 米灰线感 */
+    --line:    #dcd7ca;          /* 细线 */
+    --line-s:  #1b1b19;          /* 强线（墨黑） */
+    --serif:   "STZhongsong", "华文中宋", "SimHei", "Microsoft YaHei", serif;
+    --sans:    "Microsoft YaHei", "微软雅黑", "SimHei", "黑体", sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--paper); }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 页面骨架 ---------- */
+  .deck { width: 1280px; margin: 0 auto; padding: 0; }
+  .slide {
+    position: relative;
+    width: 1280px; height: 720px;
+    background: var(--paper);
+    padding: 46px 84px 38px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide.active { display: flex; }
+  @media print { .slide { display: flex !important; } .slide + .slide { page-break-before: always; } }
+  @page { size: 1280px 720px; margin: 0; }
+
+  /* ---------- 页眉 ---------- */
+  .head { flex-shrink: 0; }
+  .chap {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 18px; letter-spacing: 3px; color: var(--ink3);
+    margin-bottom: 11px; font-weight: 400;
+  }
+  .chap .idx { color: var(--verm-d); font-family: var(--serif); font-size: 19px; letter-spacing: 1px; }
+  .chap .bar { width: 46px; height: 1px; background: var(--vermil); }
+  .chap .txt { white-space: nowrap; }
+
+  .stitle {
+    font-family: var(--serif);
+    font-size: 40px; font-weight: 700; line-height: 1.26;
+    color: var(--ink); letter-spacing: 1px;
+  }
+  .stitle .em { color: var(--vermil); }
+  .hairline { height: 1px; background: var(--line); margin: 16px 0 0; flex-shrink: 0; }
+  .hairline.strong { background: var(--line-s); height: 2px; }
+
+  /* ---------- 正文排版 ---------- */
+  .body {
+    flex: 1 1 0; min-height: 0; overflow: hidden;
+    display: flex; flex-direction: column; padding-top: 26px;
+  }
+  .body.tight { padding-top: 20px; }
+  .body > * { flex-shrink: 0; }
+
+  p { font-size: 21px; line-height: 1.85; color: var(--ink); }
+  .lead { font-size: 23px; line-height: 1.82; color: var(--ink); }
+  .sub   { font-size: 19px; line-height: 1.8; color: var(--ink3); }
+  .em    { color: var(--vermil); font-weight: 700; }
+  .em2   { color: var(--verm-d); font-weight: 700; }
+  .k     { color: var(--ink2); }
+  b, strong { font-weight: 700; color: var(--ink); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; min-height: 0; }
+  .grid2.g34 { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .col { min-width: 0; display: flex; flex-direction: column; }
+  .vsep { border-left: 1px solid var(--line); padding-left: 44px; }
+
+  /* ---------- 信息卡片 ---------- */
+  .card {
+    background: var(--rice);
+    padding: 18px 22px;
+    border-top: 2px solid var(--ink);
+  }
+  .card.red { border-top-color: var(--vermil); background: var(--verm-l); }
+  .card.plain { background: transparent; border-top: 1px solid var(--line); padding: 16px 0 0; }
+  .card-h {
+    font-family: var(--serif); font-size: 22px; font-weight: 700;
+    color: var(--ink); margin-bottom: 8px; line-height: 1.4;
+  }
+  .card.red .card-h { color: var(--verm-d); }
+  .card p { font-size: 19px; line-height: 1.68; color: var(--ink2); }
+  .card .big {
+    font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--vermil);
+    line-height: 1.15; margin-bottom: 6px;
+  }
+
+  .num-card { display: flex; gap: 16px; align-items: flex-start; }
+  .num-card .n {
+    font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--vermil);
+    line-height: 1.2; flex-shrink: 0; width: 38px;
+  }
+  .num-card .t { font-size: 20px; line-height: 1.7; color: var(--ink2); }
+
+  /* ---------- 列表 ---------- */
+  ul.plain { list-style: none; }
+  ul.plain li {
+    position: relative; padding-left: 24px; margin-bottom: 13px;
+    font-size: 20px; line-height: 1.72; color: var(--ink2);
+  }
+  ul.plain li::before {
+    content: ""; position: absolute; left: 0; top: 15px;
+    width: 11px; height: 2px; background: var(--vermil);
+  }
+  ul.plain li b { color: var(--ink); }
+
+  /* ---------- 结论条 ---------- */
+  .concl {
+    margin-top: auto; flex-shrink: 0;
+    border-top: 2px solid var(--line-s); border-bottom: 2px solid var(--line-s);
+    padding: 14px 4px;
+    font-size: 21px; line-height: 1.6; color: var(--ink);
+  }
+  .concl.red { border-top-color: var(--vermil); border-bottom-color: var(--vermil); }
+  .concl .em { color: var(--vermil); }
+
+  /* ---------- 层级图 ---------- */
+  .tiers { display: flex; flex-direction: column; }
+  .tier { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
+  .tier:last-child { border-bottom: 1px solid var(--line-s); }
+  .tier .lvl {
+    width: 168px; flex-shrink: 0; padding: 10px 14px 10px 0;
+    border-right: 1px solid var(--line);
+    font-family: var(--serif); font-size: 21px; font-weight: 700; color: var(--ink);
+    line-height: 1.28;
+  }
+  .tier .lvl .tag { display: block; font-family: var(--sans); font-size: 18px; font-weight: 400; color: var(--vermil); margin-top: 3px; letter-spacing: 1px; }
+  .tier .det { flex: 1; padding: 9px 0 9px 22px; }
+  .tier .det .files { font-size: 19px; line-height: 1.56; color: var(--ink2); }
+  .tier .det .files b { color: var(--ink); }
+  .tier .det .note { font-size: 18px; line-height: 1.5; color: var(--ink3); margin-top: 4px; }
+  .tier.hi .lvl { color: var(--verm-d); }
+  .tier .count {
+    font-family: var(--serif); font-size: 19px; color: var(--ink3);
+    align-self: center; padding-left: 18px; white-space: nowrap;
+  }
+
+  /* ---------- 表格 ---------- */
+  table { border-collapse: collapse; width: 100%; }
+  th {
+    font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink);
+    text-align: left; padding: 9px 14px;
+    border-top: 2px solid var(--line-s); border-bottom: 1px solid var(--line-s);
+    background: var(--rice);
+  }
+  td {
+    font-size: 19px; line-height: 1.5; color: var(--ink2);
+    padding: 8px 14px; border-bottom: 1px solid var(--line); vertical-align: top;
+  }
+  td .fn { color: var(--ink); font-weight: 700; }
+  tr:last-child td { border-bottom: 1px solid var(--line-s); }
+  td.r { color: var(--vermil); font-weight: 700; }
+
+  /* ---------- 流程 / 箭头链 ---------- */
+  .flow { display: flex; align-items: stretch; }
+  .fnode {
+    flex: 1; background: var(--rice); padding: 16px 18px;
+    border-top: 2px solid var(--ink); position: relative;
+  }
+  .fnode.red { border-top-color: var(--vermil); background: var(--verm-l); }
+  .fnode .fh { font-family: var(--serif); font-size: 20px; font-weight: 700; margin-bottom: 7px; line-height: 1.35; }
+  .fnode .fh.red { color: var(--verm-d); }
+  .fnode p { font-size: 18px; line-height: 1.62; color: var(--ink2); }
+  .farrow {
+    width: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--vermil); font-size: 22px; font-family: var(--serif);
+  }
+  .farrow::before { content: ""; position: absolute; }
+
+  /* ---------- 对照 ---------- */
+  .vs { display: grid; grid-template-columns: 1fr 64px 1fr; align-items: stretch; }
+  .vs .side { background: var(--rice); padding: 20px 22px; border-top: 2px solid var(--ink); }
+  .vs .side.red { border-top-color: var(--vermil); background: var(--verm-l); }
+  .vs .side h4 { font-family: var(--serif); font-size: 21px; font-weight: 700; margin-bottom: 10px; line-height: 1.4; }
+  .vs .mid { display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 20px; color: var(--ink3); }
+  .vs .side.red h4 { color: var(--verm-d); }
+
+  /* ---------- 坐标图 ---------- */
+  .coord { position: relative; display: flex; flex-direction: column; }
+  .coord .plot { position: relative; flex-shrink: 0; overflow: visible; }
+  .coord .axis-x, .coord .axis-y { position: absolute; background: var(--ink); }
+  .coord .gridline { position: absolute; background: var(--line); }
+  .coord .divider {
+    position: absolute; border-top: 1px dashed var(--rice3); border-left: 1px dashed var(--rice3);
+  }
+  .pt { position: absolute; transform: translate(-50%, -50%); width: 0; height: 0; }
+  .pt .dot { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .pt .dot {
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--ink4);
+  }
+  .pt.on .dot { background: var(--vermil); width: 19px; height: 19px; box-shadow: 0 0 0 4px var(--verm-l); }
+  .pt .lb {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-size: 18px; color: var(--ink3); line-height: 1.35;
+    text-align: center; margin-top: 6px;
+  }
+  .pt.on .lb { color: var(--verm-d); font-weight: 700; }
+  .pt .lb.up { bottom: 24px; margin-top: 0; }
+  .pt .lb.rt { left: auto; transform: none; margin-left: 12px; text-align: left; }
+  .pt .lb.lf { left: auto; right: 50%; transform: none; margin-right: 12px; text-align: right; }
+  .pt .lb.aboveleft { left: auto; right: 50%; transform: none; margin-right: 12px; text-align: right; bottom: 24px; margin-top: 0; }
+  .axis-t { position: absolute; font-size: 18px; color: var(--ink3); letter-spacing: 2px; }
+  .axis-t.v { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 4px; }
+  .legend {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px 20px;
+  }
+  .legend .le { font-size: 18px; color: var(--ink3); line-height: 1.5; white-space: nowrap; }
+  .legend .le b { color: var(--ink); font-weight: 700; }
+  .chip {
+    display: inline-block; background: var(--paper); border: 1px solid var(--rice3);
+    padding: 4px 12px; font-size: 18px; color: var(--ink2); margin: 0 6px 6px 0;
+  }
+  .chip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .chip-grid .chip { margin: 0; text-align: center; padding: 5px 2px; }
+
+  /* ---------- 时间轴 ---------- */
+  .tl { position: relative; display: flex; }
+  .tl::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 46px;
+    height: 1px; background: var(--ink);
+  }
+  .tl .node { flex: 1; position: relative; padding-top: 0; }
+  .tl .yr { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--ink); height: 46px; }
+  .tl .node.on .yr { color: var(--vermil); }
+  .tl .mk {
+    width: 13px; height: 13px; border-radius: 50%; background: var(--paper);
+    border: 2px solid var(--ink); margin: 0 0 14px; position: relative; z-index: 2;
+  }
+  .tl .node.on .mk { background: var(--vermil); border-color: var(--vermil); }
+  .tl .cap { font-size: 19px; line-height: 1.6; color: var(--ink2); padding-right: 18px; }
+  .tl .node.on .cap { color: var(--ink); }
+
+  /* ---------- 步骤序列 ---------- */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: flex; gap: 18px; align-items: flex-start; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: none; }
+  .step .s {
+    width: 30px; height: 30px; flex-shrink: 0; border: 1px solid var(--vermil);
+    color: var(--vermil); font-family: var(--serif); font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 2px;
+  }
+  .step .st { font-size: 20px; line-height: 1.68; color: var(--ink2); }
+
+  /* ---------- 封面 ---------- */
+  .cover { padding: 0; }
+  .cover .inner { flex: 1; display: flex; padding: 76px 84px 54px; }
+  .cover .bar { width: 5px; background: var(--vermil); flex-shrink: 0; margin-right: 54px; }
+  .cover .txt { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .cover .kicker { font-size: 19px; letter-spacing: 7px; color: var(--ink3); margin-bottom: 34px; }
+  .cover h1 {
+    font-family: var(--serif); font-size: 56px; font-weight: 700;
+    line-height: 1.34; letter-spacing: 2px; color: var(--ink);
+  }
+  .cover h1 .em { color: var(--vermil); }
+  .cover .rule { width: 300px; height: 2px; background: var(--ink); margin: 36px 0 26px; }
+  .cover .sub { font-size: 23px; line-height: 1.7; color: var(--ink2); max-width: 720px; }
+  .cover .meta {
+    flex-shrink: 0; border-top: 1px solid var(--line); padding: 16px 84px 0;
+    display: flex; justify-content: space-between;
+    font-size: 18px; color: var(--ink3); letter-spacing: 1px;
+  }
+
+  /* ---------- 目录 ---------- */
+  .toc { display: flex; flex-direction: column; }
+  .toc .it {
+    display: flex; align-items: baseline; gap: 26px;
+    padding: 17px 0; border-bottom: 1px solid var(--line);
+  }
+  .toc .it:first-child { border-top: 1px solid var(--line); }
+  .toc .no { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--vermil); width: 58px; flex-shrink: 0; }
+  .toc .tt { font-family: var(--serif); font-size: 25px; font-weight: 700; color: var(--ink); line-height: 1.4; }
+  .toc .dd { font-size: 19px; color: var(--ink3); margin-left: auto; text-align: right; }
+
+  /* ---------- 注记 ---------- */
+  .note { font-size: 18px; line-height: 1.62; color: var(--ink4); }
+  .figcap { font-size: 18px; color: var(--ink3); letter-spacing: 1px; }
+  .rule-v { width: 1px; background: var(--line); }
+</style>
+</head>
+<body>
+<div class="deck">
+<!-- ============ 一 封面 ============ -->
+<section class="slide cover active">
+  <div class="inner">
+    <div class="bar"></div>
+    <div class="txt">
+      <div class="kicker">人工智能伦理与安全系列课程</div>
+      <h1>人工智能伦理与安全<br>的<span class="em">政策与法律</span></h1>
+      <div class="rule"></div>
+      <div class="sub">从文件清单到体系结构<br><span style="color:var(--ink3);font-size:20px;">—— 不逐条读文件，讲清楚这些文件构成什么结构</span></div>
+    </div>
+  </div>
+  <div class="meta">
+    <span>第一讲 · 讲授起点与体系规模</span>
+    <span>面向教师的专业讲义</span>
+  </div>
+</section>
+
+<!-- ============ 二 目录 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">目</span><span class="bar"></span><span class="txt">本讲结构</span></div>
+    <h2 class="stitle">目录</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <div class="toc">
+      <div class="it"><span class="no">一</span><span class="tt">讲授起点与体系规模</span><span class="dd">文件为什么读不完 · 五类效力层级 · 两种排法的局限</span></div>
+      <div class="it"><span class="no">二</span><span class="tt">体系的两个独立维度</span><span class="dd">技术形态与效力层级 · 独立方向的数量为二</span></div>
+      <div class="it"><span class="no">三</span><span class="tt">文件的坐标定位</span><span class="dd">效力层级 × 技术形态 · 逐份文件在平面上的位置</span></div>
+      <div class="it"><span class="no">四</span><span class="tt">维度成因与三条主线</span><span class="dd">形态为何可切分 · 使用者承担剩余义务 · 三条取向</span></div>
+      <div class="it"><span class="no">五</span><span class="tt">判断新文件与教师含义</span><span class="dd">两个问句 · 一件日常操作横跨三个形态 · 三点含义</span></div>
+    </div>
+    <div class="concl">
+      本讲的目标不是让你记住更多文件名，而是给你一套<span class="em">判断新文件位置的结构</span>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 三 讲授起点 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">一</span><span class="bar"></span><span class="txt">讲授起点与体系规模</span></div>
+    <h2 class="stitle">本讲不逐条讲文件</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <div class="grid2" style="gap:56px;flex:0 0 auto;">
+      <div class="col">
+        <h3 style="font-family:var(--serif);font-size:23px;font-weight:700;margin-bottom:22px;color:var(--ink3);letter-spacing:2px;">各位老师面对的处境</h3>
+        <div class="num-card" style="margin-bottom:20px;">
+          <div class="n">一</div>
+          <div class="t">需要遵守的规范文件很多，<b>逐份读完不现实</b></div>
+        </div>
+        <div class="num-card" style="margin-bottom:20px;">
+          <div class="n">二</div>
+          <div class="t">新文件仍在持续出台，<b>读完的很快过期</b></div>
+        </div>
+        <div class="num-card">
+          <div class="n">三</div>
+          <div class="t">真正遇到问题时，<b>不知道该援引哪一份</b></div>
+        </div>
+      </div>
+      <div class="col vsep">
+        <div class="card plain" style="margin-bottom:20px;">
+          <div class="card-h" style="color:var(--ink3);">本讲不做的事</div>
+          <p style="font-size:21px;color:var(--ink3);">不逐条讲文件</p>
+        </div>
+        <div class="card red" style="margin-bottom:26px;">
+          <div class="card-h">本讲要做的事</div>
+          <p style="font-size:21px;color:var(--ink);">讲这些文件构成什么结构</p>
+        </div>
+        <div style="border-left:3px solid var(--ink);padding:4px 0 4px 22px;">
+          <p style="font-size:21px;line-height:1.78;">结构清楚了，任何一份新文件出台，都能在<span class="em">两分钟内</span>判断它属于体系内的<span class="em">常规增补</span>，还是<span class="em">体系本身发生了变化</span>。</p>
+        </div>
+      </div>
+    </div>
+    <!-- 本讲路线 -->
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:20px;">
+      <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);white-space:nowrap;">本讲路线</div>
+      <div style="flex:1;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:19px;color:var(--ink2);">体系规模</span>
+        <span style="color:var(--vermil);font-family:var(--serif);font-size:19px;">→</span>
+        <span style="font-size:19px;color:var(--ink2);">两个维度</span>
+        <span style="color:var(--vermil);font-family:var(--serif);font-size:19px;">→</span>
+        <span style="font-size:19px;color:var(--ink2);">坐标定位</span>
+        <span style="color:var(--vermil);font-family:var(--serif);font-size:19px;">→</span>
+        <span style="font-size:19px;color:var(--ink);font-weight:700;">判断新文件</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 四 五类效力层级 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">一</span><span class="bar"></span><span class="txt">讲授起点与体系规模</span></div>
+    <h2 class="stitle">五类效力层级与代表文件</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div class="tiers">
+      <div class="tier hi">
+        <div class="lvl">法律<span class="tag">四部 · 授权基础</span></div>
+        <div class="det">
+          <div class="files">尚无人工智能专门立法。《<b>网络安全法</b>》《<b>数据安全法</b>》《<b>个人信息保护法</b>》《<b>科学技术进步法</b>》构成下位规范的主要授权基础。</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="lvl">行政法规<span class="tag">基础性规定</span></div>
+        <div class="det">
+          <div class="files">主要是《<b>互联网信息服务管理办法</b>》。该办法在多份部门规章的第一条中被直接援引，是体系中真实存在的<span class="em">连接点</span>，承担承上启下的作用。</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="lvl">部门规章<span class="tag">数量最多</span></div>
+        <div class="det">
+          <div class="files">《算法推荐管理规定》《深度合成管理规定》《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》</div>
+          <div class="note">多数部门规章的第一条，援引的是上列四部法律。</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="lvl">规范性文件<span class="tag">伦理与框架</span></div>
+        <div class="det">
+          <div class="files">《新一代人工智能伦理规范》《人工智能安全治理框架》系列</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="lvl">技术标准<span class="tag">配套落地</span></div>
+        <div class="det">
+          <div class="files">《人工智能科技伦理审查与服务办法（试行）》《人工智能应用伦理安全指引1.0》以及配套<b>强制性国家标准</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="concl red" style="margin-top:18px;">
+      截至当前，直接涉及人工智能伦理与安全的规范性文件，按效力层级可分为<span class="em">五类</span>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 五 规章最多 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">一</span><span class="bar"></span><span class="txt">讲授起点与体系规模</span></div>
+    <h2 class="stitle">规章最多，标准配套落地</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <table style="margin-bottom:18px;">
+      <tr>
+        <th style="width:140px;">效力层级</th>
+        <th>代表文件</th>
+        <th style="width:180px;">在体系中的位置</th>
+      </tr>
+      <tr>
+        <td class="fn">法律</td>
+        <td>《网络安全法》《数据安全法》《个人信息保护法》《科学技术进步法》</td>
+        <td>下位规范的主要授权基础</td>
+      </tr>
+      <tr>
+        <td class="fn">行政法规</td>
+        <td>《互联网信息服务管理办法》</td>
+        <td>被多份规章第一条直接援引</td>
+      </tr>
+      <tr>
+        <td class="fn">部门规章</td>
+        <td>《算法推荐管理规定》《深度合成管理规定》《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》</td>
+        <td class="r">数量最多 · 义务最具体</td>
+      </tr>
+      <tr>
+        <td class="fn">规范性文件</td>
+        <td>《新一代人工智能伦理规范》《人工智能安全治理框架》系列</td>
+        <td>价值取向与风险分类</td>
+      </tr>
+      <tr>
+        <td class="fn">技术标准</td>
+        <td>《人工智能科技伦理审查与服务办法（试行）》《人工智能应用伦理安全指引1.0》及配套强制性国家标准</td>
+        <td>伦理要求落到审查与执行</td>
+      </tr>
+    </table>
+    <div class="concl">
+      五类层级及其代表文件可归为下表，<span class="em">讲授时可直接指表展开</span>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 六 两种排法的局限 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">一</span><span class="bar"></span><span class="txt">讲授起点与体系规模</span></div>
+    <h2 class="stitle">时间与主题两种排法的局限</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <div class="vs" style="flex:1;min-height:0;grid-template-columns:1fr 72px 1fr;">
+      <div class="side">
+        <h4>按时间排列</h4>
+        <p style="font-size:19px;line-height:1.7;color:var(--ink2);">得到一条<span class="em">逐年加密的曲线</span>。文件持续出台，早期规范长期有效，后期规范密集跟进。</p>
+        <div style="margin-top:26px;display:flex;align-items:flex-end;gap:9px;height:120px;border-bottom:1px solid var(--ink);padding-bottom:0;">
+          <div style="flex:1;height:16%;background:var(--rice3);"></div>
+          <div style="flex:1;height:24%;background:var(--rice3);"></div>
+          <div style="flex:1;height:34%;background:var(--rice2);"></div>
+          <div style="flex:1;height:46%;background:var(--rice2);"></div>
+          <div style="flex:1;height:60%;background:var(--rice);"></div>
+          <div style="flex:1;height:76%;background:var(--rice);"></div>
+          <div style="flex:1;height:100%;background:var(--verm-l);border-top:2px solid var(--vermil);"></div>
+        </div>
+        <div style="display:flex;gap:9px;margin-top:8px;font-size:18px;color:var(--ink4);">
+          <div style="flex:1;text-align:center;">早期</div>
+          <div style="flex:1;text-align:center;">…</div>
+          <div style="flex:1;text-align:center;">…</div>
+          <div style="flex:1;text-align:center;">…</div>
+          <div style="flex:1;text-align:center;">…</div>
+          <div style="flex:1;text-align:center;">…</div>
+          <div style="flex:1;text-align:center;">近期</div>
+        </div>
+      </div>
+      <div class="mid">或</div>
+      <div class="side red">
+        <h4>按主题排列</h4>
+        <p style="font-size:19px;line-height:1.7;color:var(--ink2);">得到<span class="em">数据、算法、内容、安全</span>四组，但四组之间<span class="em">大量交叠</span>。</p>
+        <div style="margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--paper);border:1px solid var(--rice3);padding:14px 16px;">
+            <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--verm-d);margin-bottom:8px;">数据</div>
+            <div style="font-size:18px;color:var(--ink3);line-height:1.55;">个人信息保护、数据安全</div>
+          </div>
+          <div style="background:var(--paper);border:1px solid var(--rice3);padding:14px 16px;">
+            <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--verm-d);margin-bottom:8px;">算法</div>
+            <div style="font-size:18px;color:var(--ink3);line-height:1.55;">算法推荐、备案</div>
+          </div>
+          <div style="background:var(--paper);border:1px solid var(--rice3);padding:14px 16px;">
+            <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--verm-d);margin-bottom:8px;">内容</div>
+            <div style="font-size:18px;color:var(--ink3);line-height:1.55;">深度合成、生成式、标识</div>
+          </div>
+          <div style="background:var(--paper);border:1px solid var(--rice3);padding:14px 16px;">
+            <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--verm-d);margin-bottom:8px;">安全</div>
+            <div style="font-size:18px;color:var(--ink3);line-height:1.55;">安全治理框架、伦理审查</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:18px;color:var(--ink3);">算法类文件必然涉及数据，内容类文件必然涉及安全。</div>
+      </div>
+    </div>
+    <div class="concl red">
+      两种排法都能列出文件，都无法回答一个问题：<span class="em">为什么是这些文件，而不是另外一些</span>。
+    </div>
+  </div>
+</section>
+<!-- ============ 七 两个独立维度 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">二</span><span class="bar"></span><span class="txt">体系的两个独立维度</span></div>
+    <h2 class="stitle">独立方向只有两个</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <p class="lead" style="margin-bottom:24px;">把上述文件的属性逐项编码，会发现<b>表象虽多，独立方向只有两个</b>。</p>
+    <div class="grid2" style="gap:36px;flex:0 0 auto;">
+      <div class="card red">
+        <div class="big">维度一</div>
+        <div class="card-h">规制对象的技术形态</div>
+        <p>算法推荐、深度合成、生成式服务、生成合成内容标识、科技伦理审查——<b>每一种形态成熟到一定程度，便出现一份与之对应的规范</b>。</p>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--rice3);">
+          <p style="font-family:var(--serif);font-size:21px;color:var(--verm-d);font-weight:700;">回答的是：管什么</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="big" style="color:var(--ink);">维度二</div>
+        <div class="card-h">效力来源的层级</div>
+        <p>从法律到技术标准，<b>同一技术形态可以在不同层级反复出现</b>。形态固定而硬度可变。</p>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+          <p style="font-family:var(--serif);font-size:21px;color:var(--ink);font-weight:700;">回答的是：由谁管、管到多硬</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:auto;">
+      <div style="display:flex;align-items:center;gap:20px;background:var(--rice);padding:20px 26px;border-left:4px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:26px;font-weight:700;color:var(--vermil);white-space:nowrap;">秩 = 二</div>
+        <p style="font-size:20px;color:var(--ink2);line-height:1.68;">两个维度构成一个<b>坐标平面</b>，独立方向的数量为二。此处借「秩」表示独立方向的数量，<span style="color:var(--ink3);">非矩阵秩的严格意义</span>。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 八 无需第三个维度 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">二</span><span class="bar"></span><span class="txt">体系的两个独立维度</span></div>
+    <h2 class="stitle">义务差别无需第三个维度</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <p class="lead" style="margin-bottom:22px;">其余差异均为<b>派生</b>。以两份文件为例——</p>
+    <div class="vs" style="flex:1;min-height:0;">
+      <div class="side">
+        <h4>《算法推荐管理规定》</h4>
+        <div class="card-h" style="font-size:19px;color:var(--ink3);margin-bottom:14px;">重在</div>
+        <ul class="plain">
+          <li>用户<b>选择权</b></li>
+          <li><b>算法备案</b></li>
+        </ul>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:19px;color:var(--ink3);">
+          针对<b style="color:var(--ink);">推荐算法</b>这一形态
+        </div>
+      </div>
+      <div class="mid">≠</div>
+      <div class="side red">
+        <h4>《生成式人工智能服务管理暂行办法》</h4>
+        <div class="card-h" style="font-size:19px;color:var(--ink3);margin-bottom:14px;">重在</div>
+        <ul class="plain">
+          <li><b>训练数据合法性</b></li>
+          <li><b>内容标识</b></li>
+        </ul>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--rice3);font-size:19px;color:var(--ink3);">
+          针对<b style="color:var(--verm-d);">生成式服务</b>这一形态
+        </div>
+      </div>
+    </div>
+    <div class="concl">
+      形态不同，义务自然不同。这一差别<span class="em">不需要第三个维度</span>来解释。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 九 坐标轴与点的读法 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">坐标轴与点的读法</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;gap:40px;flex:1;min-height:0;">
+      <!-- 左：坐标图 -->
+      <div style="flex:1.25;display:flex;flex-direction:column;min-width:0;padding-left:30px;">
+        <div class="coord">
+          <div class="plot" style="height:268px;">
+            <!-- 网格线 -->
+            <div class="gridline" style="left:30%;right:0;top:0;height:1px;"></div>
+            <div class="gridline" style="left:56%;right:0;top:0;height:1px;"></div>
+            <div class="gridline" style="left:0;right:0;top:30%;height:1px;"></div>
+            <div class="gridline" style="left:0;right:0;top:60%;height:1px;"></div>
+            <!-- 象限分隔 -->
+            <div class="divider" style="left:0;top:0;right:0;height:30%;border-right:none;border-bottom:none;"></div>
+            <div class="divider" style="left:0;top:60%;right:0;bottom:0;border-right:none;border-top:none;"></div>
+            <!-- 轴 -->
+            <div class="axis-y" style="left:0;top:0;width:2px;height:100%;"></div>
+            <div class="axis-x" style="left:0;bottom:0;height:2px;width:100%;"></div>
+            <!-- 象限标注 -->
+            <div style="position:absolute;left:12px;top:8px;font-size:18px;color:var(--ink4);letter-spacing:1px;">高宽区</div>
+            <div style="position:absolute;left:12px;top:38px;font-size:18px;color:var(--ink4);letter-spacing:1px;">中宽区</div>
+            <div style="position:absolute;left:12px;bottom:8px;font-size:18px;color:var(--ink4);letter-spacing:1px;">低宽区</div>
+            <div class="axis-t v" style="left:-30px;top:2px;">效力层级（由高至低）</div>
+            <!-- 点：高宽 / 中宽区 -->
+            <div class="pt on" style="left:36%;top:17%;">
+              <div class="dot"></div>
+              <div class="lb up">2017</div>
+            </div>
+            <div class="pt on" style="left:52%;top:25%;">
+              <div class="dot"></div>
+              <div class="lb up">2019</div>
+            </div>
+            <div class="pt on" style="left:42%;top:48%;">
+              <div class="dot"></div>
+              <div class="lb up">2021</div>
+            </div>
+            <!-- 点：窄低区 -->
+            <div class="pt" style="left:84%;top:62%;">
+              <div class="dot"></div>
+              <div class="lb lf">2022</div>
+            </div>
+            <div class="pt" style="left:74%;top:71%;">
+              <div class="dot"></div>
+              <div class="lb lf">2023</div>
+            </div>
+            <div class="pt" style="left:64%;top:79%;">
+              <div class="dot"></div>
+              <div class="lb lf">2023</div>
+            </div>
+            <div class="pt" style="left:53%;top:87%;">
+              <div class="dot"></div>
+              <div class="lb lf">2025</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding-top:6px;border-top:1px solid var(--line);">
+            <span style="font-size:18px;color:var(--ink4);">形态宽</span>
+            <span style="font-size:18px;color:var(--ink3);letter-spacing:2px;">技术形态（由宽至窄）→</span>
+            <span style="font-size:18px;color:var(--ink4);">形态窄</span>
+          </div>
+        </div>
+        <!-- 读法 + 图例 -->
+        <div style="margin-top:12px;padding:10px 0 0;border-top:1px solid var(--line);">
+          <p style="font-size:19px;line-height:1.6;color:var(--ink2);">
+            <b style="color:var(--ink);">读法　</b>纵轴为<b>效力层级</b>，由法律到技术标准自上而下排列；横轴为<b>技术形态</b>，覆盖范围由宽到窄。文件以点标注，其<span class="em">横向跨度</span>表示所覆盖形态的宽窄。
+          </p>
+          <div style="font-size:18px;color:var(--ink3);margin-top:8px;letter-spacing:1px;">图例</div>
+          <div style="font-size:18px;color:var(--ink2);line-height:1.45;">
+            2017 发展规划　2019 治理原则　2021 伦理规范<br>
+            2022 算法推荐　2023 深度合成　2023 生成式　2025 标识办法
+          </div>
+        </div>
+      </div>
+      <!-- 右：高宽区说明 -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--line);padding-left:38px;">
+        <div class="card red" style="margin-bottom:10px;">
+          <div class="card-h">高宽区 · 多年稳定</div>
+          <p><b>2017《新一代人工智能发展规划》</b>位于层级高、形态宽的位置，因<b>不针对具体技术形态</b>，故多年保持稳定。</p>
+        </div>
+        <div class="card" style="margin-bottom:10px;">
+          <div class="card-h">高宽区 · 价值取向</div>
+          <p><b>2019《新一代人工智能治理原则》</b>同属高宽区，承担价值取向功能，提出<span class="em">八条原则</span>：</p>
+          <div class="chip-grid" style="margin-top:8px;">
+            <span class="chip">和谐友好</span><span class="chip">公平公正</span><span class="chip">包容共享</span><span class="chip">尊重隐私</span>
+            <span class="chip">安全可控</span><span class="chip">共担责任</span><span class="chip">开放协作</span><span class="chip">敏捷治理</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;padding-top:10px;border-top:1px solid var(--line);">
+          <p style="font-size:19px;line-height:1.6;color:var(--ink2);">
+            <b style="color:var(--ink);">中宽区</b>　<b>2021《伦理规范》</b>层级中等、形态宽，首次把<span class="em">使用主体</span>单列为规范对象。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十 伦理规范首次单列使用主体 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">伦理规范首次单列使用主体</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;align-items:center;gap:24px;background:var(--rice);padding:14px 26px;margin-bottom:18px;">
+      <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--vermil);white-space:nowrap;">2021</div>
+      <div style="font-family:var(--serif);font-size:23px;font-weight:700;color:var(--ink);">《新一代人工智能伦理规范》</div>
+      <div style="margin-left:auto;font-size:19px;color:var(--ink3);">层级中等 · 形态宽</div>
+    </div>
+    <p class="lead" style="margin-bottom:18px;font-size:22px;line-height:1.72;">其重要作用在于<span class="em">首次把使用主体单列为规范对象</span>，提出管理、研发、供应、使用四类活动共<span class="em">十八项</span>具体要求，其上是<span class="em">六项</span>基本伦理要求。</p>
+    <div style="display:flex;gap:0;margin-bottom:18px;">
+      <div style="flex:1;background:var(--rice);padding:14px 22px;border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:34px;font-weight:700;color:var(--ink);line-height:1;">六</div>
+        <div style="font-size:19px;color:var(--ink2);margin-top:6px;">基本伦理要求</div>
+      </div>
+      <div style="width:40px;display:flex;align-items:center;justify-content:center;color:var(--vermil);font-family:var(--serif);font-size:20px;">＋</div>
+      <div style="flex:1;background:var(--verm-l);padding:14px 22px;border-top:2px solid var(--vermil);">
+        <div style="font-family:var(--serif);font-size:34px;font-weight:700;color:var(--verm-d);line-height:1;">十八</div>
+        <div style="font-size:19px;color:var(--ink2);margin-top:6px;">具体要求</div>
+      </div>
+    </div>
+    <div class="card red" style="margin-bottom:14px;">
+      <div class="card-h">与本课程直接相关</div>
+      <p>教师属于<b style="color:var(--verm-d);">使用主体</b>。这一条是本课程与《伦理规范》之间的直接接口。</p>
+    </div>
+    <div class="concl" style="margin-top:auto;">
+      伦理规范首次把教师所在的位置——<span class="em">使用主体</span>——写进了规范对象。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十一 三份规章 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">三份规章的义务各自具体</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;flex-direction:column;gap:0;flex:1;min-height:0;">
+      <div style="display:flex;gap:22px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line);">
+        <div style="width:96px;flex-shrink:0;font-family:var(--serif);font-size:24px;font-weight:700;color:var(--vermil);">2022</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:7px;">《互联网信息服务算法推荐管理规定》</div>
+          <div style="font-size:19px;line-height:1.66;color:var(--ink2);">义务高度具体：<b class="em2">算法备案</b> · <b class="em2">用户关闭个性化推荐的选项</b> · <b class="em2">人工干预机制</b></div>
+        </div>
+        <div style="width:270px;flex-shrink:0;font-size:18px;color:var(--ink3);line-height:1.55;text-align:right;">2021年12月31日公布<br>2022年3月1日起施行</div>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line);">
+        <div style="width:96px;flex-shrink:0;font-family:var(--serif);font-size:24px;font-weight:700;color:var(--vermil);">2023</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:7px;">《互联网信息服务深度合成管理规定》</div>
+          <div style="font-size:19px;line-height:1.66;color:var(--ink2);">核心义务：对<b class="em2">人脸生成替换</b>、<b class="em2">合成内容作显著标识</b></div>
+        </div>
+        <div style="width:270px;flex-shrink:0;font-size:18px;color:var(--ink3);line-height:1.55;text-align:right;">2022年11月25日公布<br>2023年1月10日起施行</div>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line);">
+        <div style="width:96px;flex-shrink:0;font-family:var(--serif);font-size:24px;font-weight:700;color:var(--vermil);">2023</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:7px;">《生成式人工智能服务管理暂行办法》</div>
+          <div style="font-size:19px;line-height:1.66;color:var(--ink2);"><b class="em2">训练数据合法性</b> · <b class="em2">内容标识</b> · <b class="em2">未成年人保护</b>；明确对生成式服务实行<span class="em">包容审慎</span>和<span class="em">分类分级</span>监管</div>
+        </div>
+        <div style="width:270px;flex-shrink:0;font-size:18px;color:var(--ink3);line-height:1.55;text-align:right;">七部门联合公布<br>2023年8月15日起施行</div>
+      </div>
+    </div>
+    <div class="concl">
+      三份规章同处<span class="em">层级低、形态窄</span>的窄低区，义务高度具体。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十二 标识义务细化 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">标识义务细化为两类</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <div class="grid2" style="gap:40px;flex:0 0 auto;margin-bottom:24px;">
+      <div class="card red">
+        <div class="card-h">显式标识</div>
+        <p>在生成合成内容及其交互界面中，以<span class="em">显著方式</span>向公众提示内容由人工智能生成。</p>
+      </div>
+      <div class="card red">
+        <div class="card-h">隐式标识</div>
+        <p>在生成合成内容的文件元数据中嵌入<span class="em">隐式信息</span>，用于溯源与验证。</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:26px;align-items:stretch;margin-bottom:24px;">
+      <div style="flex:1;background:var(--rice);padding:22px 24px;border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px;">2025《人工智能生成合成内容标识办法》</div>
+        <p style="font-size:19px;line-height:1.7;color:var(--ink2);">把标识义务<b>细化为显式与隐式两类</b>。<br><span style="color:var(--ink3);font-size:18px;">2023年7月13日由七部门联合公布，2023年8月15日起施行。</span></p>
+      </div>
+      <div style="flex:1;background:var(--rice);padding:22px 24px;border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px;">GB 45438-2025</div>
+        <p style="font-size:19px;line-height:1.7;color:var(--ink2);">《网络安全技术 人工智能生成合成内容标识方法》配套<b>强制性国家标准</b>，对标识的<span class="em">时长、面积</span>作出量化规定。<br><span style="color:var(--ink3);font-size:18px;">与《标识办法》同日于2025年9月1日施行。</span></p>
+      </div>
+    </div>
+    <div class="concl red">
+      同日施行：一部办法与一部强制性国标，构成<span class="em">义务 + 量化标准</span>的配套结构。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十三 治理框架迭代 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">治理框架按年度迭代</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;align-items:center;gap:22px;margin-bottom:22px;">
+      <div style="font-family:var(--serif);font-size:24px;font-weight:700;color:var(--ink);">《人工智能安全治理框架》系列</div>
+      <div style="font-size:19px;color:var(--ink3);">2024年首发 · 层级低、形态宽</div>
+    </div>
+    <div style="display:flex;gap:0;margin-bottom:22px;">
+      <div style="flex:1;background:var(--rice);padding:20px 22px;border-top:2px solid var(--line);">
+        <div style="font-family:var(--serif);font-size:32px;font-weight:700;color:var(--ink);line-height:1;">1.0</div>
+        <div style="font-size:19px;color:var(--ink3);margin-top:9px;">2024年9月发布</div>
+      </div>
+      <div style="flex:1;background:var(--rice);padding:20px 22px;border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:32px;font-weight:700;color:var(--ink);line-height:1;">2.0</div>
+        <div style="font-size:19px;color:var(--ink3);margin-top:9px;">2025年9月发布</div>
+      </div>
+      <div style="flex:1;background:var(--verm-l);padding:20px 22px;border-top:2px solid var(--vermil);">
+        <div style="font-family:var(--serif);font-size:32px;font-weight:700;color:var(--verm-d);line-height:1;">3.0</div>
+        <div style="font-size:19px;color:var(--verm-d);margin-top:9px;">2026年9月发布</div>
+      </div>
+    </div>
+    <div class="grid2" style="gap:36px;flex:0 0 auto;margin-bottom:20px;">
+      <div class="card plain">
+        <div class="card-h">从风险分类切入</div>
+        <p>为各类形态共用，核心逻辑为<span class="em">风险分类 → 技术应对 → 综合治理</span>。位于低宽区，管框架不管具体操作。</p>
+      </div>
+      <div class="card red">
+        <div class="card-h">3.0版最实质的变化</div>
+        <p>增设<span class="em">智能体风险管理专章</span>，按全生命周期梳理智能体各环节风险及对应防范措施。</p>
+      </div>
+    </div>
+    <div class="concl">
+      反映治理对象已从「<span class="em">回答问题</span>」扩展到「<span class="em">执行任务</span>」。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十四 伦理审查与指引 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">三</span><span class="bar"></span><span class="txt">文件的坐标定位</span></div>
+    <h2 class="stitle">伦理审查与指引同属低层宽面</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div class="grid2" style="gap:34px;flex:0 0 auto;margin-bottom:22px;">
+      <div class="card">
+        <div class="card-h">2026《人工智能科技伦理审查与服务办法（试行）》</div>
+        <p>由工业和信息化部等<b>十部门</b>联合印发，文号<span class="em">工信部联科〔2026〕75号</span>。把伦理要求从<b>原则倡导</b>推进到<b>审查与落实</b>环节。</p>
+      </div>
+      <div class="card">
+        <div class="card-h">《人工智能应用伦理安全指引 1.0》</div>
+        <p>由全国网络安全标准化技术委员会于2026年5月发布，编号<span class="em">TC260-005</span>。属技术文件，给出<b>应用开发、服务提供、应用使用</b>三类主体的伦理安全指引。</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <div style="font-size:19px;color:var(--ink3);white-space:nowrap;">坐标定位</div>
+      <div style="height:1px;flex:1;background:var(--line);"></div>
+      <div style="font-family:var(--serif);font-size:21px;font-weight:700;color:var(--verm-d);white-space:nowrap;">层级低 · 形态宽</div>
+    </div>
+    <div class="concl red">
+      定位完成后，一条规律浮现：<span class="em">形态宽而层级高</span>的文件更新频率低，<span class="em">形态窄而层级低</span>的文件更新频率高。<br>
+      <span style="font-size:20px;color:var(--ink2);">前者管方向，后者管操作。</span>
+    </div>
+  </div>
+</section>
+<!-- ============ 十五 形态可切分而风险难切分 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">四</span><span class="bar"></span><span class="txt">维度成因与三条主线</span></div>
+    <h2 class="stitle">形态可切分而风险难切分</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div class="grid2" style="gap:36px;flex:1;min-height:0;">
+      <div class="col">
+        <div class="card red" style="flex:1;">
+          <div class="card-h">维度一之所以是技术形态</div>
+          <p><b>技术迭代周期短于立法周期</b>，而技术形态可以清晰切分，风险却难以清晰切分。</p>
+          <p style="margin-top:14px;">按形态立法，每出现一种新形态，<b>增补一份文件即可</b>，不必等统一法典。</p>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--rice3);">
+            <p style="color:var(--verm-d);font-weight:700;">代价是规范分散。</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="flex:1;">
+          <div class="card-h">维度二之所以是层级</div>
+          <p>原因在于<b>义务的可执行性</b>。</p>
+          <p style="margin-top:14px;">备案、标识、内容审核，<b>平台具备履行的技术能力，个体不具备</b>。</p>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+            <p style="color:var(--ink);font-weight:700;">把主要义务配置给服务提供者，监管链条最短、执行成本最低。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="concl">
+      形态是立法成本的解，层级是执行成本的解。<span class="em">两个维度各有其成因，不是一般性的分类偏好。</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十六 使用者承担剩余义务 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">四</span><span class="bar"></span><span class="txt">维度成因与三条主线</span></div>
+    <h2 class="stitle">使用者承担剩余义务</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <p class="lead" style="margin-bottom:24px;">由此产生一个必须讲清的事实：<b>义务主要配置给服务提供者，使用者承担的是剩余义务</b>。</p>
+    <div class="grid2" style="gap:36px;flex:0 0 auto;margin-bottom:24px;">
+      <div class="card">
+        <div class="card-h">配置依据</div>
+        <p>各规章的<b>责任条款多以服务提供者为主体</b>；使用者义务则散见于个人信息保护的一般法律，以及各规章中关于使用行为的具体条款。</p>
+      </div>
+      <div class="card red">
+        <div class="card-h">剩余义务的性质</div>
+        <p>数量少，但<b>不可免除</b>。教师的合规责任，正落在这个位置。</p>
+      </div>
+    </div>
+    <div style="border-left:4px solid var(--vermil);background:var(--verm-l);padding:20px 24px;margin-bottom:22px;">
+      <p style="font-size:21px;line-height:1.75;">它不来自某一份人工智能规章，而来自<span class="em">个人信息保护的一般法律</span>，以及<span class="em">各规章中关于使用行为的具体条款</span>。</p>
+    </div>
+    <div class="concl">
+      教师的合规责任来源分散、条款隐蔽——这正是需要先讲清体系结构的原因。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十七 一件日常操作横跨三个形态 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">四</span><span class="bar"></span><span class="txt">维度成因与三条主线</span></div>
+    <h2 class="stitle">一件日常操作横跨三个形态</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <p class="lead" style="margin-bottom:16px;">这一结构在具体场景中并不抽象。一位教师用某款 AI 工具<span class="em">生成课件插图</span>——</p>
+    <div class="flow" style="margin-bottom:16px;">
+      <div class="fnode red">
+        <div class="fh red">生成式服务</div>
+        <p>该工具提供生成能力，落入《生成式人工智能服务管理暂行办法》</p>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fnode red">
+        <div class="fh red">内容标识</div>
+        <p>生成内容带标识义务，落入《人工智能生成合成内容标识办法》</p>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fnode red">
+        <div class="fh red">算法推荐</div>
+        <p>若该工具还向学生推荐学习资源，则又涉及算法推荐规范</p>
+      </div>
+    </div>
+    <!-- 合规动作链 -->
+    <div style="background:var(--rice);padding:16px 24px;border-top:2px solid var(--ink);margin-bottom:16px;">
+      <div style="font-family:var(--serif);font-size:21px;font-weight:700;margin-bottom:11px;">同一件操作，三条并行的义务链</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;">
+        <div style="padding-right:20px;border-right:1px solid var(--line);">
+          <div style="font-size:19px;color:var(--ink3);margin-bottom:6px;">① 服务提供者</div>
+          <div style="font-size:19px;color:var(--ink2);line-height:1.5;">训练数据合法 · 内容显著标识</div>
+        </div>
+        <div style="padding:0 20px;border-right:1px solid var(--line);">
+          <div style="font-size:19px;color:var(--ink3);margin-bottom:6px;">② 内容标识</div>
+          <div style="font-size:19px;color:var(--ink2);line-height:1.5;">显式标识 · 隐式标识 · 元数据</div>
+        </div>
+        <div style="padding-left:20px;">
+          <div style="font-size:19px;color:var(--ink3);margin-bottom:6px;">③ 使用者（教师）</div>
+          <div style="font-size:19px;color:var(--ink);line-height:1.5;font-weight:700;">传播时不得删除标识</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:26px;margin-bottom:16px;">
+      <div style="flex:1;border-left:3px solid var(--ink3);padding:4px 0 4px 20px;">
+        <div style="font-size:19px;color:var(--ink3);margin-bottom:6px;">常见误判</div>
+        <p style="font-size:20px;color:var(--ink2);">先找文件、再套用条款</p>
+      </div>
+      <div style="flex:1;border-left:3px solid var(--vermil);padding:4px 0 4px 20px;">
+        <div style="font-size:19px;color:var(--verm-d);margin-bottom:6px;">正确顺序</div>
+        <p style="font-size:20px;color:var(--ink);font-weight:700;">先判断形态，再找文件</p>
+      </div>
+    </div>
+    <div class="concl red">
+      同一件日常操作，横跨三个形态。教师首先要做的不是找文件，而是<span class="em">判断形态</span>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十八 三条不写在文件里的取向 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">四</span><span class="bar"></span><span class="txt">维度成因与三条主线</span></div>
+    <h2 class="stitle">三条不写在文件里的取向</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <p class="sub" style="margin-bottom:20px;">两个维度之外，还有三条贯穿全部文件的取向。它们<b>不写在任何一份文件里</b>，却是所有文件共同的出发点。</p>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:22px;align-items:flex-start;background:var(--rice);padding:17px 24px;border-left:4px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--ink);line-height:1;flex-shrink:0;">一</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:23px;font-weight:700;margin-bottom:7px;">发展与安全并重</div>
+          <p style="font-size:19px;line-height:1.62;color:var(--ink2);">规范的目的在于让应用可持续，<b>不以禁止替代治理</b>。《生成式人工智能服务管理暂行办法》第一条即同时列出<span class="em">促进发展</span>与<span class="em">防范风险</span>两项立法目的。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-start;background:var(--rice);padding:17px 24px;border-left:4px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--ink);line-height:1;flex-shrink:0;">二</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:23px;font-weight:700;margin-bottom:7px;">分类分级</div>
+          <p style="font-size:19px;line-height:1.62;color:var(--ink2);"><b>不设统一门槛</b>，按技术形态与风险程度分别设定要求。这一取向在安全治理框架的版本迭代中体现得最为清楚。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-start;background:var(--verm-l);padding:17px 24px;border-left:4px solid var(--vermil);">
+        <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--verm-d);line-height:1;flex-shrink:0;">三</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:23px;font-weight:700;color:var(--verm-d);margin-bottom:7px;">伦理先行于法律</div>
+          <p style="font-size:19px;line-height:1.62;color:var(--ink2);">伦理规范、伦理审查办法<b>先于专门立法出台</b>，伦理要求承担了在法律缺位时提供判断依据的功能。</p>
+        </div>
+      </div>
+    </div>
+    <!-- 三条取向的共同落点 -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:26px;">
+      <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);white-space:nowrap;">三条取向的共同落点</div>
+      <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <div style="font-size:19px;color:var(--ink2);line-height:1.45;border-left:2px solid var(--rice3);padding-left:12px;">不禁止<br>而设条件</div>
+        <div style="font-size:19px;color:var(--ink2);line-height:1.45;border-left:2px solid var(--rice3);padding-left:12px;">不设统一门槛<br>而分级</div>
+        <div style="font-size:19px;color:var(--ink2);line-height:1.45;border-left:2px solid var(--rice3);padding-left:12px;">法未定时<br>伦理先判</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 十九 伦理先行是治理取向 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">四</span><span class="bar"></span><span class="txt">维度成因与三条主线</span></div>
+    <h2 class="stitle">伦理先行是治理取向</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body">
+    <div class="grid2" style="gap:52px;flex:1;min-height:0;">
+      <div class="col">
+        <div class="card red" style="margin-bottom:22px;">
+          <div class="card-h">「伦理先行」是什么</div>
+          <p>是<b style="color:var(--verm-d);">治理取向</b>的表述，<b style="color:var(--verm-d);">非法律原则</b>。它描述的是文件出台的先后与功能分工，不是法律位阶上的概念。</p>
+        </div>
+        <div class="card">
+          <div class="card-h">它不是什么</div>
+          <p>不意味伦理要求可以替代法条，也不意味着伦理规范具有强制约束力。二者功能不同：法律解决<span class="em">必须做什么</span>，伦理提供<span class="em">应当怎么做</span>的判断依据。</p>
+        </div>
+      </div>
+      <div class="col vsep">
+        <div style="font-family:var(--serif);font-size:23px;font-weight:700;color:var(--ink);margin-bottom:20px;">这一顺序决定了什么</div>
+        <div class="steps">
+          <div class="step">
+            <div class="s">一</div>
+            <div class="st">教师在实践中遇到的<b>许多问题</b>，没有可直接援引的法条</div>
+          </div>
+          <div class="step">
+            <div class="s">二</div>
+            <div class="st">可依据的是<b style="color:var(--verm-d);">伦理指引</b>——《伦理规范》《伦理审查办法》《伦理安全指引》</div>
+          </div>
+          <div class="step">
+            <div class="s">三</div>
+            <div class="st">因此，讲清「哪些是法律、哪些是伦理」，本身就是合规能力的一部分</div>
+          </div>
+        </div>
+        <!-- 对照 -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+          <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+            <span style="font-family:var(--serif);font-size:19px;font-weight:700;color:var(--ink);white-space:nowrap;">有专门规章</span>
+            <span style="font-size:19px;color:var(--ink2);">该规章的具体条款 + 上位法依据</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:14px;">
+            <span style="font-family:var(--serif);font-size:19px;font-weight:700;color:var(--verm-d);white-space:nowrap;">仅有伦理文件</span>
+            <span style="font-size:19px;color:var(--ink2);">伦理规范、伦理审查办法、伦理安全指引</span>
+          </div>
+        </div>
+        <div class="concl" style="margin-top:16px;">
+          没有法条可援引时，<span class="em">伦理指引就是判断依据</span>。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 二十 两个问句 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">五</span><span class="bar"></span><span class="txt">判断新文件与教师含义</span></div>
+    <h2 class="stitle">两个问句定文件性质</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <p class="lead" style="margin-bottom:22px;">体系结构稳定之后，判断一份新文件的性质<b>只需两个问句</b>。</p>
+    <div class="grid2" style="gap:36px;flex:1;min-height:0;">
+      <div class="card red">
+        <div class="big">一问</div>
+        <div class="card-h">它管的是哪一种技术形态</div>
+        <ul class="plain" style="margin-top:14px;">
+          <li>若指向某一<b>具体形态</b> → 属<b class="em2">常规增补</b>，在坐标上落在形态窄的区域</li>
+          <li>若指向<b>全部形态</b> → 可能是<b class="em2">层级提升</b>或<b class="em2">方向调整</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="big" style="color:var(--ink);">二问</div>
+        <div class="card-h">它的义务主要配置给谁</div>
+        <ul class="plain" style="margin-top:14px;">
+          <li>若仍以<b>服务提供者</b>为主 → <b class="em2">体系未变</b></li>
+          <li>若开始向<b>使用者、组织者</b>大量配置义务 → 属<b class="em2">结构变化</b>，教师的合规负担会随之改变</li>
+        </ul>
+      </div>
+    </div>
+    <div class="concl red">
+      两个问句的价值在于：把对新规的<span class="em">被动等待</span>，转为主动<span class="em">预判</span>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 二十一 走一遍 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">五</span><span class="bar"></span><span class="txt">判断新文件与教师含义</span></div>
+    <h2 class="stitle">以深度合成规定走一遍</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;align-items:center;gap:20px;background:var(--rice);padding:16px 24px;margin-bottom:22px;">
+      <span style="font-family:var(--serif);font-size:21px;font-weight:700;">《互联网信息服务深度合成管理规定》</span>
+      <span style="margin-left:auto;font-size:19px;color:var(--ink3);">样例文件</span>
+    </div>
+    <div style="display:flex;align-items:stretch;margin-bottom:20px;">
+      <div style="flex:1;background:var(--verm-l);padding:20px 24px;border-top:2px solid var(--vermil);">
+        <div style="font-family:var(--serif);font-size:21px;font-weight:700;color:var(--verm-d);margin-bottom:10px;">一问形态</div>
+        <p style="font-size:19px;line-height:1.68;color:var(--ink2);">指向<b>深度合成</b>这一具体形态 → 属<span class="em">常规增补</span>。</p>
+      </div>
+      <div style="width:56px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;color:var(--vermil);">→</div>
+      <div style="flex:1;background:var(--rice);padding:20px 24px;border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:21px;font-weight:700;margin-bottom:10px;">二问义务主体</div>
+        <p style="font-size:19px;line-height:1.68;color:var(--ink2);">主要配置给<b>深度合成服务提供者</b>，要求其对生成内容作显著标识；使用者仅在传播环节承担不得删除标识的义务。</p>
+      </div>
+    </div>
+    <div style="border-left:4px solid var(--vermil);background:var(--verm-l);padding:20px 24px;margin-bottom:22px;">
+      <p style="font-size:21px;line-height:1.72;">结论：该文件<span class="em">未改变体系结构</span>。教师只需在<span class="em">传播他人合成内容</span>时注意标识完整。</p>
+    </div>
+    <div class="concl">
+      两个问句走完，判断结束——不必通读全文，不必等别人解读。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 二十二 三点含义（1、2） ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">五</span><span class="bar"></span><span class="txt">判断新文件与教师含义</span></div>
+    <h2 class="stitle">教师的三点含义</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:22px;align-items:flex-start;background:var(--verm-l);padding:18px 26px;border-left:4px solid var(--vermil);">
+        <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--verm-d);line-height:1;flex-shrink:0;">一</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:23px;font-weight:700;color:var(--verm-d);margin-bottom:7px;">教师处于使用主体位置</div>
+          <p style="font-size:20px;line-height:1.62;color:var(--ink2);">义务数量少，但性质是<b style="color:var(--verm-d);">法定的</b>，<b>不因「我不知道」而免除</b>。因此需要读懂结构，不必通读全文。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-start;background:var(--rice);padding:18px 26px;border-left:4px solid var(--ink);">
+        <div style="font-family:var(--serif);font-size:30px;font-weight:700;color:var(--ink);line-height:1;flex-shrink:0;">二</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--serif);font-size:23px;font-weight:700;margin-bottom:7px;">具体问题多数落在形态边界上</div>
+          <p style="font-size:20px;line-height:1.62;color:var(--ink2);">首要动作是判断所用产品属于哪一类服务：<b>推荐算法</b>、<b>深度合成</b>、<b>生成式服务</b>，还是仅涉及<b>内容标识</b>。</p>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:20px;color:var(--vermil);font-weight:700;">
+            形态判断错了，援引的文件就错了。
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 形态判断清单 -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+      <div style="font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:10px;">形态判断清单：产品是什么</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div style="background:var(--rice);padding:12px 14px;border-top:2px solid var(--ink);">
+          <div style="font-size:18px;color:var(--ink3);margin-bottom:5px;">推荐内容</div>
+          <div style="font-family:var(--serif);font-size:19px;font-weight:700;margin-bottom:4px;">算法推荐</div>
+          <div style="font-size:18px;color:var(--ink2);line-height:1.4;">可关闭个性化</div>
+        </div>
+        <div style="background:var(--rice);padding:12px 14px;border-top:2px solid var(--ink);">
+          <div style="font-size:18px;color:var(--ink3);margin-bottom:5px;">合成人脸</div>
+          <div style="font-family:var(--serif);font-size:19px;font-weight:700;margin-bottom:4px;">深度合成</div>
+          <div style="font-size:18px;color:var(--ink2);line-height:1.4;">不得删标识</div>
+        </div>
+        <div style="background:var(--rice);padding:12px 14px;border-top:2px solid var(--ink);">
+          <div style="font-size:18px;color:var(--ink3);margin-bottom:5px;">生成图文</div>
+          <div style="font-family:var(--serif);font-size:19px;font-weight:700;margin-bottom:4px;">生成式服务</div>
+          <div style="font-size:18px;color:var(--ink2);line-height:1.4;">内容标识</div>
+        </div>
+        <div style="background:var(--verm-l);padding:12px 14px;border-top:2px solid var(--vermil);">
+          <div style="font-size:18px;color:var(--ink3);margin-bottom:5px;">对外分发</div>
+          <div style="font-family:var(--serif);font-size:19px;font-weight:700;color:var(--verm-d);margin-bottom:4px;">内容标识</div>
+          <div style="font-size:18px;color:var(--ink2);line-height:1.4;">显式 + 隐式</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 二十三 合规只解决底线 ============ -->
+<section class="slide">
+  <div class="head">
+    <div class="chap"><span class="idx">五</span><span class="bar"></span><span class="txt">判断新文件与教师含义</span></div>
+    <h2 class="stitle">合规只解决底线</h2>
+    <hr class="hairline strong">
+  </div>
+  <div class="body tight">
+    <div style="display:flex;gap:22px;align-items:flex-start;background:var(--rice);padding:22px 26px;border-left:4px solid var(--ink);margin-bottom:22px;">
+      <div style="font-family:var(--serif);font-size:32px;font-weight:700;color:var(--ink);line-height:1;flex-shrink:0;">三</div>
+      <div style="flex:1;">
+        <div style="font-family:var(--serif);font-size:24px;font-weight:700;margin-bottom:9px;">合规只解决底线，不解决取舍</div>
+        <p style="font-size:20px;line-height:1.7;color:var(--ink2);"><b>两份都合规的方案之间如何选择，规范不作回答。</b></p>
+      </div>
+    </div>
+    <div style="font-family:var(--serif);font-size:23px;font-weight:700;color:var(--ink);margin-bottom:14px;">取舍的判断顺序</div>
+    <div class="steps" style="margin-bottom:20px;">
+      <div class="step">
+        <div class="s">一</div>
+        <div class="st">先看<b>教学目标</b>是否需要该功能</div>
+      </div>
+      <div class="step">
+        <div class="s">二</div>
+        <div class="st">再看<b>学生认知阶段</b>是否适配</div>
+      </div>
+      <div class="step">
+        <div class="s">三</div>
+        <div class="st">最后看所用<b>数据是否满足最小必要</b></div>
+      </div>
+    </div>
+    <div class="concl red">
+      三点合起来，回到开篇的承诺：结构清楚之后，一份新文件摆在面前，<span class="em">两个问句即可定位</span>，不必等别人解读。
+    </div>
+  </div>
+</section>
+</div>
+<script>
+(function(){
+  'use strict';
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var cur = 0;
+
+  function show(i){
+    if(i < 0 || i >= total) return;
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    cur = i;
+    try{ location.hash = 'p' + (i+1); }catch(e){}
+  }
+  function next(){ show(cur+1); }
+  function prev(){ show(cur-1); }
+
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(total-1); break;
+      case 'f': case 'F':
+        if(!document.fullscreenElement){ document.documentElement.requestFullscreen(); }
+        else { document.exitFullscreen(); }
+        break;
+    }
+  });
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest('a')) return;
+    var x = e.clientX, w = window.innerWidth;
+    if(x > w * 0.78) next();
+    else if(x < w * 0.22) prev();
+  });
+
+  var tx = 0;
+  document.addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    var d = e.changedTouches[0].clientX - tx;
+    if(Math.abs(d) > 50){ if(d < 0) next(); else prev(); }
+  }, {passive:true});
+
+  var m = /^#p(\d+)$/.exec(location.hash || '');
+  show(m ? Math.min(total, Math.max(1, parseInt(m[1],10))) - 1 : 0);
+})();
+</script>
+</body>
+</html>

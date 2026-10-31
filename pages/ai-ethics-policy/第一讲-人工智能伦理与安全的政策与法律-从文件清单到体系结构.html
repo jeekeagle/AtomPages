@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第一讲 人工智能伦理与安全的政策与法律：从文件清单到体系结构</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #ffffff; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; color: #1a1a1a; }
+
+  .slide {
+    width: 1280px; height: 720px;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+    padding: 60px 80px;
+    page-break-after: always;
+    break-after: page;
+    display: none;
+    flex-direction: column;
+  }
+  .slide.active { display: flex; }
+
+  /* 打印时全部显示 */
+  @media print {
+    .slide { display: flex !important; }
+  }
+  @page { size: 1280px 720px; margin: 0; }
+
+  h1 { font-size: 52px; font-weight: 700; line-height: 1.3; }
+  h2 { font-size: 38px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+  h3 { font-size: 24px; font-weight: 700; line-height: 1.4; }
+  p, li, td, th, .cell { font-size: 21px; line-height: 1.65; }
+
+  .rule { border: none; border-top: 3px solid #1a1a1a; margin: 22px 0 30px; width: 100%; }
+  .rule-thin { border: none; border-top: 1px solid #c8c8c8; margin: 16px 0; }
+
+  .muted { color: #555555; }
+  .strong { font-weight: 700; }
+
+  /* 两栏布局 */
+  .cols { display: flex; gap: 56px; flex: 1; min-height: 0; }
+  .col { flex: 1; min-width: 0; }
+
+  /* 带编号的条目 */
+  .num-item { display: flex; gap: 18px; margin-bottom: 22px; align-items: flex-start; }
+  .num-mark { font-size: 26px; font-weight: 700; border: 2px solid #1a1a1a; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .num-item .txt { font-size: 21px; line-height: 1.6; padding-top: 6px; }
+
+  /* 列表 */
+  ul.plain { list-style: none; }
+  ul.plain li { padding-left: 26px; position: relative; margin-bottom: 14px; }
+  ul.plain li::before { content: ""; position: absolute; left: 0; top: 14px; width: 10px; height: 2px; background: #1a1a1a; }
+
+  /* 表格 */
+  table { border-collapse: collapse; width: 100%; }
+  th { border-top: 3px solid #1a1a1a; border-bottom: 2px solid #1a1a1a; padding: 12px 14px; text-align: left; font-size: 21px; font-weight: 700; }
+  td { border-bottom: 1px solid #d5d5d5; padding: 12px 14px; vertical-align: top; }
+  tr:last-child td { border-bottom: 2px solid #1a1a1a; }
+
+  /* 引言块：只用细线，不用色块 */
+  .quote { border-left: 4px solid #1a1a1a; padding: 6px 0 6px 24px; font-size: 22px; line-height: 1.7; }
+
+  /* 层级条：单色，灰度渐进，非彩色色块 */
+  .layer { display: flex; margin-bottom: 12px; }
+  .layer .name { width: 300px; flex-shrink: 0; font-weight: 700; font-size: 22px; padding: 14px 0; border-top: 2px solid #1a1a1a; }
+  .layer .detail { flex: 1; font-size: 20px; line-height: 1.55; padding: 14px 0 14px 32px; border-top: 2px solid #1a1a1a; color: #333333; }
+  .layer:nth-child(2) .detail, .layer:nth-child(3) .detail, .layer:nth-child(4) .detail { border-top: 1px solid #c8c8c8; }
+
+  /* 结论条 */
+  .conclusion { border-top: 3px solid #1a1a1a; border-bottom: 3px solid #1a1a1a; padding: 20px 0; font-size: 25px; font-weight: 700; line-height: 1.6; margin-top: auto; }
+
+  /* 封面 */
+  .cover { justify-content: center; }
+  .cover .kicker { font-size: 24px; letter-spacing: 6px; color: #555555; margin-bottom: 26px; }
+  .cover h1 { font-size: 58px; margin-bottom: 34px; }
+  .cover .subline { font-size: 24px; color: #555555; }
+
+  /* 网格定位图 */
+  .axis-wrap { display: flex; gap: 40px; flex: 1; min-height: 0; align-items: stretch; }
+  .axis-box { flex: 1.15; position: relative; }
+  .axis-note { flex: 1; }
+
+  /* 双问句 */
+  .ask { display: flex; gap: 40px; flex: 1; min-height: 0; }
+  .ask-block { flex: 1; border-top: 3px solid #1a1a1a; padding-top: 22px; }
+
+  .footnote { font-size: 18px; color: #555555; margin-top: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- 一 封面 -->
+<section class="slide cover active">
+  <div class="kicker">人工智能伦理与安全系列课程</div>
+  <h1>第一讲<br>人工智能伦理与安全的政策与法律<br>——从文件清单到体系结构</h1>
+  <hr class="rule" style="width: 320px; margin-left: 0;">
+  <div class="subline">不逐条读文件，讲清楚这些文件构成什么结构</div>
+</section>
+
+<!-- 二 讲授的起点 -->
+<section class="slide">
+  <h2>讲授的起点</h2>
+  <hr class="rule">
+  <div class="cols">
+    <div class="col">
+      <h3 style="margin-bottom: 20px;">各位老师的日常处境</h3>
+      <div class="num-item"><div class="num-mark">一</div><div class="txt">需要遵守的规范文件很多，逐份读完不现实</div></div>
+      <div class="num-item"><div class="num-mark">二</div><div class="txt">新文件仍在持续出台，读完的很快过期</div></div>
+      <div class="num-item"><div class="num-mark">三</div><div class="txt">真正遇到问题时，不知道该援引哪一份</div></div>
+    </div>
+    <div class="col" style="border-left: 1px solid #d5d5d5; padding-left: 56px; display: flex; flex-direction: column; justify-content: center;">
+      <p class="muted" style="margin-bottom: 18px;">本讲不做的事</p>
+      <p class="strong" style="font-size: 26px; margin-bottom: 24px;">不逐条讲文件</p>
+      <p class="muted" style="margin-bottom: 18px;">本讲要做的事</p>
+      <p class="strong" style="font-size: 26px; margin-bottom: 24px;">讲这些文件构成什么结构</p>
+      <div class="quote">结构清楚了，任何一份新文件出台，都能在两分钟内判断：它属于体系内的常规增补，还是体系本身发生了变化。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 三 体系的实际规模 -->
+<section class="slide">
+  <h2>体系的实际规模：五级效力层级</h2>
+  <hr class="rule">
+  <div class="layer">
+    <div class="name">法律</div>
+    <div class="detail">尚无人工智能专门立法。《网络安全法》《数据安全法》《个人信息保护法》《科学技术进步法》构成全部下位规范的授权基础——任何一份部门规章的第一条，援引的都是这几部法律。</div>
+  </div>
+  <div class="layer">
+    <div class="name">行政法规</div>
+    <div class="detail">《互联网信息服务管理办法》等基础性规定。</div>
+  </div>
+  <div class="layer">
+    <div class="name">部门规章</div>
+    <div class="detail">数量最多的一层：《互联网信息服务算法推荐管理规定》《互联网信息服务深度合成管理规定》《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》。</div>
+  </div>
+  <div class="layer">
+    <div class="name">规范性文件<br>与技术标准</div>
+    <div class="detail">《新一代人工智能伦理规范》《人工智能安全治理框架》系列、《人工智能科技伦理审查与服务办法（试行）》《人工智能应用伦理安全指引》，以及配套强制性国家标准。</div>
+  </div>
+</section>
+
+<!-- 四 清单的两种排法 -->
+<section class="slide">
+  <h2>清单的两种排法，与一个共同盲点</h2>
+  <hr class="rule">
+  <div class="cols">
+    <div class="col" style="border-top: 2px solid #1a1a1a; padding-top: 20px;">
+      <h3 style="margin-bottom: 16px;">按时间排列</h3>
+      <p>得到一条逐年加密的曲线：二〇一七年起，文件出台节奏持续加快。</p>
+    </div>
+    <div class="col" style="border-top: 2px solid #1a1a1a; padding-top: 20px;">
+      <h3 style="margin-bottom: 16px;">按主题排列</h3>
+      <p>得到数据、算法、内容、安全四组——但四组之间大量交叠：算法类文件必然涉及数据，内容类文件必然涉及安全。</p>
+    </div>
+  </div>
+  <div class="rule-thin" style="margin: 30px 0;"></div>
+  <p class="strong" style="font-size: 25px; margin-bottom: 14px;">共同盲点</p>
+  <p style="font-size: 22px;">两种排法都能列出文件，但都无法回答一个问题——</p>
+  <div class="quote" style="margin-top: 18px; font-size: 26px; font-weight: 700;">为什么是这些文件，而不是另外一些？</div>
+</section>
+
+<!-- 五 两个独立维度 -->
+<section class="slide">
+  <h2>体系的两个独立维度</h2>
+  <hr class="rule">
+  <p style="font-size: 22px; margin-bottom: 26px;">把文件属性逐项编码，表象虽多，独立方向只有两个。</p>
+  <div class="cols">
+    <div class="col">
+      <div class="num-item"><div class="num-mark">一</div><div class="txt"><span class="strong">规制对象的技术形态</span>——管什么。算法推荐、深度合成、生成式服务、生成合成内容标识、科技伦理审查：每一种形态成熟到一定程度，便出现一份与之对应的规范。</div></div>
+      <div class="num-item"><div class="num-mark">二</div><div class="txt"><span class="strong">效力来源的层级</span>——由谁管、管到多硬。从法律到技术标准，同一技术形态可以在不同层级反复出现。</div></div>
+      <p class="muted" style="font-size: 20px; margin-top: 6px;">其余差异均为派生，两个维度构成一个坐标平面，秩为二。</p>
+    </div>
+    <div class="col" style="display: flex; align-items: center; justify-content: center;">
+      <svg width="480" height="380" viewBox="0 0 480 380">
+        <line x1="60" y1="320" x2="440" y2="320" stroke="#1a1a1a" stroke-width="2.5"/>
+        <line x1="60" y1="320" x2="60" y2="30" stroke="#1a1a1a" stroke-width="2.5"/>
+        <polygon points="440,320 428,314 428,326" fill="#1a1a1a"/>
+        <polygon points="60,30 54,42 66,42" fill="#1a1a1a"/>
+        <text x="250" y="358" font-size="19" fill="#1a1a1a" text-anchor="middle" font-family="Microsoft YaHei">技术形态：宽 ←→ 窄</text>
+        <text x="26" y="180" font-size="19" fill="#1a1a1a" text-anchor="middle" font-family="Microsoft YaHei" transform="rotate(-90 26 180)">效力层级：低 → 高</text>
+        <text x="90" y="70" font-size="18" fill="#555555" font-family="Microsoft YaHei">层级高 · 形态宽</text>
+        <text x="300" y="70" font-size="18" fill="#555555" font-family="Microsoft YaHei">层级高 · 形态窄</text>
+        <text x="90" y="300" font-size="18" fill="#555555" font-family="Microsoft YaHei">层级低 · 形态宽</text>
+        <text x="300" y="300" font-size="18" fill="#555555" font-family="Microsoft YaHei">层级低 · 形态窄</text>
+        <circle cx="130" cy="100" r="6" fill="#1a1a1a"/>
+        <circle cx="145" cy="112" r="6" fill="#1a1a1a"/>
+        <circle cx="120" cy="122" r="6" fill="#1a1a1a"/>
+        <circle cx="360" cy="250" r="6" fill="#1a1a1a"/>
+        <circle cx="375" cy="262" r="6" fill="#1a1a1a"/>
+        <circle cx="350" cy="272" r="6" fill="#1a1a1a"/>
+        <circle cx="385" cy="240" r="6" fill="#1a1a1a"/>
+        <circle cx="200" cy="250" r="6" fill="#1a1a1a"/>
+        <circle cx="215" cy="262" r="6" fill="#1a1a1a"/>
+        <circle cx="185" cy="270" r="6" fill="#1a1a1a"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 六 派生差异举例 -->
+<section class="slide">
+  <h2>义务差别很大，为什么不需要第三个维度</h2>
+  <hr class="rule">
+  <table>
+    <tr>
+      <th style="width: 200px;">对比项</th>
+      <th>互联网信息服务算法推荐管理规定</th>
+      <th>生成式人工智能服务管理暂行办法</th>
+    </tr>
+    <tr>
+      <td class="strong">对应形态</td>
+      <td>推荐算法这一形态</td>
+      <td>生成式服务这一形态</td>
+    </tr>
+    <tr>
+      <td class="strong">义务重点</td>
+      <td>用户选择权、算法备案、人工干预机制</td>
+      <td>训练数据合法性、内容标识、未成年人保护</td>
+    </tr>
+    <tr>
+      <td class="strong">监管取向</td>
+      <td>针对既有形态的常规规制</td>
+      <td>包容审慎、分类分级监管</td>
+    </tr>
+  </table>
+  <div class="rule-thin" style="margin: 28px 0;"></div>
+  <p style="font-size: 22px; margin-bottom: 20px;">义务内容的差别不需要第三个维度解释：</p>
+  <div class="conclusion" style="margin-top: 0;">前者针对推荐算法这一形态，后者针对生成式服务这一形态——形态不同，义务自然不同。</div>
+</section>
+
+<!-- 七 定位（一）高层级 -->
+<section class="slide">
+  <h2>在坐标上定位：层级高、形态宽的三份文件</h2>
+  <hr class="rule">
+  <table>
+    <tr>
+      <th style="width: 130px;">年份</th>
+      <th style="width: 300px;">文件</th>
+      <th>定位与功能</th>
+    </tr>
+    <tr>
+      <td>二〇一七</td>
+      <td class="strong">新一代人工智能发展规划</td>
+      <td>层级高、形态宽。不针对具体技术形态，故多年保持稳定。</td>
+    </tr>
+    <tr>
+      <td>二〇一九</td>
+      <td class="strong">新一代人工智能治理原则</td>
+      <td>同属高宽区，承担价值取向功能。</td>
+    </tr>
+    <tr>
+      <td>二〇二一</td>
+      <td class="strong">新一代人工智能伦理规范</td>
+      <td>层级中等、形态宽。首次把<b>使用主体</b>单列为规范对象，提出管理、研发、供应、使用四类活动共十八项具体要求。<b>教师属于使用主体——这一条与本课程直接相关。</b></td>
+    </tr>
+  </table>
+  <div class="footnote">高宽区文件的功能：管方向、立价值，不随单项技术的起伏而修订。</div>
+</section>
+
+<!-- 八 定位（二）低层级窄形态 -->
+<section class="slide">
+  <h2>在坐标上定位：层级低、形态窄的四份文件</h2>
+  <hr class="rule">
+  <table>
+    <tr>
+      <th style="width: 130px;">年份</th>
+      <th style="width: 320px;">文件</th>
+      <th>核心义务</th>
+    </tr>
+    <tr>
+      <td>二〇二二</td>
+      <td class="strong">互联网信息服务算法推荐管理规定</td>
+      <td>算法备案、用户关闭个性化推荐的选项、人工干预机制。</td>
+    </tr>
+    <tr>
+      <td>二〇二三</td>
+      <td class="strong">互联网信息服务深度合成管理规定</td>
+      <td>对人脸生成替换、合成内容作显著标识。</td>
+    </tr>
+    <tr>
+      <td>二〇二三</td>
+      <td class="strong">生成式人工智能服务管理暂行办法</td>
+      <td>训练数据合法性、内容标识、未成年人保护；对生成式服务实行包容审慎和分类分级监管。</td>
+    </tr>
+    <tr>
+      <td>二〇二五</td>
+      <td class="strong">人工智能生成合成内容标识办法</td>
+      <td>把标识义务细化为显式标识与隐式标识两类；配套强制性国家标准对标识的时长、面积作出量化规定。</td>
+    </tr>
+  </table>
+  <div class="footnote">窄低区文件的功能：管操作，义务高度具体，随单项技术成熟而出台。</div>
+</section>
+
+<!-- 九 定位（三）低层级宽形态 + 规律 -->
+<section class="slide">
+  <h2>在坐标上定位：层级低、形态宽的文件，与一条规律</h2>
+  <hr class="rule">
+  <div class="cols" style="flex: none;">
+    <div class="col" style="border-top: 2px solid #1a1a1a; padding-top: 18px;">
+      <h3 style="margin-bottom: 12px;">二〇二四 首发安全治理框架系列</h3>
+      <p style="font-size: 20px;">从风险分类切入，为各类形态共用，已迭代至<b>三·〇版</b>。核心逻辑：风险分类、技术应对、综合治理。</p>
+    </div>
+    <div class="col" style="border-top: 2px solid #1a1a1a; padding-top: 18px;">
+      <h3 style="margin-bottom: 12px;">二〇二六 伦理审查与伦理安全指引</h3>
+      <p style="font-size: 20px;">《人工智能科技伦理审查与服务办法（试行）》《人工智能应用伦理安全指引》，把伦理要求从原则倡导推进到<b>审查与落实</b>环节。</p>
+    </div>
+  </div>
+  <div class="rule-thin" style="margin: 34px 0;"></div>
+  <p class="muted" style="margin-bottom: 14px; font-size: 21px;">定位完成后，一条规律浮现：</p>
+  <div class="cols">
+    <div class="col">
+      <p class="strong" style="font-size: 25px;">形态宽、层级高的文件，更新频率低</p>
+      <p style="font-size: 21px; margin-top: 8px;">它们管方向。</p>
+    </div>
+    <div class="col" style="border-left: 1px solid #d5d5d5; padding-left: 56px;">
+      <p class="strong" style="font-size: 25px;">形态窄、层级低的文件，更新频率高</p>
+      <p style="font-size: 21px; margin-top: 8px;">它们管操作。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 十 两个维度的成因 -->
+<section class="slide">
+  <h2>两个维度的成因</h2>
+  <hr class="rule">
+  <div class="cols">
+    <div class="col">
+      <h3 style="margin-bottom: 16px;">为什么第一维是技术形态</h3>
+      <ul class="plain">
+        <li>技术迭代周期短于立法周期。</li>
+        <li>技术形态可以清晰切分，风险却难以清晰切分。</li>
+        <li>按形态立法：每出现一种新形态，增补一份文件即可，不必等统一法典。</li>
+      </ul>
+      <div class="quote" style="margin-top: 20px;">代价是规范分散。</div>
+    </div>
+    <div class="col" style="border-left: 1px solid #d5d5d5; padding-left: 56px;">
+      <h3 style="margin-bottom: 16px;">为什么第二维是层级</h3>
+      <ul class="plain">
+        <li>取决于义务的可执行性。</li>
+        <li>备案、标识、内容审核——平台具备履行的技术能力，个体不具备。</li>
+        <li>把主要义务配置给服务提供者，监管链条最短、执行成本最低。</li>
+      </ul>
+      <div class="quote" style="margin-top: 20px;">层级即执行能力的分布。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 十一 结构性事实 -->
+<section class="slide">
+  <h2>一个必须讲清的结构性事实</h2>
+  <hr class="rule">
+  <div class="conclusion" style="margin-top: 0; margin-bottom: 36px;">义务主要配置给服务提供者，使用者承担的是剩余义务。剩余义务数量少，但不可免除。</div>
+  <div class="cols">
+    <div class="col">
+      <h3 style="margin-bottom: 16px;">教师的合规责任落在哪里</h3>
+      <ul class="plain">
+        <li>正落在「使用者剩余义务」这个位置。</li>
+        <li>它不来自某一份人工智能规章。</li>
+        <li>它来自个人信息保护的一般法律，以及各规章中关于使用行为的具体条款。</li>
+      </ul>
+    </div>
+    <div class="col" style="border-left: 1px solid #d5d5d5; padding-left: 56px;">
+      <h3 style="margin-bottom: 16px;">对本讲的意味</h3>
+      <p style="font-size: 22px;">读懂结构，比通读全文更重要——因为教师的义务不在某一份专门文件里，而在体系的结构关系里。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 十二 三条主线 -->
+<section class="slide">
+  <h2>体系的三条主线</h2>
+  <hr class="rule">
+  <p style="font-size: 21px; margin-bottom: 26px;">两个维度之外，还有三条贯穿全部文件的取向——它们不是文件，而是文件共同的出发点。</p>
+  <div class="num-item"><div class="num-mark">一</div><div class="txt"><span class="strong">发展与安全并重。</span>规范的目的在于让应用可持续，不以禁止替代治理。《生成式人工智能服务管理暂行办法》第一条即同时列出促进发展与防范风险两项立法目的。</div></div>
+  <div class="num-item"><div class="num-mark">二</div><div class="txt"><span class="strong">分类分级。</span>不设统一门槛，按技术形态与风险程度分别设定要求。这一取向在安全治理框架的版本迭代中体现得最为清楚。</div></div>
+  <div class="num-item"><div class="num-mark">三</div><div class="txt"><span class="strong">伦理先行于法律。</span>伦理规范、伦理审查办法先于专门立法出台，伦理要求承担了在法律缺位时提供判断依据的功能。</div></div>
+  <div class="quote" style="margin-top: 10px;">这一顺序决定了：教师在实践中遇到的许多问题，没有可直接援引的法条，只有伦理指引。</div>
+</section>
+
+<!-- 十三 两个问句 -->
+<section class="slide">
+  <h2>用两个问句判断新文件</h2>
+  <hr class="rule">
+  <div class="ask">
+    <div class="ask-block">
+      <h3 style="margin-bottom: 18px;">一问：它管的是哪一种技术形态</h3>
+      <p style="font-size: 21px; margin-bottom: 18px;">若指向某一具体形态——属常规增补，在坐标上落在形态窄的区域。</p>
+      <p style="font-size: 21px;">若指向全部形态——则可能是层级提升或方向调整。</p>
+    </div>
+    <div class="ask-block">
+      <h3 style="margin-bottom: 18px;">二问：它的义务主要配置给谁</h3>
+      <p style="font-size: 21px; margin-bottom: 18px;">若仍以服务提供者为主——体系未变。</p>
+      <p style="font-size: 21px;">若开始向使用者、组织者大量配置义务——属结构变化，教师的合规负担会随之改变。</p>
+    </div>
+  </div>
+  <div class="conclusion">这两个问句的价值在于：把对新规的被动等待，转为主动预判。</div>
+</section>
+
+<!-- 十四 对教师的三点含义 -->
+<section class="slide">
+  <h2>对教师的三点含义</h2>
+  <hr class="rule">
+  <div class="num-item"><div class="num-mark">一</div><div class="txt"><span class="strong">教师处于使用主体位置。</span>义务数量少，但性质是法定的，不因「我不知道」而免除。因此需要读懂结构，不必通读全文。</div></div>
+  <div class="num-item"><div class="num-mark">二</div><div class="txt"><span class="strong">具体问题多数落在技术形态的边界上。</span>首要动作是判断所用产品属于哪一类服务：是推荐算法、是深度合成、是生成式服务，还是仅涉及内容标识。形态判断错了，援引的文件就错了。</div></div>
+  <div class="num-item"><div class="num-mark">三</div><div class="txt"><span class="strong">合规只解决底线，不解决取舍。</span>两份都合规的方案之间如何选择，规范不作回答——这属于后续各讲的内容。</div></div>
+</section>
+
+<!-- 十五 一处提醒 -->
+<section class="slide">
+  <h2>需要提醒的一处变化</h2>
+  <hr class="rule">
+  <p style="font-size: 21px; margin-bottom: 24px;">本讲所依据的文件名称与施行时间，已按现行公开信息核对。其中两点须特别注意：</p>
+  <div class="num-item"><div class="num-mark">一</div><div class="txt"><span class="strong">《人工智能安全治理框架》已迭代至三·〇版</span>，讲义引用时不可停留在初版。</div></div>
+  <div class="num-item"><div class="num-mark">二</div><div class="txt"><span class="strong">二〇二六年新出台的伦理审查办法与伦理安全指引两份文件</span>，尚未被多数既有培训材料收录，属于本讲相对前沿的部分。</div></div>
+  <div class="quote" style="margin-top: 16px;">讲义定稿前建议再核对一次官方原文，尤其是配套强制性国家标准的量化条款。</div>
+</section>
+
+<script>
+  (function () {
+    var slides = document.querySelectorAll(".slide");
+    var idx = 0;
+    function show(n) {
+      idx = Math.max(0, Math.min(slides.length - 1, n));
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].classList.toggle("active", i === idx);
+      }
+    }
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") { show(idx + 1); e.preventDefault(); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") { show(idx - 1); e.preventDefault(); }
+      if (e.key === "Home") { show(0); }
+      if (e.key === "End") { show(slides.length - 1); }
+      if (e.key === "f" || e.key === "F") {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (e.clientX > window.innerWidth / 2) { show(idx + 1); } else { show(idx - 1); }
+    });
+    show(0);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>从单元模型到智能体</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #ffffff; color: #111111; }
+  body { font-family: "SimSun", "宋体", serif; font-size: 18px; line-height: 1.7; }
+  .slide {
+    width: 1280px; height: 720px;
+    padding: 56px 72px 48px;
+    position: relative;
+    border-top: 1px solid #111111;
+    page-break-after: always;
+    break-after: page;
+    display: flex; flex-direction: column;
+  }
+  .slide:first-of-type { border-top: none; }
+  .kicker {
+    font-family: "SimHei", "黑体", sans-serif;
+    font-size: 17px; letter-spacing: 4px;
+    border-bottom: 1px solid #111111;
+    padding-bottom: 10px; margin-bottom: 22px;
+  }
+  h1 {
+    font-family: "SimHei", "黑体", sans-serif;
+    font-weight: normal; font-size: 40px; line-height: 1.35;
+    text-align: left; margin-bottom: 8px;
+  }
+  h2 {
+    font-family: "SimHei", "黑体", sans-serif;
+    font-weight: normal; font-size: 30px; line-height: 1.4;
+    text-align: left; margin-bottom: 24px;
+  }
+  .fig { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .fig svg { max-width: 100%; max-height: 100%; }
+  .conclusion {
+    border-top: 1px solid #111111;
+    padding-top: 18px; margin-top: 18px;
+    font-size: 21px;
+  }
+  .conclusion .tag {
+    font-family: "SimHei", "黑体", sans-serif;
+    font-size: 17px; margin-right: 14px;
+  }
+  text { fill: #111111; }
+  .lbl { font-family: "SimSun", "宋体", serif; font-size: 18px; }
+  .lbl-hei { font-family: "SimHei", "黑体", sans-serif; font-size: 17px; }
+  .lbl-sm { font-family: "SimSun", "宋体", serif; font-size: 16px; }
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    .slide { width: 1280px; height: 720px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 封面 -->
+<section class="slide">
+  <div class="kicker">课件幻灯片</div>
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+    <h1>从单元模型到智能体</h1>
+    <h1 style="font-size:28px;">一次完整的迭代过程</h1>
+    <div style="margin-top:56px; max-width:820px;">
+      <p>一个只会对话的模型，经过六次叠加改造，长成一个能查资料、能接工具、能记事情、能分工干活的工作系统。每一次迭代，都是在同一台引擎上补一块短板。</p>
+    </div>
+    <svg width="880" height="140" viewBox="0 0 880 140" style="margin-top:40px;">
+      <rect x="0" y="100" width="130" height="40" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="65" y="126" text-anchor="middle" class="lbl-sm">单元模型</text>
+      <rect x="130" y="80" width="130" height="60" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="195" y="116" text-anchor="middle" class="lbl-sm">加提示词</text>
+      <rect x="260" y="60" width="130" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="325" y="106" text-anchor="middle" class="lbl-sm">加检索增强</text>
+      <rect x="390" y="40" width="130" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="455" y="86" text-anchor="middle" class="lbl-sm">加上下文协议</text>
+      <text x="455" y="110" text-anchor="middle" class="lbl-sm">加记忆</text>
+      <rect x="520" y="20" width="130" height="120" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="585" y="76" text-anchor="middle" class="lbl-sm">加多智能体</text>
+      <text x="585" y="100" text-anchor="middle" class="lbl-sm">加函数调用</text>
+      <rect x="650" y="0" width="230" height="140" fill="#111111"/>
+      <text x="765" y="78" text-anchor="middle" class="lbl-sm" style="fill:#ffffff;">智能体</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 2 起点：单元模型 -->
+<section class="slide">
+  <div class="kicker">起点</div>
+  <h2>单元模型：一个纯粹的对话机器</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="30" y="100" width="240" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="150" y="140" text-anchor="middle" class="lbl-hei">人的提问</text>
+      <text x="150" y="172" text-anchor="middle" class="lbl">一段文字输入</text>
+      <rect x="410" y="80" width="240" height="140" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="130" text-anchor="middle" class="lbl-hei">单元模型</text>
+      <text x="530" y="164" text-anchor="middle" class="lbl">参数在训练时固化</text>
+      <text x="530" y="194" text-anchor="middle" class="lbl">知识截止于训练日</text>
+      <rect x="790" y="100" width="240" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="910" y="140" text-anchor="middle" class="lbl-hei">一段回答</text>
+      <text x="910" y="172" text-anchor="middle" class="lbl">仅此而已</text>
+      <line x1="270" y1="150" x2="408" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="650" y1="150" x2="788" y2="150" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="264" text-anchor="middle" class="lbl">不知道最新的消息，查不了资料，动不了任何软件，下一次对话不记得上一次。</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>单元模型只有一层对话能力，所有短板都源于此。</div>
+</section>
+
+<!-- 3 迭代一：提示词 -->
+<section class="slide">
+  <div class="kicker">迭代一</div>
+  <h2>加上提示词：给模型立规矩</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="60" y="40" width="420" height="90" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="270" y="80" text-anchor="middle" class="lbl-hei">不加提示词</text>
+      <text x="270" y="112" text-anchor="middle" class="lbl">同一个问题，回答随机的风格与深度</text>
+      <rect x="60" y="170" width="420" height="90" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="270" y="210" text-anchor="middle" class="lbl-hei">加上提示词</text>
+      <text x="270" y="242" text-anchor="middle" class="lbl">指定角色、格式、步骤、边界，输出稳定可复用</text>
+      <line x1="540" y1="150" x2="620" y2="150" stroke="#111111" stroke-width="1"/>
+      <rect x="620" y="60" width="400" height="180" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="820" y="110" text-anchor="middle" class="lbl-hei">提示词是写在模型外面的规则</text>
+      <text x="820" y="150" text-anchor="middle" class="lbl">不改变参数，不重新训练</text>
+      <text x="820" y="190" text-anchor="middle" class="lbl">成本几乎为零，效果立刻可见</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>提示词让模型从随机回答变成稳定输出，是成本最低的一次升级。</div>
+</section>
+
+<!-- 4 迭代二：检索增强生成 -->
+<section class="slide">
+  <div class="kicker">迭代二</div>
+  <h2>加上检索增强生成：接上模型之外的知识</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="20" y="110" width="190" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="115" y="158" text-anchor="middle" class="lbl-hei">用户提问</text>
+      <rect x="270" y="110" width="190" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="365" y="150" text-anchor="middle" class="lbl-hei">检索环节</text>
+      <text x="365" y="178" text-anchor="middle" class="lbl">按问题找材料</text>
+      <rect x="270" y="240" width="190" height="50" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="365" y="272" text-anchor="middle" class="lbl">文档库、知识库</text>
+      <rect x="520" y="110" width="220" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="630" y="142" text-anchor="middle" class="lbl-hei">拼装上下文</text>
+      <text x="630" y="172" text-anchor="middle" class="lbl">问题加检索结果</text>
+      <rect x="800" y="110" width="230" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="915" y="142" text-anchor="middle" class="lbl-hei">模型生成回答</text>
+      <text x="915" y="172" text-anchor="middle" class="lbl">有据可依</text>
+      <line x1="210" y1="150" x2="268" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="460" y1="150" x2="518" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="740" y1="150" x2="798" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="365" y1="238" x2="365" y2="192" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="70" class="lbl">模型知识截止于训练日，检索让它随时读到当天的新材料。</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>检索增强生成解决的是知识新鲜度与私有资料两大短板。</div>
+</section>
+
+<!-- 5 迭代三：模型上下文协议 -->
+<section class="slide">
+  <div class="kicker">迭代三</div>
+  <h2>加上模型上下文协议：一个接口接通所有工具</h2>
+  <div class="fig">
+    <svg width="1060" height="320" viewBox="0 0 1060 320">
+      <rect x="410" y="110" width="240" height="110" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="156" text-anchor="middle" class="lbl-hei">模型</text>
+      <text x="530" y="190" text-anchor="middle" class="lbl">中枢调度</text>
+      <rect x="440" y="250" width="180" height="50" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="282" text-anchor="middle" class="lbl-hei">统一协议接口</text>
+      <line x1="530" y1="222" x2="530" y2="248" stroke="#111111" stroke-width="1"/>
+      <rect x="60" y="40" width="220" height="60" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="170" y="76" text-anchor="middle" class="lbl">数据库查询</text>
+      <rect x="420" y="30" width="220" height="60" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="66" text-anchor="middle" class="lbl">办公与文档工具</text>
+      <rect x="780" y="40" width="220" height="60" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="890" y="76" text-anchor="middle" class="lbl">地图与出行服务</text>
+      <rect x="60" y="270" width="220" height="40" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="170" y="296" text-anchor="middle" class="lbl">浏览器操作</text>
+      <rect x="780" y="270" width="220" height="40" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="890" y="296" text-anchor="middle" class="lbl">企业内部系统</text>
+      <line x1="170" y1="100" x2="470" y2="248" stroke="#111111" stroke-width="1"/>
+      <line x1="530" y1="90" x2="530" y2="248" stroke="#111111" stroke-width="1"/>
+      <line x1="890" y1="100" x2="590" y2="248" stroke="#111111" stroke-width="1"/>
+      <line x1="170" y1="268" x2="470" y2="262" stroke="#111111" stroke-width="1"/>
+      <line x1="890" y1="268" x2="590" y2="262" stroke="#111111" stroke-width="1"/>
+      <text x="120" y="170" class="lbl">过去：每接一个工具写一次定制对接</text>
+      <text x="620" y="330" text-anchor="middle" class="lbl">现在：工具方与模型方各写一次，全部互通</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>上下文协议把工具对接从千条专线变成一个标准插口。</div>
+</section>
+
+<!-- 6 迭代四：记忆 -->
+<section class="slide">
+  <div class="kicker">迭代四</div>
+  <h2>加上记忆：从每次失忆到长期陪伴</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="40" y="60" width="280" height="70" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="180" y="90" text-anchor="middle" class="lbl-hei">短期记忆</text>
+      <text x="180" y="118" text-anchor="middle" class="lbl">本轮对话内容，用完即弃</text>
+      <rect x="40" y="170" width="280" height="70" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="180" y="200" text-anchor="middle" class="lbl-hei">长期记忆</text>
+      <text x="180" y="228" text-anchor="middle" class="lbl">偏好、习惯、历史决定，跨对话留存</text>
+      <rect x="520" y="40" width="260" height="220" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="650" y="90" text-anchor="middle" class="lbl-hei">单元模型</text>
+      <text x="650" y="130" text-anchor="middle" class="lbl">只保留本轮上下文</text>
+      <text x="650" y="170" text-anchor="middle" class="lbl">换一个新会话，</text>
+      <text x="650" y="204" text-anchor="middle" class="lbl">等于重新认识一次。</text>
+      <rect x="800" y="40" width="230" height="220" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="915" y="90" text-anchor="middle" class="lbl-hei">加记忆之后</text>
+      <text x="915" y="130" text-anchor="middle" class="lbl">记得你上次的结论</text>
+      <text x="915" y="164" text-anchor="middle" class="lbl">接得上三天前的任务</text>
+      <text x="915" y="198" text-anchor="middle" class="lbl">越用越懂你。</text>
+      <line x1="320" y1="205" x2="518" y2="160" stroke="#111111" stroke-width="1"/>
+      <line x1="780" y1="150" x2="798" y2="150" stroke="#111111" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>记忆把智能体从一问一答的工具，变成可以长期共事的伙伴。</div>
+</section>
+
+<!-- 7 迭代五：多智能体协同 -->
+<section class="slide">
+  <div class="kicker">迭代五</div>
+  <h2>加上多智能体协同：从一个人干到分工调度</h2>
+  <div class="fig">
+    <svg width="1060" height="320" viewBox="0 0 1060 320">
+      <rect x="390" y="30" width="280" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="66" text-anchor="middle" class="lbl-hei">规划调度者</text>
+      <text x="530" y="96" text-anchor="middle" class="lbl">拆解任务、分配、验收</text>
+      <rect x="80" y="200" width="240" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="200" y="236" text-anchor="middle" class="lbl-hei">检索员</text>
+      <text x="200" y="264" text-anchor="middle" class="lbl">负责查资料</text>
+      <rect x="410" y="200" width="240" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="236" text-anchor="middle" class="lbl-hei">写作者</text>
+      <text x="530" y="264" text-anchor="middle" class="lbl">负责成稿</text>
+      <rect x="740" y="200" width="240" height="80" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="860" y="236" text-anchor="middle" class="lbl-hei">审核员</text>
+      <text x="860" y="264" text-anchor="middle" class="lbl">负责校验把关</text>
+      <line x1="460" y1="110" x2="230" y2="198" stroke="#111111" stroke-width="1"/>
+      <line x1="530" y1="110" x2="530" y2="198" stroke="#111111" stroke-width="1"/>
+      <line x1="600" y1="110" x2="830" y2="198" stroke="#111111" stroke-width="1"/>
+      <text x="90" y="140" class="lbl">单模型一把抓：长任务容易迷失、</text>
+      <text x="90" y="172" class="lbl">中途出错无法纠偏。</text>
+      <text x="620" y="140" class="lbl">分工之后：每个角色上下文干净、职责单一，</text>
+      <text x="620" y="172" class="lbl">调度者随时重派、重跑、回收结果。</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>多智能体协同解决的不是能力问题，而是长任务的组织问题。</div>
+</section>
+
+<!-- 8 迭代六：函数调用 -->
+<section class="slide">
+  <div class="kicker">迭代六</div>
+  <h2>加上函数调用：从说到做</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="30" y="100" width="230" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="145" y="140" text-anchor="middle" class="lbl-hei">模型</text>
+      <text x="145" y="172" text-anchor="middle" class="lbl">判断该做什么</text>
+      <rect x="330" y="100" width="230" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="445" y="132" text-anchor="middle" class="lbl-hei">结构化指令</text>
+      <text x="445" y="164" text-anchor="middle" class="lbl">调用哪个函数、传什么参数</text>
+      <rect x="630" y="100" width="230" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="745" y="132" text-anchor="middle" class="lbl-hei">程序执行</text>
+      <text x="745" y="164" text-anchor="middle" class="lbl">下单、查表、发消息、写文件</text>
+      <rect x="930" y="100" width="100" height="100" fill="#111111"/>
+      <text x="980" y="158" text-anchor="middle" class="lbl-sm" style="fill:#ffffff;">结果</text>
+      <line x1="260" y1="150" x2="328" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="560" y1="150" x2="628" y2="150" stroke="#111111" stroke-width="1"/>
+      <line x1="860" y1="150" x2="928" y2="150" stroke="#111111" stroke-width="1"/>
+      <path d="M 980 202 L 980 240 L 145 240 L 145 202" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="530" y="266" text-anchor="middle" class="lbl">执行结果回传模型，模型据此决定下一步——直到任务完成。</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>函数调用让模型的回答变成动作，这是从对话到执行的最后一跳。</div>
+</section>
+
+<!-- 9 全景回顾 -->
+<section class="slide">
+  <div class="kicker">全景</div>
+  <h2>六步迭代，能力逐层叠加</h2>
+  <div class="fig">
+    <svg width="1060" height="300" viewBox="0 0 1060 300">
+      <rect x="30" y="220" width="160" height="60" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="110" y="256" text-anchor="middle" class="lbl-sm">单元模型</text>
+      <rect x="190" y="180" width="160" height="100" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="270" y="236" text-anchor="middle" class="lbl-sm">加提示词</text>
+      <rect x="350" y="140" width="160" height="140" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="430" y="216" text-anchor="middle" class="lbl-sm">加检索增强</text>
+      <rect x="510" y="100" width="160" height="180" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="590" y="186" text-anchor="middle" class="lbl-sm">加上下文协议</text>
+      <text x="590" y="216" text-anchor="middle" class="lbl-sm">加记忆</text>
+      <rect x="670" y="60" width="180" height="220" fill="none" stroke="#111111" stroke-width="1"/>
+      <text x="760" y="166" text-anchor="middle" class="lbl-sm">加多智能体</text>
+      <text x="760" y="196" text-anchor="middle" class="lbl-sm">加函数调用</text>
+      <rect x="850" y="20" width="180" height="260" fill="#111111"/>
+      <text x="940" y="156" text-anchor="middle" class="lbl-sm" style="fill:#ffffff;">智能体</text>
+      <text x="110" y="170" text-anchor="middle" class="lbl">能对话</text>
+      <text x="270" y="150" text-anchor="middle" class="lbl">能稳定输出</text>
+      <text x="430" y="110" text-anchor="middle" class="lbl">能读外部资料</text>
+      <text x="590" y="70" text-anchor="middle" class="lbl">能接工具</text>
+      <text x="760" y="30" text-anchor="middle" class="lbl">能记事分工</text>
+      <text x="940" y="300" text-anchor="middle" class="lbl">能完成任务</text>
+    </svg>
+  </div>
+  <div class="conclusion"><span class="tag">结论</span>智能体不是另一台新机器，而是同一台模型经六层叠加后的形态。</div>
+</section>
+
+<!-- 10 结语 -->
+<section class="slide">
+  <div class="kicker">结语</div>
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+    <div style="border-top:1px solid #111111; border-bottom:1px solid #111111; padding:40px 0; max-width:920px;">
+      <p style="font-family:'SimHei','黑体',sans-serif; font-size:32px; line-height:1.6;">从回答问题，到完成任务。</p>
+    </div>
+    <div style="margin-top:48px; max-width:920px;">
+      <p style="font-size:22px;">单元模型的价值在会说，智能体的价值在做成。六次迭代没有一次推翻重来，都是在原有底座上补上缺口：会说的补上规矩，缺知识的接上检索，缺手脚的接上协议与函数调用，缺记性的装上记忆，扛不住长任务的搭起分工。理解这条主线，就理解了当下所有智能体产品的来路。</p>
+    </div>
+    <svg width="920" height="72" viewBox="0 0 920 72" style="margin-top:48px;">
+      <line x1="0" y1="24" x2="920" y2="24" stroke="#111111" stroke-width="1"/>
+      <text x="0" y="56" class="lbl">会说话</text>
+      <text x="230" y="56" class="lbl">会查资料</text>
+      <text x="460" y="56" class="lbl">会用工具</text>
+      <text x="690" y="56" class="lbl">会记事分工</text>
+      <circle cx="0" cy="24" r="4" fill="#111111"/>
+      <circle cx="230" cy="24" r="4" fill="#ffffff" stroke="#111111" stroke-width="1"/>
+      <circle cx="460" cy="24" r="4" fill="#ffffff" stroke="#111111" stroke-width="1"/>
+      <circle cx="690" cy="24" r="4" fill="#111111"/>
+    </svg>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var slides = document.querySelectorAll('.slide');
+    var idx = 0;
+    function show(n) {
+      idx = Math.max(0, Math.min(slides.length - 1, n));
+      slides[idx].scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { show(idx + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { show(idx - 1); e.preventDefault(); }
+      if (e.key === 'f' || e.key === 'F') {
+        if (document.fullscreenElement) { document.exitFullscreen(); } else { document.documentElement.requestFullscreen(); }
+      }
+    });
+    var st = document.createElement('style');
+    st.textContent = 'html{scroll-snap-type:y mandatory}.slide{scroll-snap-align:start}';
+    document.head.appendChild(st);
+    window.__goto = show;
+  })();
+</script>
+</body>
+</html>
